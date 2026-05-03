@@ -512,12 +512,48 @@ function renderCreatorForm(){
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">TARGET JOB TITLE *</label><input id="cr-title" list="cr-titles" placeholder="e.g. Chief Compliance Officer"/><datalist id="cr-titles">'+titles.map(function(t){return '<option value="'+esc(t)+'"/>';}).join('')+'</datalist></div>';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">INDUSTRY</label><select id="cr-industry"><option value="All pharma and life sciences">All (Pharma, Biotech, MedTech, CRO)</option><option>Pharmaceutical</option><option>Biotech</option><option>Medical Devices</option><option>CRO / Clinical Research</option><option>Healthcare</option><option>Life Sciences</option></select></div>';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">COMPANY SIZE</label><select id="cr-size"><option>50-200</option><option>200-500</option><option>500-5000</option><option>1001-5000</option><option>5000+</option></select></div>';
-  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">COMPLIANCE TOPIC (optional)</label><select id="cr-topic"><option value="">-- Auto-select best topic --</option>'+topics.map(function(t){return '<option value="'+esc(t)+'">'+esc(t)+'</option>';}).join('')+'</select></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">COMPLIANCE TOPIC (optional)</label>';
+  html+='<div style="display:flex;gap:6px;">';
+  html+='<select id="cr-topic" style="flex:1;"><option value="">-- Auto-select best topic --</option>'+topics.map(function(t){return '<option value="'+esc(t)+'">'+esc(t)+'</option>';}).join('')+'</select>';
+  html+='<button onclick="refreshCrTopics()" id="cr-topic-refresh-btn" title="Refresh topics with AI" style="background:#EBF5EC;border:1px solid #3d8b40;border-radius:8px;padding:0 10px;cursor:pointer;font-size:14px;color:#3d8b40;flex-shrink:0;">&#8635;</button>';
+  html+='</div></div>';
   html+='</div>';
   html+='<div id="cr-error"></div>';
   html+='<button class="btn btn-primary" id="cr-btn" onclick="generateCampaign()" style="margin-bottom:20px;">Generate Campaign</button>';
   html+='</div>';
   return html;
+}
+
+async function refreshCrTopics(){
+  var btn=document.getElementById('cr-topic-refresh-btn');
+  var sel=document.getElementById('cr-topic');
+  var title=document.getElementById('cr-title');
+  var industry=document.getElementById('cr-industry');
+  if(btn){btn.textContent='...';btn.disabled=true;}
+  var targetTitle=title&&title.value.trim()?title.value:'pharma compliance professional';
+  var targetIndustry=industry?industry.value:'Pharmaceutical';
+  var prompt=[
+    'Generate 12 highly relevant and current compliance topics for a LinkedIn Sales Robot outreach campaign targeting a '+targetTitle+' in the '+targetIndustry+' industry.',
+    'Eunomia Pharma Services is a UK pharma compliance consultancy. Topics should reflect real 2025-2026 regulatory developments.',
+    'Include topics from: PMCPA, ABPI Code 2024, ABAC, ANSM, FCPA, EMA, EFPIA, HCP engagement, digital channels, AI in pharma, MSL training, gifts and hospitality, due diligence, data analytics.',
+    'Make each topic specific and actionable - not generic.',
+    'Respond ONLY as a JSON array of strings: ["Topic 1","Topic 2",...]'
+  ].join(' ');
+  try{
+    var raw=await aiCall([{role:'user',content:prompt}],'You are a pharma compliance expert. Generate specific, timely compliance topics relevant to the target persona and industry.');
+    var newTopics=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    if(sel&&Array.isArray(newTopics)){
+      var current=sel.value;
+      sel.innerHTML='<option value="">-- Auto-select best topic --</option>';
+      newTopics.forEach(function(t){
+        var opt=document.createElement('option');
+        opt.value=t;opt.textContent=t;
+        if(t===current)opt.selected=true;
+        sel.appendChild(opt);
+      });
+    }
+  }catch(e){alert('Could not refresh topics: '+e.message);}
+  if(btn){btn.innerHTML='&#8635;';btn.disabled=false;}
 }
 
 async function generateCampaign(){
@@ -1816,7 +1852,7 @@ function renderClientTracker(){
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">SIGNAL TYPE</label>';
   html+='<select id="prospect-signal" style="width:100%;"><option value="phase3">Phase 3 trial approval (last 6 months)</option><option value="compliance">Actively recruiting compliance / medical affairs roles</option><option value="funding">Recently funded (Series B/C/D) pharma or biotech</option><option value="warning">Recent PMCPA or FDA warning letter</option><option value="launch">New product launch preparation</option><option value="expansion">Expanding into EU/UK markets</option><option value="multi">Multi-jurisdiction fragmented compliance</option><option value="agency">Med Comms or healthcare agencies</option></select></div>';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">GEOGRAPHY</label>';
-  html+='<select id="prospect-geo" style="width:100%;"><option>UK and Europe</option><option>UK only</option><option>Europe only</option><option>US companies entering EU</option><option>Global</option></select></div></div>';
+  html+='<select id="prospect-geo" style="width:100%;"><option>UK and Europe</option><option>UK only</option><option>Europe only</option><option>US companies entering EU</option><option>Asia Pacific (APAC)</option><option>Middle East and North Africa (MENA)</option><option>Asia and MENA combined</option><option>Global</option></select></div></div>';
   html+='<div id="prospect-output"></div></div>';
 
   // Client tracker card
@@ -2005,7 +2041,7 @@ async function findProspects(){
   var batchNum=window.PROSPECT_BATCH||0;
   var prompt=[
     'You are a business development expert for Eunomia Pharma Services, a UK pharma compliance consultancy.',
-    'Eunomia ICP: Small biotech (100-250 staff, EUR250-750K compliance spend), Mid-size biotech (250-1000 staff, EUR750K-2M spend), Large pharma BU (EUR5M+ compliance spend). Target personas: CCO, Country Compliance Manager, Medical Affairs Director, Legal Counsel, COO/Digital Lead, Med Comms agencies. Pain points: fragmented SOPs, limited in-house teams, audit readiness, HCP governance, multi-market expansion.',
+    'Eunomia ICP: Small biotech (100-250 staff, EUR250-750K compliance spend), Mid-size biotech (250-1000 staff, EUR750K-2M spend), Large pharma BU (EUR5M+ compliance spend). Target personas: CCO, Country Compliance Manager, Medical Affairs Director, Legal Counsel, COO/Digital Lead, Med Comms agencies. Pain points: fragmented SOPs, limited in-house teams, audit readiness, HCP governance, multi-market expansion. For APAC: focus on companies expanding from Japan, South Korea, China, Singapore, Australia into EU/UK markets who need ABPI/EFPIA compliance. For MENA: focus on Gulf pharma companies (Saudi Arabia, UAE, Egypt) expanding into regulated EU markets, or global pharma with MENA operations needing regional compliance frameworks aligned with local health authority requirements (SFDA, HAAD, MOH).',
     'Identify 12 real pharmaceutical, biotech or Med Comms companies that are strong prospective clients based on this signal:',
     '"'+sigLabels[sigVal]+'" in this geography: "'+geoVal+'".',
     'This is batch '+batchNum+' - provide DIFFERENT companies from previous batches.',
