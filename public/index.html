@@ -392,22 +392,60 @@ Give specific actionable advice for Eunomia's pharma compliance marketing.`;
           <>
             {usingMock.li&&<Alert type="warning">Showing demo data. Add <strong>LINKEDIN_ACCESS_TOKEN</strong> in Vercel env vars for live data.</Alert>}
             <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
-              <Stat label="Account" value={li?.name&&li.name!=='undefined undefined'?li.name:li?.email??'Connected'} sub={li?.email&&li.name!=='undefined undefined'?li.email:'LinkedIn profile'}/>
-              <Stat label="Connections" value={li?.connections?.toLocaleString()??'N/A'} sub="Total network — requires r_network scope"/>
+              <Stat label="Account" value={li?.name&&li.name!=='undefined undefined'?li.name:li?.email??'Connected'} sub={li?.email?li.email:'LinkedIn profile'}/>
+              <Stat label="Connections" value={li?.connections?.toLocaleString()??'N/A'} sub="Total network"/>
               <Stat label="Status" value={usingMock.li?'Demo':'Live'} sub={usingMock.li?'Add token for live data':'Token connected'} color={usingMock.li?C.amber:C.green}/>
             </div>
+
+            {/* Quick actions */}
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+              <a href="https://www.linkedin.com/company/eunomia-pharma-services" target="_blank" rel="noreferrer"
+                style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:10,padding:'14px 20px',textDecoration:'none',color:C.text,display:'flex',alignItems:'center',gap:12}}>
+                <div style={{width:36,height:36,borderRadius:8,background:'#E8F0F8',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>in</div>
+                <div><div style={{fontWeight:700,fontSize:14}}>Open Company Page</div><div style={{fontSize:12,color:C.muted}}>View your LinkedIn presence</div></div>
+              </a>
+              <a href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer"
+                style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:10,padding:'14px 20px',textDecoration:'none',color:C.text,display:'flex',alignItems:'center',gap:12}}>
+                <div style={{width:36,height:36,borderRadius:8,background:'#3d8b4020',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>✍</div>
+                <div><div style={{fontWeight:700,fontSize:14}}>Create a Post</div><div style={{fontSize:12,color:C.muted}}>Share a regulatory update</div></div>
+              </a>
+            </div>
+
+            {/* Tips */}
             <div className="card">
-              <H>How to connect LinkedIn</H>
+              <H>LinkedIn content strategy for Eunomia</H>
               {[
-                ['1','Create a LinkedIn Developer App','Go to linkedin.com/developers/apps → Create App. Select your Eunomia Company Page.'],
-                ['2','Request permissions','Request: r_liteprofile, r_emailaddress, r_network. For page analytics also: r_organization_social.'],
-                ['3','Generate access token','In your app dashboard → OAuth 2.0 tools → generate token. Copy it.'],
-                ['4','Add to Vercel','Vercel → your project → Settings → Environment Variables → add LINKEDIN_ACCESS_TOKEN and LINKEDIN_ORG_ID (your company page number).'],
-                ['5','Redeploy','Vercel → Deployments → Redeploy. Live data will appear here.'],
-              ].map(([n,t,d])=>(
-                <div key={n} className="row" style={{alignItems:'flex-start'}}>
-                  <div style={{width:24,height:24,borderRadius:'50%',background:'#0077B5',color:'#fff',fontSize:12,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{n}</div>
-                  <div><div style={{fontWeight:600}}>{t}</div><div style={{color:C.muted,fontSize:12,marginTop:2}}>{d}</div></div>
+                {day:'Mon',tip:'Share a regulatory insight',detail:'Post a 3-sentence take on the latest PMCPA or ABPI development. Tag the relevant body. Best posting time: 8–9am.',icon:'📋'},
+                {day:'Wed',tip:'Publish a webinar clip',detail:'Uday's 60–90 second video clip from your last webinar. Add captions. Video gets 3× more reach than text posts.',icon:'🎬'},
+                {day:'Thu',tip:'Engagement hour',detail:'Spend 15 minutes replying to comments on your posts and commenting on posts from your ICP. LinkedIn rewards fast engagement.',icon:'💬'},
+                {day:'Fri',tip:'Newsletter teaser',detail:'Short preview of your upcoming Mailchimp newsletter — 2 key takeaways and a link to subscribe.',icon:'✉'},
+              ].map((t,i)=>(
+                <div key={i} className="row" style={{alignItems:'flex-start',gap:14}}>
+                  <div style={{width:44,height:44,borderRadius:8,background:'#EBF5EC',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    <span style={{fontSize:16}}>{t.icon}</span>
+                    <span style={{fontSize:9,fontWeight:700,color:'#3d8b40',textTransform:'uppercase',letterSpacing:'0.05em'}}>{t.day}</span>
+                  </div>
+                  <div>
+                    <div style={{fontWeight:600,fontSize:13,marginBottom:2}}>{t.tip}</div>
+                    <div style={{fontSize:12,color:C.muted,lineHeight:1.5}}>{t.detail}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Token status */}
+            <div className="card" style={{background:'#F4F7F4'}}>
+              <H>Token & permissions status</H>
+              {[
+                {label:'Access token',status:!usingMock.li,note:usingMock.li?'Add LINKEDIN_ACCESS_TOKEN in Vercel env vars':'Connected'},
+                {label:'Profile data (openid scope)',status:li?.name&&li.name!=='undefined undefined',note:'Returns your name and email'},
+                {label:'Connection count (r_network)',status:!!li?.connections,note:li?.connections?`${li.connections} connections`:'Requires r_network scope — regenerate token with this scope'},
+                {label:'Org page analytics',status:false,note:'Requires Marketing Developer Platform — apply at linkedin.com/developers'},
+              ].map((r,i)=>(
+                <div key={i} className="row">
+                  <div style={{width:8,height:8,borderRadius:'50%',background:r.status?'#3d8b40':'#E8651A',flexShrink:0}}/>
+                  <span style={{fontWeight:600,fontSize:13,flex:1}}>{r.label}</span>
+                  <span style={{fontSize:12,color:C.muted}}>{r.note}</span>
                 </div>
               ))}
             </div>
