@@ -131,7 +131,7 @@ var MOCK={
     ]}
 };
 
-// ── Hunter Tab ───────────────────────────────────────────────────────────────
+// -- Hunter Tab ---------------------------------------------------------------
 function HunterTab(props){
   var ht=props.ht,usingMock=props.usingMock;
   var [domain,setDomain]=useState('');
@@ -490,7 +490,7 @@ function HunterTab(props){
   );
 }
 
-// ── LinkedIn Composer ────────────────────────────────────────────────────────
+// -- LinkedIn Composer --------------------------------------------------------
 function LinkedInComposer(props){
   var li=props.li;
   var [text,setText]=useState('');
@@ -575,7 +575,7 @@ function LinkedInComposer(props){
   );
 }
 
-// ── LinkedIn Tab ─────────────────────────────────────────────────────────────
+// -- LinkedIn Tab -------------------------------------------------------------
 function LinkedInTab(props){
   var li=props.li,usingMock=props.usingMock;
   var [showComposer,setShowComposer]=useState(false);
@@ -628,7 +628,7 @@ function LinkedInTab(props){
   );
 }
 
-// ── Mailchimp Tab ────────────────────────────────────────────────────────────
+// -- Mailchimp Tab ------------------------------------------------------------
 function MailchimpTab(props){
   var mc=props.mc,usingMock=props.usingMock,onCreateNewsletter=props.onCreateNewsletter;
   var [launching,setLaunching]=useState({});
@@ -716,7 +716,7 @@ function MailchimpTab(props){
   );
 }
 
-// ── Newsletter Preview ───────────────────────────────────────────────────────
+// -- Newsletter Preview -------------------------------------------------------
 function NewsletterPreview(props){
   var draft=props.draft,draftSubj=props.draftSubj,draftLoading=props.draftLoading;
   var mcResult=props.mcResult,sending=props.sending,mc=props.mc;
@@ -833,7 +833,7 @@ function NewsletterPreview(props){
   );
 }
 
-// ── Main App ─────────────────────────────────────────────────────────────────
+// -- Main App -----------------------------------------------------------------
 function App(){
   var [tab,setTab]=useState('overview');
   var [mc,setMc]=useState(null);
@@ -1160,7 +1160,7 @@ function App(){
 }
 
 
-// ── SalesRobotTab ─────────────────────────────────────────────────────────────
+// -- SalesRobotTab -------------------------------------------------------------
 function SalesRobotTab(props) {
   var sr = props.sr, usingMock = props.usingMock;
   var [showCreator, setShowCreator] = useState(false);
