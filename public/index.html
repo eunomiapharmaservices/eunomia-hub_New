@@ -657,65 +657,69 @@ function HunterTab({ht,usingMock,C,Stat,Alert,H,Pill,Spin}){
                 <div style={{color:C.muted,marginTop:4,fontSize:12}}>Hunter.io may not have data for this domain yet. Try the company's main domain (e.g. try "gsk.com" not "uk.gsk.com"). Some smaller companies are not in Hunter's database.</div>
               </div>
             )}
-            {results.emails.length>0&&<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-              <div style={{fontSize:13,color:C.muted}}>Found <strong style={{color:C.text}}>{results.emails.length}</strong> emails at <strong style={{color:C.text}}>{results.domain}</strong></div>
-              <div style={{display:'flex',gap:8}}>
-                <button onClick={toggleAll} style={{background:'none',border:`1px solid ${C.border}`,borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
-                  {selected.length===results.emails.length?'Deselect all':'Select all'}
-                </button>
-                <button onClick={verifySelected} disabled={!selected.length||verifying}
-                  style={{background:selected.length?C.teal:'#e5e7eb',color:selected.length?'#fff':C.muted,border:'none',borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:selected.length?'pointer':'default',display:'flex',alignItems:'center',gap:6}}>
-                  {verifying?<><Spin s={12}/> Verifying…</>:'✓ Verify selected'}
-                </button>
-              </div>
-            </div>
-
-            <div style={{border:`1px solid ${C.border}`,borderRadius:10,overflow:'hidden',marginBottom:14}}>
-              <div style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 90px 80px',gap:8,padding:'8px 12px',background:C.grayL,fontSize:11,fontWeight:600,color:C.muted,textTransform:'uppercase',letterSpacing:'0.05em'}}>
-                <span/>
-                <span>Name</span><span>Email</span><span>Role</span><span style={{textAlign:'right'}}>Confidence</span>
-              </div>
-              {results.emails.map((e,i)=>(
-                <div key={i} onClick={()=>setSelected(p=>p.includes(e.email)?p.filter(x=>x!==e.email):[...p,e.email])}
-                  style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 90px 80px',gap:8,padding:'10px 12px',borderTop:`1px solid ${C.border}`,cursor:'pointer',background:selected.includes(e.email)?C.blueL:'#fff',transition:'background .1s'}}>
-                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${selected.includes(e.email)?C.blue:C.border}`,background:selected.includes(e.email)?C.blue:'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    {selected.includes(e.email)&&<span style={{color:'#fff',fontSize:11,fontWeight:800}}>✓</span>}
-                  </div>
-                  <div>
-                    <div style={{fontWeight:600,fontSize:13}}>{e.name}</div>
-                    {e.verified&&<span style={{fontSize:10,background:e.verified==='valid'?C.greenL:C.amberL,color:e.verified==='valid'?C.green:C.amber,borderRadius:4,padding:'1px 5px',fontWeight:600}}>{e.verified}</span>}
-                  </div>
-                  <span style={{fontSize:12,color:C.blue,fontFamily:'monospace'}}>{e.email}</span>
-                  <span style={{fontSize:12,color:C.muted}}>{e.role||'--'}</span>
-                  <div style={{textAlign:'right'}}>
-                    <Pill label={`${e.confidence}%`} color={e.confidence>=90?C.green:e.confidence>=75?C.amber:C.red}/>
+            {results.emails.length>0&&(
+              <>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+                  <div style={{fontSize:13,color:C.muted}}>Found <strong style={{color:C.text}}>{results.emails.length}</strong> emails at <strong style={{color:C.text}}>{results.domain}</strong></div>
+                  <div style={{display:'flex',gap:8}}>
+                    <button onClick={toggleAll} style={{background:'none',border:`1px solid ${C.border}`,borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                      {selected.length===results.emails.length?'Deselect all':'Select all'}
+                    </button>
+                    <button onClick={verifySelected} disabled={!selected.length||verifying}
+                      style={{background:selected.length?C.teal:'#e5e7eb',color:selected.length?'#fff':C.muted,border:'none',borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:selected.length?'pointer':'default',display:'flex',alignItems:'center',gap:6}}>
+                      {verifying?'Verifying...':'Verify selected'}
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            </div>}
-            {results.emails.length>0&&selected.length>0&&(
-              <div style={{display:'flex',gap:10,alignItems:'center',padding:'12px 14px',background:C.blueL,borderRadius:10}}>
-                <span style={{fontSize:13,fontWeight:600,flex:1}}>{selected.length} email{selected.length!==1?'s':''} selected</span>
-                <button onClick={csvDownload}
-                  style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:8,padding:'8px 14px',fontSize:13,fontWeight:600,cursor:'pointer'}}>
-                  ⬇ Download CSV
-                </button>
-                <button onClick={exportToMailchimp} disabled={exporting}
-                  style={{background:exporting?C.grayL:C.amber,color:exporting?C.muted:'#fff',border:'none',borderRadius:8,padding:'8px 16px',fontSize:13,fontWeight:600,cursor:exporting?'default':'pointer',display:'flex',alignItems:'center',gap:6}}>
-                  {exporting?<><Spin s={13}/> Exporting…</>:'✉ Export to Mailchimp'}
-                </button>
-              </div>
+                <div style={{border:`1px solid ${C.border}`,borderRadius:10,overflow:'hidden',marginBottom:14}}>
+                  <div style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 90px 80px',gap:8,padding:'8px 12px',background:C.grayL,fontSize:11,fontWeight:600,color:C.muted,textTransform:'uppercase',letterSpacing:'0.05em'}}>
+                    <span/>
+                    <span>Name</span><span>Email</span><span>Role</span><span style={{textAlign:'right'}}>Confidence</span>
+                  </div>
+                  {results.emails.map((e,i)=>(
+                    <div key={i} onClick={()=>setSelected(p=>p.includes(e.email)?p.filter(x=>x!==e.email):[...p,e.email])}
+                      style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 90px 80px',gap:8,padding:'10px 12px',borderTop:`1px solid ${C.border}`,cursor:'pointer',background:selected.includes(e.email)?C.blueL:'#fff',transition:'background .1s'}}>
+                      <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${selected.includes(e.email)?C.blue:C.border}`,background:selected.includes(e.email)?C.blue:'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        {selected.includes(e.email)&&<span style={{color:'#fff',fontSize:11,fontWeight:800}}>v</span>}
+                      </div>
+                      <div>
+                        <div style={{fontWeight:600,fontSize:13}}>{e.name}</div>
+                        {e.verified&&<span style={{fontSize:10,background:e.verified==='valid'?C.greenL:C.amberL,color:e.verified==='valid'?C.green:C.amber,borderRadius:4,padding:'1px 5px',fontWeight:600}}>{e.verified}</span>}
+                      </div>
+                      <span style={{fontSize:12,color:C.blue,fontFamily:'monospace'}}>{e.email}</span>
+                      <span style={{fontSize:12,color:C.muted}}>{e.role||'--'}</span>
+                      <div style={{textAlign:'right'}}>
+                        <Pill label={e.confidence+'%'} color={e.confidence>=90?C.green:e.confidence>=75?C.amber:C.red}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
+                {selected.length>0&&(
+                  <div style={{display:'flex',gap:10,alignItems:'center',padding:'12px 14px',background:C.blueL,borderRadius:10}}>
+                    <span style={{fontSize:13,fontWeight:600,flex:1}}>{selected.length} email{selected.length!==1?'s':''} selected</span>
+                    <button onClick={csvDownload}
+                      style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:8,padding:'8px 14px',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                      Download CSV
+                    </button>
+                    <button onClick={exportToMailchimp} disabled={exporting}
+                      style={{background:exporting?C.grayL:C.amber,color:exporting?C.muted:'#fff',border:'none',borderRadius:8,padding:'8px 16px',fontSize:13,fontWeight:600,cursor:exporting?'default':'pointer',display:'flex',alignItems:'center',gap:6}}>
+                      {exporting?'Exporting...':'Export to Mailchimp'}
+                    </button>
+                  </div>
+                )}
 
-            {exportResult&&(
-              <div style={{marginTop:10}}>
-                <Alert type={exportResult.error?'error':'success'}>
-                  {exportResult.error?`Mailchimp error: ${exportResult.error}`
-                    :`✓ ${exportResult.added||selected.length} contacts added to Mailchimp with tag "ABM-Hunter"`}
-                </Alert>
-              </div>
+                {exportResult&&(
+                  <div style={{marginTop:10}}>
+                    <Alert type={exportResult.error?'error':'success'}>
+                      {exportResult.error?'Mailchimp error: '+exportResult.error
+                        :(exportResult.added||selected.length)+' contacts added to Mailchimp with tag ABM-Hunter'}
+                    </Alert>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
