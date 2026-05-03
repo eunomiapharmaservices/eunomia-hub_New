@@ -651,6 +651,7 @@ function renderHunter(){
   else if(STATE.hunterView==='finder')html+=renderHunterFinder();
   else if(STATE.hunterView==='jobrole')html+=renderHunterJobRole();
   else html+=renderHunterLeads();
+  document.getElementById('panel-hunter').innerHTML=html;
 }
 
 // ── Hunter Email Finder ──────────────────────────────────────────────────────
@@ -782,8 +783,6 @@ function renderHunterJobRole(){
   }
   html+='</div>';
 
-  // Add onchange for custom role
-  // Note: jr-role change handler is in setHunterView via renderHunter refresh
   return html;
 }
 
@@ -1914,7 +1913,7 @@ function downloadProspects(){
   var csvStr=csvRows.map(function(r){
     return r.map(function(v){return '"'+(v||'').split('"').join("'")+'"';}).join(',');
   }).join('\n');
-
+  var blob=new Blob([csvStr],{type:'text/csv'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download='eunomia-prospects.csv';a.click();
 }
