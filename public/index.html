@@ -1447,14 +1447,17 @@ function setClientSection(s){CLIENT_STATE.activeSection=s;renderClients();}
 // ONBOARDING PACK
 function renderOnboarding(){
   var html='<div class="card"><div class="card-title">New Client Onboarding Pack Generator</div>';
-  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">Generate a professional onboarding pack for a new client including welcome letter, key contacts, service scope summary, and communication cadence.</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">Generate a professional onboarding pack including welcome letter, key contacts, service scope and communication cadence. Choose email or PDF format.</div>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">CLIENT NAME</label><input id="ob-client" placeholder="e.g. AstraZeneca UK Ltd"/></div>';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">CLIENT CONTACT NAME</label><input id="ob-contact" placeholder="e.g. Dr Sarah Mitchell"/></div>';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">SERVICES ENGAGED</label><input id="ob-services" placeholder="e.g. ABPI Code compliance review, HCP training"/></div>';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">EUNOMIA LEAD CONSULTANT</label><input id="ob-consultant" placeholder="e.g. Your name"/></div>';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">CONTRACT START DATE</label><input id="ob-start" type="date"/></div>';
-  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">REVIEW CADENCE</label><select id="ob-cadence" style="width:100%;"><option>Monthly</option><option>Quarterly</option><option>Bi-monthly</option></select></div></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">REVIEW CADENCE</label><select id="ob-cadence" style="width:100%;"><option>Monthly</option><option>Quarterly</option><option>Bi-monthly</option></select></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">OUTPUT FORMAT</label>';
+  html+='<select id="ob-format" style="width:100%;"><option value="email">Email format (send directly to client)</option><option value="pdf">PDF document (download and attach)</option><option value="both">Both email and PDF</option></select></div>';
+  html+='</div>';
   html+='<button class="btn btn-primary" id="ob-btn" onclick="genOnboarding()" style="margin-bottom:14px;">Generate Onboarding Pack</button>';
   html+='<div id="ob-output"></div></div>';
   return html;
@@ -1467,35 +1470,148 @@ async function genOnboarding(){
   var consultant=document.getElementById('ob-consultant');
   var start=document.getElementById('ob-start');
   var cadence=document.getElementById('ob-cadence');
+  var format=document.getElementById('ob-format');
   var btn=document.getElementById('ob-btn');
   var out=document.getElementById('ob-output');
   if(!client||!client.value.trim()){if(out)out.innerHTML=alert_('error','Please enter the client name.');return;}
   if(btn)btn.textContent='Generating...';
-  var obParts=['Generate a professional new client onboarding pack for Eunomia Pharma Services.',
-    'Client: '+client.value+'. Contact: '+(contact?contact.value:'[Contact Name]')+'.',
-    'Services: '+(services?services.value:'pharma compliance consulting')+'.',
-    'Eunomia lead: '+(consultant?consultant.value:'Eunomia Team')+'.',
-    'Start date: '+(start&&start.value?start.value:'[Start Date]')+'.',
+  var fmt=format?format.value:'email';
+  var fmtInstr=fmt==='pdf'
+    ?'Format as a formal PDF document with clear section headings, professional spacing and a document title at the top. Use structured formatting suitable for a PDF attachment.'
+    :fmt==='both'
+    ?'Generate TWO versions: First, an email version starting with SUBJECT LINE: then the email body. Then a separator line "===PDF VERSION===", then the full PDF document version with formal headings.'
+    :'Format as a professional onboarding email ready to send. Start with SUBJECT LINE: then write the email body. Use a warm, professional tone suitable for sending directly to the client.';
+  var obParts=[
+    'Generate a professional new client onboarding pack for Eunomia Pharma Services.',
+    'Client company: '+client.value+'. Client contact: '+(contact&&contact.value?contact.value:'[Contact Name]')+'.',
+    'Services engaged: '+(services&&services.value?services.value:'pharma compliance consulting')+'.',
+    'Eunomia lead consultant: '+(consultant&&consultant.value?consultant.value:'Eunomia Pharma Services team')+'.',
+    'Engagement start date: '+(start&&start.value?new Date(start.value).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'[Start Date]')+'.',
     'Review cadence: '+(cadence?cadence.value:'Monthly')+'.',
-    'Generate a complete onboarding pack with these four sections:',
-    '1. WELCOME LETTER - Warm professional letter welcoming the client and outlining the first 30 days.',
-    '2. KEY CONTACTS - Eunomia team contacts, escalation path and expected response times.',
-    '3. SERVICE SCOPE SUMMARY - What is included, what is out of scope, and key deliverables.',
-    '4. COMMUNICATION CADENCE - Meeting schedule, reporting format and how to raise urgent issues.',
-    'Tone: professional, warm, reassuring. Format with clear section headings.'
+    'Include all four sections: (1) Welcome - warm opening outlining what happens in the first 30 days,',
+    '(2) Key contacts - Eunomia team details and escalation path,',
+    '(3) Service scope - exactly what is included, what is out of scope, key deliverables,',
+    '(4) Communication cadence - meeting schedule, reporting format, how to raise urgent issues.',
+    fmtInstr
   ];
   var prompt=obParts.join(' ');
   try{
-    var text=await aiCall([{role:'user',content:prompt}],'You are a senior pharma compliance consultant at Eunomia Pharma Services writing a new client onboarding document. Be professional, warm and specific.');
+    var text=await aiCall([{role:'user',content:prompt}],'You are a senior pharma compliance consultant at Eunomia Pharma Services. Write the onboarding pack in a professional, warm and reassuring tone. Be specific and detailed.');
+    LAST_DOC=text;
+    LAST_DOC_META={title:'Onboarding-'+client.value,format:fmt};
     if(out){
-      out.innerHTML='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
-      out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;">Onboarding Pack - '+esc(client.value)+'</span>';
-      out.innerHTML+='<div style="display:flex;gap:8px;"><button onclick="copyLastDoc()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>';
-      out.innerHTML+='<button onclick="downloadLastDoc()" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download</button></div></div>';
-      out.innerHTML+='<div style="padding:20px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#1C2B1D;max-height:500px;overflow-y:auto;">'+esc(text)+'</div></div>';
+      out.innerHTML='';
+      // Email section
+      if(fmt==='email'||fmt==='both'){
+        var emailText=fmt==='both'?text.split('===PDF VERSION===')[0].trim():text;
+        out.innerHTML+='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;margin-bottom:12px;">';
+        out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;">';
+        out.innerHTML+='<div><span style="color:#fff;font-weight:600;font-size:13px;">Email Version</span><span style="color:#a8c5a9;font-size:11px;margin-left:10px;">Ready to send to '+esc(client.value)+'</span></div>';
+        out.innerHTML+='<div style="display:flex;gap:6px;">';
+        out.innerHTML+='<button onclick="obCopyEmail()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;" id="ob-copy-email-btn">Copy Email</button>';
+        out.innerHTML+='<button onclick="obDownloadTxt()" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download .txt</button></div></div>';
+        out.innerHTML+='<div id="ob-email-text" style="padding:20px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#1C2B1D;max-height:400px;overflow-y:auto;">'+esc(emailText)+'</div></div>';
+        window.OB_EMAIL_TEXT=emailText;
+      }
+      // PDF section
+      if(fmt==='pdf'||fmt==='both'){
+        var pdfText=fmt==='both'?(text.split('===PDF VERSION===')[1]||text).trim():text;
+        out.innerHTML+='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;margin-bottom:12px;">';
+        out.innerHTML+='<div style="background:#1a5c1d;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;">';
+        out.innerHTML+='<div><span style="color:#fff;font-weight:600;font-size:13px;">PDF Document Version</span><span style="color:#a8c5a9;font-size:11px;margin-left:10px;">Download and attach to email</span></div>';
+        out.innerHTML+='<div style="display:flex;gap:6px;">';
+        out.innerHTML+='<button onclick="obCopyPdf()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;" id="ob-copy-pdf-btn">Copy</button>';
+        out.innerHTML+='<button onclick="obDownloadPdf()" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;" id="ob-pdf-btn">Download PDF</button></div></div>';
+        out.innerHTML+='<div id="ob-pdf-text" style="padding:20px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#1C2B1D;max-height:400px;overflow-y:auto;">'+esc(pdfText)+'</div></div>';
+        window.OB_PDF_TEXT=pdfText;
+        window.OB_CLIENT_NAME=client.value;
+      }
+      if(fmt==='email'){window.OB_EMAIL_TEXT=text;window.OB_PDF_TEXT=null;}
     }
   }catch(e){if(out)out.innerHTML=alert_('error','Error: '+e.message);}
   if(btn)btn.textContent='Generate Onboarding Pack';
+}
+
+function obCopyEmail(){
+  var text=window.OB_EMAIL_TEXT||LAST_DOC;
+  if(!text)return;
+  navigator.clipboard.writeText(text).then(function(){
+    var btn=document.getElementById('ob-copy-email-btn');
+    if(btn){btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy Email';},2000);}
+  });
+}
+
+function obCopyPdf(){
+  var text=window.OB_PDF_TEXT||LAST_DOC;
+  if(!text)return;
+  navigator.clipboard.writeText(text).then(function(){
+    var btn=document.getElementById('ob-copy-pdf-btn');
+    if(btn){btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy';},2000);}
+  });
+}
+
+function obDownloadTxt(){
+  var text=window.OB_EMAIL_TEXT||LAST_DOC;
+  if(!text){alert('No content to download. Please generate first.');return;}
+  var name=(window.OB_CLIENT_NAME||'Client').split(' ').join('-');
+  var blob=new Blob([text],{type:'text/plain'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='Eunomia-Onboarding-Email-'+name+'.txt';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function obDownloadPdf(){
+  var text=window.OB_PDF_TEXT||window.OB_EMAIL_TEXT||LAST_DOC;
+  if(!text){alert('No content to download. Please generate first.');return;}
+  var btn=document.getElementById('ob-pdf-btn');
+  if(btn)btn.textContent='Building PDF...';
+  var name=(window.OB_CLIENT_NAME||'Client').split(' ').join('-');
+  // Build styled HTML then print-to-PDF via browser
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8">';
+  html+='<title>Eunomia Onboarding Pack - '+esc(window.OB_CLIENT_NAME||'Client')+'</title>';
+  html+='<style>';
+  html+='body{font-family:Arial,sans-serif;color:#1C2B1D;margin:40px;line-height:1.7;font-size:13px;}';
+  html+='h1{color:#2C3E2D;font-size:22px;border-bottom:3px solid #E8651A;padding-bottom:10px;margin-bottom:20px;}';
+  html+='h2{color:#3d8b40;font-size:16px;margin-top:30px;margin-bottom:10px;border-left:4px solid #3d8b40;padding-left:10px;}';
+  html+='.header{background:#2C3E2D;color:#fff;padding:20px 30px;margin:-40px -40px 30px -40px;display:flex;align-items:center;gap:16px;}';
+  html+='.header h1{color:#fff;border:none;margin:0;font-size:20px;}';
+  html+='.logo{width:50px;height:50px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#3d8b40;font-size:18px;flex-shrink:0;}';
+  html+='.footer{margin-top:40px;padding-top:16px;border-top:2px solid #E2E8E2;font-size:11px;color:#5C6B5D;text-align:center;}';
+  html+='pre{white-space:pre-wrap;font-family:Arial,sans-serif;font-size:13px;line-height:1.7;}';
+  html+='</style></head><body>';
+  html+='<div class="header"><div class="logo">E</div><div>';
+  html+='<h1>Eunomia Pharma Services</h1>';
+  html+='<div style="font-size:13px;opacity:0.8;">Client Onboarding Pack &bull; Confidential</div></div></div>';
+  // Convert text to styled HTML - detect headings
+  var lines=text.split('\n');
+  var body='';
+  lines.forEach(function(line){
+    var trimmed=line.trim();
+    if(!trimmed){body+='<br>';return;}
+    // Detect section headings (numbered or ALL CAPS)
+    if(/^[1-4]\.\s+[A-Z]/.test(trimmed)||/^[A-Z][A-Z\s&\/]{5,}$/.test(trimmed)){
+      body+='<h2>'+trimmed+'</h2>';
+    }else if(trimmed.startsWith('SUBJECT LINE:')||trimmed.startsWith('Subject:')){
+      body+='<p style="background:#EBF5EC;padding:8px 12px;border-radius:6px;font-weight:600;">'+esc(trimmed)+'</p>';
+    }else{
+      body+='<p>'+esc(trimmed)+'</p>';
+    }
+  });
+  html+=body;
+  html+='<div class="footer">Eunomia Pharma Services &bull; hello@eunomiapharmaservices.com &bull; www.eunomiapharmaservices.com &bull; Confidential</div>';
+  html+='</body></html>';
+  // Open in new window and trigger print dialog (Save as PDF)
+  var win=window.open('','_blank','width=800,height=900');
+  win.document.write(html);
+  win.document.close();
+  win.onload=function(){
+    setTimeout(function(){
+      win.focus();
+      win.print();
+      if(btn)btn.textContent='Download PDF';
+    },500);
+  };
 }
 
 // TESTIMONIAL REQUEST
