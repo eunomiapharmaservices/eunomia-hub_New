@@ -258,6 +258,8 @@ function setDot(id,state){
 // ============================================================
 async function loadAll(){
   ['li','sr','mc','ht'].forEach(function(k){setDot(k,'loading');});
+  // Show loading state immediately so page is not blank
+  renderTab(STATE.currentTab);
   var results=await Promise.all([
     apiGet('/api/mailchimp?action=stats'),
     apiGet('/api/hunter?action=account'),
@@ -1022,6 +1024,10 @@ async function sendToMailchimp(){
 // ============================================================
 var REG_STATE = {feeds:null, loading:false, insight:'', insightLoading:false, insightTopic:''};
 
+// Safe localStorage wrapper - prevents crashes if localStorage unavailable
+function lsGet(key,def){try{var v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch(e){return def;}}
+function lsSet(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+
 var REG_BODIES = [
   {name:'PMCPA', country:'UK', url:'https://www.pmcpa.org.uk', rss:'https://www.pmcpa.org.uk/feed/', desc:'UK pharma advertising self-regulator. Issues rulings and guidance on digital channels, social media and the ABPI Code.', color:'#3d8b40', lastUpdate:'Social media guidance updated Feb 2026'},
   {name:'ABPI', country:'UK', url:'https://www.abpi.org.uk', rss:'https://www.abpi.org.uk/media/news/rss.xml', desc:'Sets the UK Code of Practice for pharma promotion. Current version: ABPI Code 2024, in force since 1 Jan 2025.', color:'#1a5c1d', lastUpdate:'Code 2024 in full force Jan 2025'},
@@ -1170,14 +1176,14 @@ function shareToLinkedIn(){
 // CLIENTS HUB
 // ============================================================
 var CLIENT_STATE = {
-  clients: JSON.parse(localStorage.getItem('eunomia-clients')||'[]'),
+  clients: lsGet('eunomia-clients',[]),
   activeSection: 'onboarding',
   caseStudy: '', caseStudyLoading: false,
   testimonial: '', testimonialLoading: false,
   onboardingDoc: '', onboardingLoading: false
 };
 
-function saveClients(){localStorage.setItem('eunomia-clients',JSON.stringify(CLIENT_STATE.clients));}
+function saveClients(){lsSet('eunomia-clients',CLIENT_STATE.clients);}
 
 function renderClients(){
   var html='';
@@ -1261,7 +1267,7 @@ function renderTestimonial(){
   html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:14px;">Paste received testimonials here to keep them organised and ready to use in proposals and on the website.</div>';
   html+='<textarea id="new-testimonial" rows="3" placeholder="Paste a received testimonial here..." style="margin-bottom:8px;"></textarea>';
   html+='<div style="display:flex;gap:8px;margin-bottom:16px;"><input id="tm-author" placeholder="Client name and title" style="flex:1;"/><button class="btn btn-primary" onclick="saveTestimonial()">Save</button></div>';
-  var stored=JSON.parse(localStorage.getItem('eunomia-testimonials')||'[]');
+  var stored=lsGet('eunomia-testimonials',[]);
   if(stored.length){
     stored.forEach(function(t,i){
       html+='<div style="border:1px solid #E2E8E2;border-radius:10px;padding:14px;margin-bottom:10px;">';
@@ -1310,20 +1316,20 @@ function saveTestimonial(){
   var text=document.getElementById('new-testimonial');
   var author=document.getElementById('tm-author');
   if(!text||!text.value.trim())return;
-  var stored=JSON.parse(localStorage.getItem('eunomia-testimonials')||'[]');
+  var stored=lsGet('eunomia-testimonials',[]);
   stored.push({text:text.value.trim(),author:(author?author.value:'Anonymous'),date:new Date().toLocaleDateString('en-GB')});
-  localStorage.setItem('eunomia-testimonials',JSON.stringify(stored));
+  lsSet('eunomia-testimonials',stored);
   text.value='';if(author)author.value='';
   renderClients();
 }
 function copyTestimonial(i){
-  var stored=JSON.parse(localStorage.getItem('eunomia-testimonials')||'[]');
+  var stored=lsGet('eunomia-testimonials',[]);
   if(stored[i])navigator.clipboard.writeText('"'+stored[i].text+'" -- '+stored[i].author);
 }
 function deleteTestimonial(i){
-  var stored=JSON.parse(localStorage.getItem('eunomia-testimonials')||'[]');
+  var stored=lsGet('eunomia-testimonials',[]);
   stored.splice(i,1);
-  localStorage.setItem('eunomia-testimonials',JSON.stringify(stored));
+  lsSet('eunomia-testimonials',stored);
   renderClients();
 }
 
@@ -1343,7 +1349,7 @@ function renderCaseStudy(){
   html+='<div id="cs-output"></div></div>';
 
   // Saved case studies
-  var stored=JSON.parse(localStorage.getItem('eunomia-casestudies')||'[]');
+  var stored=lsGet('eunomia-casestudies',[]);
   html+='<div class="card"><div class="card-title">Saved Case Studies ('+stored.length+')</div>';
   if(stored.length){
     stored.forEach(function(cs,i){
@@ -1406,9 +1412,9 @@ Do not name the client. Use language like "a leading UK biotech" or "a mid-size 
 function saveCaseStudy(clientDesc,serviceDesc){
   var el=document.getElementById('cs-doc-text');
   if(!el)return;
-  var stored=JSON.parse(localStorage.getItem('eunomia-casestudies')||'[]');
+  var stored=lsGet('eunomia-casestudies',[]);
   stored.unshift({title:clientDesc+' - '+serviceDesc,service:serviceDesc,content:el.textContent,date:new Date().toLocaleDateString('en-GB')});
-  localStorage.setItem('eunomia-casestudies',JSON.stringify(stored));
+  lsSet('eunomia-casestudies',stored);
   alert('Case study saved!');
   renderClients();
 }
@@ -1417,19 +1423,19 @@ function viewCaseStudy(i){
   if(el)el.style.display=el.style.display==='none'?'block':'none';
 }
 function copyCaseStudy(i){
-  var stored=JSON.parse(localStorage.getItem('eunomia-casestudies')||'[]');
+  var stored=lsGet('eunomia-casestudies',[]);
   if(stored[i])navigator.clipboard.writeText(stored[i].content);
 }
 function deleteCaseStudy(i){
-  var stored=JSON.parse(localStorage.getItem('eunomia-casestudies')||'[]');
+  var stored=lsGet('eunomia-casestudies',[]);
   stored.splice(i,1);
-  localStorage.setItem('eunomia-casestudies',JSON.stringify(stored));
+  lsSet('eunomia-casestudies',stored);
   renderClients();
 }
 
 // CLIENT TRACKER
 function renderClientTracker(){
-  var clients=JSON.parse(localStorage.getItem('eunomia-clients-list')||'[]');
+  var clients=lsGet('eunomia-clients-list',[]);
   var html='<div class="card"><div class="card-title">Client Tracker</div>';
   html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">Track your active clients, their 90-day testimonial due date, and onboarding status.</div>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">';
@@ -1464,16 +1470,16 @@ function addClient(){
   var name=document.getElementById('new-client-name');
   var start=document.getElementById('new-client-start');
   if(!name||!name.value.trim())return;
-  var clients=JSON.parse(localStorage.getItem('eunomia-clients-list')||'[]');
+  var clients=lsGet('eunomia-clients-list',[]);
   clients.push({name:name.value.trim(),start:start&&start.value?start.value:new Date().toISOString().slice(0,10),testimonialReceived:false});
-  localStorage.setItem('eunomia-clients-list',JSON.stringify(clients));
+  lsSet('eunomia-clients-list',clients);
   name.value='';if(start)start.value='';
   renderClients();
 }
 function markTestimonialReceived(i){
-  var clients=JSON.parse(localStorage.getItem('eunomia-clients-list')||'[]');
+  var clients=lsGet('eunomia-clients-list',[]);
   clients[i].testimonialReceived=!clients[i].testimonialReceived;
-  localStorage.setItem('eunomia-clients-list',JSON.stringify(clients));
+  lsSet('eunomia-clients-list',clients);
   renderClients();
 }
 
