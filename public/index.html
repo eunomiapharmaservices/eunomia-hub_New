@@ -1229,15 +1229,20 @@ async function genOnboarding(){
   var out=document.getElementById('ob-output');
   if(!client||!client.value.trim()){if(out)out.innerHTML=alert_('error','Please enter the client name.');return;}
   if(btn)btn.textContent='Generating...';
-  var prompt='Generate a professional new client onboarding pack for Eunomia Pharma Services. Client: '+client.value+'. Contact: '+(contact?contact.value:'[Contact Name]')+'. Services: '+(services?services.value:'pharma compliance consulting')+'. Eunomia lead: '+(consultant?consultant.value:'Eunomia Team')+'. Start date: '+(start&&start.value?start.value:'[Start Date]')+'. Review cadence: '+(cadence?cadence.value:'Monthly')+'.
-
-Generate a complete onboarding pack with these four sections:
-1. WELCOME LETTER - Warm, professional letter from Eunomia welcoming the client, expressing commitment to the partnership, outlining what happens next in the first 30 days.
-2. KEY CONTACTS - Eunomia team contacts (use the consultant name provided), escalation path, and expected response times.
-3. SERVICE SCOPE SUMMARY - Clear summary of exactly what is included in the engagement, what is out of scope, and key deliverables with indicative timelines.
-4. COMMUNICATION CADENCE - Meeting schedule (30-day check-in, then recurring reviews), reporting format, how to raise urgent issues, and how regulatory updates will be communicated.
-
-Tone: professional, warm, reassuring. Format with clear section headings. This will be sent to the client as their first impression of working with Eunomia.';
+  var obParts=['Generate a professional new client onboarding pack for Eunomia Pharma Services.',
+    'Client: '+client.value+'. Contact: '+(contact?contact.value:'[Contact Name]')+'.',
+    'Services: '+(services?services.value:'pharma compliance consulting')+'.',
+    'Eunomia lead: '+(consultant?consultant.value:'Eunomia Team')+'.',
+    'Start date: '+(start&&start.value?start.value:'[Start Date]')+'.',
+    'Review cadence: '+(cadence?cadence.value:'Monthly')+'.',
+    'Generate a complete onboarding pack with these four sections:',
+    '1. WELCOME LETTER - Warm professional letter welcoming the client and outlining the first 30 days.',
+    '2. KEY CONTACTS - Eunomia team contacts, escalation path and expected response times.',
+    '3. SERVICE SCOPE SUMMARY - What is included, what is out of scope, and key deliverables.',
+    '4. COMMUNICATION CADENCE - Meeting schedule, reporting format and how to raise urgent issues.',
+    'Tone: professional, warm, reassuring. Format with clear section headings.'
+  ];
+  var prompt=obParts.join(' ');
   try{
     var text=await aiCall([{role:'user',content:prompt}],'You are a senior pharma compliance consultant at Eunomia Pharma Services writing a new client onboarding document. Be professional, warm and specific.');
     if(out){
@@ -1290,17 +1295,18 @@ async function genTestimonial(){
   var out=document.getElementById('tm-output');
   if(!client||!client.value.trim()){if(out)out.innerHTML=alert_('error','Please enter the client name.');return;}
   if(btn)btn.textContent='Generating...';
-  var prompt='Write a professional testimonial request email from Eunomia Pharma Services to '+client.value+', contact name '+(contact?contact.value:'[Contact]')+'. Services: '+(services?services.value:'compliance consulting')+'. Key outcome: '+(outcome&&outcome.value?outcome.value:'improved compliance processes')+'.
-
-The email should:
-- Be warm and personal, referencing the specific work done
-- Acknowledge the 3-month milestone
-- Make it genuinely easy to respond - suggest they could reply with just 2-4 sentences
-- Give them prompts to guide what to write (e.g. what challenge were you facing, how did Eunomia help, what would you say to others considering working with us)
-- Offer to draft the testimonial for them to approve if they prefer
-- Include subject line at the top
-- Be 150-200 words maximum
-- Sign off from Eunomia Pharma Services';
+  var tmParts=[
+    'Write a professional testimonial request email from Eunomia Pharma Services to '+client.value+', contact: '+(contact?contact.value:'[Contact]')+'.',
+    'Services provided: '+(services?services.value:'compliance consulting')+'.',
+    'Key outcome achieved: '+(outcome&&outcome.value?outcome.value:'improved compliance processes')+'.',
+    'The email should: be warm and personal referencing the specific work done,',
+    'acknowledge the 3-month milestone,',
+    'make it easy to respond with just 2-4 sentences,',
+    'give prompts: what challenge were you facing, how did Eunomia help, what would you say to others,',
+    'offer to draft the testimonial for them to approve,',
+    'include subject line at the top, be 150-200 words, sign off from Eunomia Pharma Services.'
+  ];
+  var prompt=tmParts.join(' ');
   try{
     var text=await aiCall([{role:'user',content:prompt}],'You are writing a professional but warm client testimonial request email for Eunomia Pharma Services.');
     if(out){
@@ -1381,18 +1387,19 @@ async function genCaseStudy(){
   if(!challenge||!challenge.value.trim()){if(out)out.innerHTML=alert_('error','Please describe the challenge the client faced.');return;}
   if(btn)btn.textContent='Generating...';
   var formatInstructions={'website':'Write a full website case study with sections: The Client (anonymised), The Challenge, Our Approach, The Outcome. 400-500 words. Professional and compelling. Add a 2-sentence client quote if requested.','proposal':'Write a concise case study for a proposal insert. 150-200 words. Challenge, approach, outcome format. Punchy and results-focused.','linkedin':'Write a LinkedIn story post about this client success. 200-250 words. First-person narrative from Eunomia perspective. End with a question or CTA. No emojis.'}[format?format.value:'website'];
-  var prompt='Generate a professional anonymised case study for Eunomia Pharma Services.
-
-Client type: '+(client?client.value:'pharma company')+'
-Service: '+(service?service.value:'compliance consulting')+'
-Challenge: '+(challenge?challenge.value:'')+'
-Approach: '+(approach&&approach.value?approach.value:'Eunomia provided expert compliance support')+'
-Outcome: '+(outcome&&outcome.value?outcome.value:'significant compliance improvements achieved')+'
-Include quote: '+(quote?quote.value:'yes')+'
-
-'+formatInstructions+'
-
-Do not name the client. Use language like "a leading UK biotech" or "a mid-size pharma company". Position Eunomia as expert, agile and commercially aware.';
+  var csParts=[
+    'Generate a professional anonymised case study for Eunomia Pharma Services.',
+    'Client type: '+(client?client.value:'pharma company')+'.',
+    'Service: '+(service?service.value:'compliance consulting')+'.',
+    'Challenge: '+(challenge?challenge.value:'compliance gap identified')+'.',
+    'Approach: '+(approach&&approach.value?approach.value:'Eunomia provided expert compliance support')+'.',
+    'Outcome: '+(outcome&&outcome.value?outcome.value:'significant compliance improvements achieved')+'.',
+    'Include illustrative client quote: '+(quote?quote.value:'yes')+'.',
+    formatInstructions,
+    'Do not name the client. Use language like a leading UK biotech or a mid-size pharma company.',
+    'Position Eunomia as expert, agile and commercially aware.'
+  ];
+  var prompt=csParts.join(' ');
   try{
     var text=await aiCall([{role:'user',content:prompt}],'You are a senior pharma compliance expert writing a case study for Eunomia Pharma Services. Be specific, results-focused, and position Eunomia as the go-to compliance partner for growing pharma companies.');
     if(out){
