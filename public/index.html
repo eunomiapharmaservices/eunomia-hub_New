@@ -8,25 +8,23 @@
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'DM Sans',sans-serif;background:#F4F7F4;color:#1C2B1D;}
-  @keyframes spin{to{transform:rotate(360deg);}}
-  @keyframes up{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-  .card{background:#fff;border:1px solid #E2E8E2;border-radius:14px;padding:20px;animation:up 0.2s ease;}
-  .tab{background:none;border:none;padding:10px 16px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#6B7280;transition:all .15s;}
-  .tab.on{color:#3d8b40;border-bottom-color:#3d8b40;}
-  .tab:hover:not(.on){color:#111827;}
-  .tc{border:1.5px solid #E5E7EB;border-radius:10px;padding:14px;cursor:pointer;background:#fff;transition:all .15s;}
-  .tc.sel{border-color:#3d8b40;background:#EBF5EC;}
-  .tc:hover:not(.sel){border-color:#3d8b4080;}
-  .row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #E5E7EB;font-size:13px;}
-  .row:last-child{border-bottom:none;}
-  .cu{background:#3d8b40;color:#fff;border-radius:12px 12px 2px 12px;padding:10px 14px;font-size:13px;max-width:80%;margin-left:auto;}
-  .ca{background:#F3F4F6;color:#111827;border-radius:12px 12px 12px 2px;padding:10px 14px;font-size:13px;max-width:85%;white-space:pre-wrap;line-height:1.6;}
-  input,button,textarea{font-family:inherit;}
-  ::-webkit-scrollbar{width:4px;height:4px;}
-  ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:2px;}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F4F7F4;color:#1C2B1D;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes up{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.card{background:#fff;border:1px solid #E2E8E2;border-radius:14px;padding:20px;animation:up 0.2s ease;}
+.tab{background:none;border:none;padding:10px 16px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#5C6B5D;transition:all .15s;}
+.tab.on{color:#3d8b40;border-bottom-color:#3d8b40;}
+.tab:hover:not(.on){color:#1C2B1D;}
+.tc{border:1.5px solid #E2E8E2;border-radius:10px;padding:14px;cursor:pointer;background:#fff;transition:all .15s;}
+.tc.sel{border-color:#3d8b40;background:#EBF5EC;}
+.tc:hover:not(.sel){border-color:#3d8b4060;}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #E2E8E2;font-size:13px;}
+.row:last-child{border-bottom:none;}
+.cu{background:#3d8b40;color:#fff;border-radius:12px 12px 2px 12px;padding:10px 14px;font-size:13px;max-width:80%;margin-left:auto;}
+.ca{background:#F3F4F6;color:#1C2B1D;border-radius:12px 12px 12px 2px;padding:10px 14px;font-size:13px;max-width:85%;white-space:pre-wrap;line-height:1.6;}
+input,button,textarea,select{font-family:inherit;}
 </style>
 </head>
 <body>
@@ -34,167 +32,655 @@
 <script type="text/babel">
 const {useState,useEffect,useRef} = React;
 
-// ── colours ──────────────────────────────────────────────────────────────────
 const C={
-  navy:'#2C3E2D',       // deep forest green (topbar, headers)
-  blue:'#3d8b40',       // primary green (replaces blue throughout)
-  blueL:'#EBF5EC',      // light green tint
-  teal:'#0E9E8E',       // teal (keep for secondary accents)
-  amber:'#E8651A',      // Eunomia orange (logo accent, warnings)
-  amberL:'#FEF0E8',     // light orange tint
-  red:'#DC2626',redL:'#FEE2E2',
-  green:'#3d8b40',      // success green
-  greenL:'#EBF5EC',
+  navy:'#2C3E2D',blue:'#3d8b40',blueL:'#EBF5EC',
+  teal:'#0E9E8E',amber:'#E8651A',amberL:'#FEF0E8',
+  red:'#DC2626',redL:'#FEE2E2',green:'#3d8b40',greenL:'#EBF5EC',
   gray:'#6B7280',grayL:'#F5F6F5',border:'#E2E8E2',
   text:'#1C2B1D',muted:'#5C6B5D',white:'#FFFFFF'
 };
 
-// ── tiny components ───────────────────────────────────────────────────────────
-function Spin({s=16}){
-  return <span style={{display:'inline-block',width:s,height:s,border:`2px solid #3d8b4030`,borderTopColor:'#3d8b40',borderRadius:'50%',animation:'spin .7s linear infinite'}}/>;
+function Spin({s}){
+  const sz=s||16;
+  return <span style={{display:'inline-block',width:sz,height:sz,border:'2px solid #3d8b4030',borderTopColor:'#3d8b40',borderRadius:'50%',animation:'spin .7s linear infinite'}}/>;
 }
 function Pill({label,color}){
-  return <span style={{fontSize:11,fontWeight:600,background:color+'18',color,borderRadius:20,padding:'2px 9px',whiteSpace:'nowrap'}}>{label}</span>;
+  return <span style={{fontSize:11,fontWeight:600,background:color+'18',color:color,borderRadius:20,padding:'2px 9px',whiteSpace:'nowrap'}}>{label}</span>;
 }
-function Stat({label,value,sub,color=C.blue}){
+function Stat({label,value,sub,color}){
   return(
-    <div style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:12,padding:'16px 18px'}}>
+    <div style={{background:'#fff',border:'1px solid #E2E8E2',borderRadius:12,padding:'16px 18px'}}>
       <div style={{fontSize:11,fontWeight:600,color:C.muted,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>{label}</div>
-      <div style={{fontSize:26,fontWeight:700,color:C.text,lineHeight:1.1}}>{value??'--'}</div>
-      {sub&&<div style={{fontSize:12,color:C.muted,marginTop:4}}>{sub}</div>}
+      <div style={{fontSize:26,fontWeight:700,color:C.text,lineHeight:1.1}}>{value||'—'}</div>
+      {sub ? <div style={{fontSize:12,color:C.muted,marginTop:4}}>{sub}</div> : null}
     </div>
   );
 }
-function Alert({type='info',children}){
-  const m={info:[C.blueL,C.blue],warning:[C.amberL,C.amber],error:[C.redL,C.red],success:[C.greenL,C.green]};
-  const[bg,fg]=m[type];
-  return <div style={{background:bg,border:`1px solid ${fg}30`,borderRadius:10,padding:'10px 14px',fontSize:13,marginBottom:10}}>{children}</div>;
+function Alert({type,children}){
+  const colors={info:['#EBF5EC','#3d8b40'],warning:['#FEF0E8','#E8651A'],error:['#FEE2E2','#DC2626'],success:['#EBF5EC','#3d8b40']};
+  const t=type||'info';
+  const bg=colors[t][0],fg=colors[t][1];
+  return <div style={{background:bg,border:'1px solid '+fg+'30',borderRadius:10,padding:'10px 14px',fontSize:13,marginBottom:10}}>{children}</div>;
 }
-function H({children}){
+function SH({children}){
   return <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:14}}>{children}</div>;
 }
 
-// ── date helpers ──────────────────────────────────────────────────────────────
-const daysSince=iso=>Math.floor((Date.now()-new Date(iso))/86400000);
-const nextDue=iso=>{const d=new Date(iso);d.setDate(d.getDate()+30);return d;};
-const daysUntil=iso=>Math.max(0,Math.ceil((nextDue(iso)-Date.now())/86400000));
-const fmt=iso=>new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+const daysSince=function(iso){return Math.floor((Date.now()-new Date(iso))/86400000);};
+const nextDue=function(iso){var d=new Date(iso);d.setDate(d.getDate()+30);return d;};
+const daysUntil=function(iso){return Math.max(0,Math.ceil((nextDue(iso)-Date.now())/86400000));};
+const fmtDate=function(iso){return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});};
+const tagColor={PMCPA:'#3d8b40',ABPI:'#1a5c1d',ANSM:'#0E9E8E',FCPA:'#E8651A',Digital:'#3d8b40',Training:'#7C3AED',Strategy:'#DC2626'};
 
-const tagColor={PMCPA:C.blue,ABPI:C.navy,ANSM:C.teal,FCPA:C.amber,Digital:C.green,Training:'#7C3AED',Strategy:C.red};
-
-// ── stream Claude via /api/claude ─────────────────────────────────────────────
-async function streamClaude({messages,system,onChunk}){
-  let resp;
+async function callClaude(messages,system,onChunk){
+  var resp;
   try{
-    resp=await fetch('/api/claude',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages,system})
-    });
-  }catch(e){
-    throw new Error('Could not reach /api/claude. Check your Vercel deployment.');
-  }
+    resp=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:messages,system:system})});
+  }catch(e){throw new Error('Could not reach /api/claude');}
   if(!resp.ok){
-    let msg='AI error ('+resp.status+')';
-    try{const e=await resp.json();msg=e.error||msg;}catch{}
-    if(resp.status===500&&msg.includes('ANTHROPIC_API_KEY')){
-      throw new Error('ANTHROPIC_API_KEY not set. Go to Vercel → Settings → Environment Variables and add your key, then Redeploy.');
-    }
+    var msg='AI error ('+resp.status+')';
+    try{var ej=await resp.json();msg=ej.error||msg;}catch(x){}
     throw new Error(msg);
   }
-  const reader=resp.body.getReader();
-  const dec=new TextDecoder();
-  let full='';
+  var reader=resp.body.getReader();
+  var dec=new TextDecoder();
+  var full='';
   while(true){
-    const{done,value}=await reader.read();
-    if(done)break;
-    for(const line of dec.decode(value,{stream:true}).split('\n')){
-      if(line.startsWith('data: ')){
+    var rv=await reader.read();
+    if(rv.done)break;
+    var lines=dec.decode(rv.value,{stream:true}).split('\n');
+    for(var i=0;i<lines.length;i++){
+      if(lines[i].startsWith('data: ')){
         try{
-          const j=JSON.parse(line.slice(6));
-          if(j.type==='content_block_delta'&&j.delta?.text){full+=j.delta.text;onChunk(full);}
-          if(j.type==='error'){throw new Error(j.error?.message||'Stream error');}
-        }catch(e){if(e.message&&e.message!=='Unexpected end of JSON input'){}};
+          var j=JSON.parse(lines[i].slice(6));
+          if(j.type==='content_block_delta'&&j.delta&&j.delta.text){full+=j.delta.text;onChunk(full);}
+        }catch(x){}
       }
     }
   }
-  if(!full)throw new Error('No response received. Check ANTHROPIC_API_KEY has credits at console.anthropic.com');
+  if(!full)throw new Error('No response received. Check ANTHROPIC_API_KEY.');
   return full;
 }
 
-// ── API helpers ───────────────────────────────────────────────────────────────
-const apig=async path=>{try{const r=await fetch(path);return await r.json();}catch(e){return{error:e.message};}};
-const apip=async(path,body)=>{try{const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return await r.json();}catch(e){return{error:e.message};}};
+async function apiGet(path){try{var r=await fetch(path);return await r.json();}catch(e){return{error:e.message};}}
+async function apiPost(path,body){try{var r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return await r.json();}catch(e){return{error:e.message};}}
 
-// ── fallback mock data (shown when API keys not yet configured) ───────────────
-const MOCK={
-  mc:{subscribers:834,openRate:'31.4',lastSent:new Date(Date.now()-25*86400000).toISOString(),lastSubject:'PMCPA Social Media Guidance: What It Means For Your Team',
+var MOCK={
+  mc:{subscribers:834,openRate:'31.4',lastSent:new Date(Date.now()-25*86400000).toISOString(),
+    lastSubject:'PMCPA Social Media Guidance: What It Means For Your Team',
     campaigns:[
-      {name:'PMCPA Social Media Guidance Alert',date:'08/04/2025',sent:834,opens:'34.2%',clicks:'5.1%'},
-      {name:'March Regulatory Roundup',date:'18/03/2025',sent:801,opens:'29.7%',clicks:'3.9%'},
-      {name:'ABPI Code 2024 -- Key Changes',date:'28/02/2025',sent:788,opens:'38.1%',clicks:'6.2%'},
+      {id:'1',name:'PMCPA Social Media Guidance Alert',date:'08/04/2025',sent:834,opens:'34.2%',clicks:'5.1%',status:'sent'},
+      {id:'2',name:'March Regulatory Roundup',date:'18/03/2025',sent:801,opens:'29.7%',clicks:'3.9%',status:'sent'},
+      {id:'3',name:'ABPI Code 2024 Key Changes',date:'28/02/2025',sent:788,opens:'38.1%',clicks:'6.2%',status:'sent'}
     ]},
   ht:{creditsUsed:312,creditsTotal:500,verificationUsed:289,verificationTotal:500,plan:'Starter'},
-  li:{name:'Eunomia Consulting',connections:1247},
+  li:{name:'Eunomia Consulting',connections:1247,email:''},
   sr:{summary:{activeSequences:3,messagesSent:47,replies:9,replyRate:'19.1',meetings:2},
     campaigns:[
       {name:'PMCPA Social Media Update',sent:18,replies:4,rate:'22.2',status:'active'},
       {name:'ABPI Code 2024 Briefing',sent:21,replies:3,rate:'14.3',status:'active'},
-      {name:'Compliance Audit Offer',sent:8,replies:2,rate:'25.0',status:'active'},
+      {name:'Compliance Audit Offer',sent:8,replies:2,rate:'25.0',status:'active'}
     ]}
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Hunter Tab ───────────────────────────────────────────────────────────────
+function HunterTab(props){
+  var ht=props.ht,usingMock=props.usingMock;
+  var [domain,setDomain]=useState('');
+  var [searching,setSearching]=useState(false);
+  var [results,setResults]=useState(null);
+  var [err,setErr]=useState('');
+  var [selected,setSelected]=useState([]);
+  var [exporting,setExporting]=useState(false);
+  var [exportResult,setExportResult]=useState(null);
+  var [verifying,setVerifying]=useState(false);
+
+  async function doSearch(){
+    var raw=domain.trim();
+    if(!raw)return;
+    if(raw.indexOf(' ')>=0||raw.indexOf('.')<0){
+      setErr('Please enter a domain name (e.g. pfizer.com) not a company name. Hunter.io requires a website domain.');
+      return;
+    }
+    setSearching(true);setResults(null);setErr('');setSelected([]);setExportResult(null);
+    var d=raw.replace(/^https?:\/\//,'').replace(/\/.*/,'').toLowerCase();
+    var data=await apiGet('/api/hunter?action=domain-search&domain='+encodeURIComponent(d));
+    if(data.error){setErr(data.error);}else{setResults(data);}
+    setSearching(false);
+  }
+
+  async function verifySelected(){
+    if(!selected.length)return;
+    setVerifying(true);
+    var updated={emails:results.emails.slice(),domain:results.domain,total:results.total};
+    for(var i=0;i<selected.length;i++){
+      var email=selected[i];
+      var d=await apiGet('/api/hunter?action=verify&email='+encodeURIComponent(email));
+      updated.emails=updated.emails.map(function(e){return e.email===email?Object.assign({},e,{verified:d.status,score:d.score}):e;});
+    }
+    setResults(updated);
+    setVerifying(false);
+  }
+
+  async function exportToMailchimp(){
+    if(!selected.length)return;
+    setExporting(true);setExportResult(null);
+    var members=results.emails.filter(function(e){return selected.indexOf(e.email)>=0;});
+    var data=await apiPost('/api/mailchimp?action=add-members',{members:members,tag:'ABM-Hunter'});
+    setExportResult(data);
+    setExporting(false);
+  }
+
+  function toggleAll(){
+    if(selected.length===results.emails.length)setSelected([]);
+    else setSelected(results.emails.map(function(e){return e.email;}));
+  }
+
+  function csvDownload(){
+    if(!results||!results.emails.length)return;
+    var chosen=results.emails.filter(function(e){return selected.indexOf(e.email)>=0;});
+    var rows=[['Name','Email','Role','Confidence']].concat(chosen.map(function(e){return [e.name,e.email,e.role||'',e.confidence];}));
+    var csv=rows.map(function(r){return r.map(function(v){return '"'+v+'"';}).join(',');}).join('\n');
+    var blob=new Blob([csv],{type:'text/csv'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='hunter-'+(results.domain||'results')+'.csv';a.click();
+  }
+
+  function toggleEmail(email){
+    setSelected(function(p){
+      if(p.indexOf(email)>=0)return p.filter(function(x){return x!==email;});
+      return p.concat([email]);
+    });
+  }
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      {usingMock ? <Alert type="warning">Showing demo data. Add HUNTER_API_KEY in Vercel env vars for live data.</Alert> : null}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
+        <Stat label="Plan" value={ht?ht.plan:null}/>
+        <Stat label="Search credits" value={ht?ht.creditsUsed+'/'+ht.creditsTotal:null} color={ht&&ht.creditsUsed/ht.creditsTotal>0.8?C.red:C.green}/>
+        <Stat label="Verifications" value={ht?ht.verificationUsed+'/'+ht.verificationTotal:null} color={C.teal}/>
+        <Stat label="Credits left" value={ht?ht.creditsTotal-ht.creditsUsed:null}/>
+      </div>
+
+      <div className="card">
+        <SH>Find emails by company domain</SH>
+        <div style={{fontSize:13,color:C.muted,marginBottom:14}}>Enter a company website domain to find verified emails. Use pfizer.com not "Pfizer".</div>
+        <div style={{display:'flex',gap:10,marginBottom:16}}>
+          <input value={domain} onChange={function(e){setDomain(e.target.value);}}
+            onKeyDown={function(e){if(e.key==='Enter')doSearch();}}
+            placeholder="e.g. pfizer.com, gsk.com, novartis.com"
+            style={{flex:1,border:'1px solid #E2E8E2',borderRadius:8,padding:'10px 14px',fontSize:13,outline:'none'}}/>
+          <button onClick={doSearch} disabled={searching||!domain.trim()}
+            style={{background:domain.trim()?C.blue:C.grayL,color:domain.trim()?'#fff':C.muted,border:'none',borderRadius:8,padding:'10px 20px',fontSize:13,fontWeight:600,cursor:domain.trim()?'pointer':'default',display:'flex',alignItems:'center',gap:8}}>
+            {searching ? <Spin s={14}/> : null}
+            {searching ? 'Searching...' : 'Search'}
+          </button>
+        </div>
+
+        {err ? <Alert type="error">{err}</Alert> : null}
+
+        {results ? (
+          results.emails&&results.emails.length===0 ? (
+            <div style={{background:C.amberL,border:'1px solid #E8651A30',borderRadius:10,padding:'14px 18px',fontSize:13}}>
+              <strong style={{color:C.amber}}>No emails found for {results.domain}</strong>
+              <div style={{color:C.muted,marginTop:4,fontSize:12}}>Hunter.io may not have data for this domain. Try the main domain (e.g. gsk.com not uk.gsk.com).</div>
+            </div>
+          ) : results.emails&&results.emails.length>0 ? (
+            <div>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+                <div style={{fontSize:13,color:C.muted}}>
+                  Found <strong style={{color:C.text}}>{results.emails.length}</strong> emails at <strong style={{color:C.text}}>{results.domain}</strong>
+                </div>
+                <div style={{display:'flex',gap:8}}>
+                  <button onClick={toggleAll} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                    {selected.length===results.emails.length ? 'Deselect all' : 'Select all'}
+                  </button>
+                  <button onClick={verifySelected} disabled={!selected.length||verifying}
+                    style={{background:selected.length?C.teal:'#e5e7eb',color:selected.length?'#fff':C.muted,border:'none',borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:selected.length?'pointer':'default'}}>
+                    {verifying ? 'Verifying...' : 'Verify selected'}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{border:'1px solid #E2E8E2',borderRadius:10,overflow:'hidden',marginBottom:14}}>
+                <div style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 100px 80px',gap:8,padding:'8px 12px',background:C.grayL,fontSize:11,fontWeight:600,color:C.muted,textTransform:'uppercase',letterSpacing:'0.05em'}}>
+                  <span/><span>Name</span><span>Email</span><span>Role</span><span style={{textAlign:'right'}}>Confidence</span>
+                </div>
+                {results.emails.map(function(e,idx){
+                  var isSel=selected.indexOf(e.email)>=0;
+                  return(
+                    <div key={idx} onClick={function(){toggleEmail(e.email);}}
+                      style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 100px 80px',gap:8,padding:'10px 12px',borderTop:'1px solid #E2E8E2',cursor:'pointer',background:isSel?C.blueL:'#fff'}}>
+                      <div style={{width:18,height:18,borderRadius:4,border:'2px solid '+(isSel?C.blue:'#E2E8E2'),background:isSel?C.blue:'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'#fff'}}>
+                        {isSel?'v':''}
+                      </div>
+                      <div>
+                        <div style={{fontWeight:600,fontSize:13}}>{e.name}</div>
+                        {e.verified ? <span style={{fontSize:10,background:e.verified==='valid'?C.greenL:C.amberL,color:e.verified==='valid'?C.green:C.amber,borderRadius:4,padding:'1px 5px',fontWeight:600}}>{e.verified}</span> : null}
+                      </div>
+                      <span style={{fontSize:12,color:C.blue,fontFamily:'monospace',wordBreak:'break-all'}}>{e.email}</span>
+                      <span style={{fontSize:12,color:C.muted}}>{e.role||'—'}</span>
+                      <div style={{textAlign:'right'}}>
+                        <Pill label={e.confidence+'%'} color={e.confidence>=90?C.green:e.confidence>=75?C.amber:C.red}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {selected.length>0 ? (
+                <div style={{display:'flex',gap:10,alignItems:'center',padding:'12px 14px',background:C.blueL,borderRadius:10}}>
+                  <span style={{fontSize:13,fontWeight:600,flex:1}}>{selected.length} email{selected.length!==1?'s':''} selected</span>
+                  <button onClick={csvDownload} style={{background:'#fff',border:'1px solid #E2E8E2',borderRadius:8,padding:'8px 14px',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                    Download CSV
+                  </button>
+                  <button onClick={exportToMailchimp} disabled={exporting}
+                    style={{background:exporting?C.grayL:C.amber,color:exporting?C.muted:'#fff',border:'none',borderRadius:8,padding:'8px 16px',fontSize:13,fontWeight:600,cursor:exporting?'default':'pointer'}}>
+                    {exporting ? 'Exporting...' : 'Export to Mailchimp'}
+                  </button>
+                </div>
+              ) : null}
+
+              {exportResult ? (
+                <div style={{marginTop:10}}>
+                  <Alert type={exportResult.error?'error':'success'}>
+                    {exportResult.error ? 'Mailchimp error: '+exportResult.error : (exportResult.added||selected.length)+' contacts added to Mailchimp with tag ABM-Hunter'}
+                  </Alert>
+                </div>
+              ) : null}
+            </div>
+          ) : null
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+// ── LinkedIn Composer ────────────────────────────────────────────────────────
+function LinkedInComposer(props){
+  var li=props.li;
+  var [text,setText]=useState('');
+  var [postAs,setPostAs]=useState('person');
+  var [posting,setPosting]=useState(false);
+  var [result,setResult]=useState(null);
+  var [aiLoading,setAiLoading]=useState(false);
+  var maxChars=3000;
+
+  async function generateDraft(){
+    setAiLoading(true);
+    try{
+      await callClaude(
+        [{role:'user',content:'Write a LinkedIn post for Eunomia Pharma Services, a UK pharma compliance consultancy. Topic: a current pharma regulatory update (PMCPA, ABPI Code 2024, or compliance best practice). 150-200 words. 3-4 relevant hashtags at the end. No emojis. Ready to post immediately.'}],
+        'You are a LinkedIn content expert for pharma compliance. Write posts that position Eunomia as a thought leader. Be direct and insightful.',
+        function(chunk){setText(chunk);}
+      );
+    }catch(e){setText('Error: '+e.message);}
+    setAiLoading(false);
+  }
+
+  async function doPost(){
+    if(!text.trim())return;
+    setPosting(true);setResult(null);
+    var data=await apiPost('/api/linkedin?action=post',{text:text,postAs:postAs});
+    setResult(data);
+    if(data.success)setText('');
+    setPosting(false);
+  }
+
+  return(
+    <div className="card" style={{border:'1.5px solid #3d8b40'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+        <div style={{fontWeight:700,fontSize:15}}>Create LinkedIn Post</div>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          <span style={{fontSize:12,color:C.muted}}>Post as:</span>
+          <select value={postAs} onChange={function(e){setPostAs(e.target.value);}}
+            style={{fontSize:12,border:'1px solid #E2E8E2',borderRadius:6,padding:'4px 8px',background:'#fff'}}>
+            <option value="person">Personal profile ({li?li.name:'You'})</option>
+            <option value="org">Eunomia company page</option>
+          </select>
+        </div>
+      </div>
+
+      <div style={{display:'flex',gap:8,marginBottom:10}}>
+        <button onClick={generateDraft} disabled={aiLoading}
+          style={{background:aiLoading?C.grayL:C.blueL,color:aiLoading?C.muted:C.blue,border:'1px solid #3d8b4040',borderRadius:7,padding:'7px 14px',fontSize:12,fontWeight:600,cursor:aiLoading?'default':'pointer',display:'flex',alignItems:'center',gap:6}}>
+          {aiLoading ? <Spin s={13}/> : null}
+          {aiLoading ? 'Writing draft...' : 'Generate AI draft'}
+        </button>
+        {text ? <button onClick={function(){setText('');}} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:C.muted}}>Clear</button> : null}
+      </div>
+
+      <textarea value={text} onChange={function(e){setText(e.target.value.slice(0,maxChars));}}
+        placeholder="Write your post here, or generate an AI draft above..."
+        rows={8}
+        style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:10,padding:'12px 14px',fontSize:13,lineHeight:1.7,resize:'vertical',outline:'none',color:C.text}}/>
+      <div style={{fontSize:12,color:text.length>2800?C.red:text.length>2500?C.amber:C.muted,marginTop:6,marginBottom:14}}>
+        {text.length}/{maxChars} characters
+      </div>
+
+      {result ? (
+        result.success ? (
+          <div style={{background:C.greenL,border:'1px solid #3d8b4030',borderRadius:8,padding:'10px 14px',fontSize:13,marginBottom:12}}>
+            Posted successfully!
+            <a href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer" style={{color:C.blue,fontWeight:600,marginLeft:8}}>View feed</a>
+          </div>
+        ) : (
+          <Alert type="error">
+            <strong>Could not post: </strong>{result.error}
+            {result.error==='Permission denied' ? <div style={{marginTop:8,fontSize:12}}>Add w_member_social scope to your LinkedIn token and update LINKEDIN_ACCESS_TOKEN in Vercel.</div> : null}
+          </Alert>
+        )
+      ) : null}
+
+      <button onClick={doPost} disabled={posting||!text.trim()}
+        style={{background:text.trim()&&!posting?C.blue:C.grayL,color:text.trim()&&!posting?'#fff':C.muted,border:'none',borderRadius:9,padding:'11px 24px',fontSize:14,fontWeight:700,cursor:text.trim()&&!posting?'pointer':'default',display:'flex',alignItems:'center',justifyContent:'center',gap:8,width:'100%'}}>
+        {posting ? <Spin s={16}/> : null}
+        {posting ? 'Posting to LinkedIn...' : 'Post to LinkedIn'}
+      </button>
+    </div>
+  );
+}
+
+// ── LinkedIn Tab ─────────────────────────────────────────────────────────────
+function LinkedInTab(props){
+  var li=props.li,usingMock=props.usingMock;
+  var [showComposer,setShowComposer]=useState(false);
+  var liName=(li&&li.name&&li.name!=='undefined undefined')?li.name:(li&&li.email?li.email:'Connected');
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      {usingMock ? <Alert type="warning">Showing demo data. Add LINKEDIN_ACCESS_TOKEN in Vercel env vars.</Alert> : null}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
+        <Stat label="Account" value={liName} sub="LinkedIn profile"/>
+        <Stat label="Connections" value={li&&li.connections?li.connections.toLocaleString():null} sub="Total network"/>
+        <Stat label="Status" value={usingMock?'Demo':'Live'} sub={usingMock?'Add token for live data':'Token connected'} color={usingMock?C.amber:C.green}/>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+        <a href="https://www.linkedin.com/company/eunomia-pharma-services" target="_blank" rel="noreferrer"
+          style={{background:'#fff',border:'1px solid #E2E8E2',borderRadius:10,padding:'14px 20px',textDecoration:'none',color:C.text,display:'flex',alignItems:'center',gap:12}}>
+          <div style={{width:36,height:36,borderRadius:8,background:'#E8F0F8',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0,fontWeight:700,color:'#0077B5'}}>in</div>
+          <div><div style={{fontWeight:700,fontSize:14}}>Open Company Page</div><div style={{fontSize:12,color:C.muted}}>View your LinkedIn presence</div></div>
+        </a>
+        <button onClick={function(){setShowComposer(function(p){return !p;});}}
+          style={{background:showComposer?C.blueL:'#fff',border:'1.5px solid '+(showComposer?C.blue:'#E2E8E2'),borderRadius:10,padding:'14px 20px',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:12}}>
+          <div style={{width:36,height:36,borderRadius:8,background:C.blueL,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>&#9998;</div>
+          <div><div style={{fontWeight:700,fontSize:14,color:C.text}}>Create a Post</div><div style={{fontSize:12,color:C.muted}}>Post directly to LinkedIn</div></div>
+        </button>
+      </div>
+
+      {showComposer ? <LinkedInComposer li={li}/> : null}
+
+      <div className="card">
+        <SH>Content strategy for Eunomia</SH>
+        {[
+          {day:'Mon',tip:'Share a regulatory insight',detail:'Post a 3-sentence take on the latest PMCPA or ABPI development. Best time: 8-9am.',icon:'📋'},
+          {day:'Wed',tip:'Publish a webinar clip',detail:'Uday clips 60-90 seconds from your last webinar. Video gets 3x more reach than text.',icon:'🎬'},
+          {day:'Thu',tip:'Engagement hour',detail:'Spend 15 minutes replying to comments and engaging with your ICP posts.',icon:'💬'},
+          {day:'Fri',tip:'Newsletter teaser',detail:'Short preview of your upcoming newsletter with a link to subscribe.',icon:'📧'},
+        ].map(function(t,i){
+          return(
+            <div key={i} className="row" style={{alignItems:'flex-start',gap:14}}>
+              <div style={{width:44,height:44,borderRadius:8,background:C.blueL,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                <span style={{fontSize:16}}>{t.icon}</span>
+                <span style={{fontSize:9,fontWeight:700,color:C.blue,textTransform:'uppercase',letterSpacing:'0.05em'}}>{t.day}</span>
+              </div>
+              <div><div style={{fontWeight:600,fontSize:13,marginBottom:2}}>{t.tip}</div><div style={{fontSize:12,color:C.muted,lineHeight:1.5}}>{t.detail}</div></div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Mailchimp Tab ────────────────────────────────────────────────────────────
+function MailchimpTab(props){
+  var mc=props.mc,usingMock=props.usingMock,onCreateNewsletter=props.onCreateNewsletter;
+  var [launching,setLaunching]=useState({});
+  var [launchResult,setLaunchResult]=useState({});
+  var [confirmId,setConfirmId]=useState(null);
+
+  async function sendCampaign(campaignId){
+    setLaunching(function(p){var n=Object.assign({},p);n[campaignId]=true;return n;});
+    var r=await apiPost('/api/mailchimp?action=send-campaign',{campaignId:campaignId});
+    setLaunchResult(function(p){var n=Object.assign({},p);n[campaignId]=r;return n;});
+    setLaunching(function(p){var n=Object.assign({},p);n[campaignId]=false;return n;});
+    setConfirmId(null);
+  }
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      {usingMock ? <Alert type="warning">Showing demo data. Add MAILCHIMP_API_KEY, MAILCHIMP_SERVER_PREFIX and MAILCHIMP_LIST_ID in Vercel env vars.</Alert> : null}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
+        <Stat label="Subscribers" value={mc?mc.subscribers.toLocaleString():null} sub="Active list"/>
+        <Stat label="Open rate" value={mc&&mc.openRate?mc.openRate+'%':null} color={C.green}/>
+        <Stat label="Days since last" value={mc&&mc.lastSent?daysSince(mc.lastSent)+'d':null} color={C.amber}/>
+        <Stat label="Next due in" value={mc&&mc.lastSent?daysUntil(mc.lastSent)+'d':null} sub={mc&&mc.lastSent?fmtDate(nextDue(mc.lastSent)):null}/>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+        <button onClick={onCreateNewsletter}
+          style={{background:C.blue,color:'#fff',border:'none',borderRadius:10,padding:'14px 20px',fontSize:14,fontWeight:700,cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:12}}>
+          <span style={{fontSize:24}}>✦</span>
+          <div><div>Create new newsletter</div><div style={{fontSize:12,fontWeight:400,opacity:0.8}}>AI-powered topic research and draft</div></div>
+        </button>
+        <a href="https://us1.admin.mailchimp.com/campaigns/" target="_blank" rel="noreferrer"
+          style={{background:'#fff',border:'1px solid #E2E8E2',borderRadius:10,padding:'14px 20px',fontSize:14,fontWeight:700,cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:12,textDecoration:'none',color:C.text}}>
+          <span style={{fontSize:24}}>&#8599;</span>
+          <div><div>Open Mailchimp</div><div style={{fontSize:12,fontWeight:400,color:C.muted}}>Go to campaign manager</div></div>
+        </a>
+      </div>
+
+      <div className="card">
+        <SH>Campaign History</SH>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 100px 70px 70px 70px 130px',gap:8,fontSize:11,fontWeight:600,color:C.muted,paddingBottom:8,borderBottom:'1px solid #E2E8E2',textTransform:'uppercase',letterSpacing:'0.05em'}}>
+          <span>Campaign</span><span>Date</span><span style={{textAlign:'center'}}>Sent</span><span style={{textAlign:'center'}}>Opens</span><span style={{textAlign:'center'}}>Clicks</span><span style={{textAlign:'right'}}>Action</span>
+        </div>
+        {mc&&mc.campaigns&&mc.campaigns.length>0 ? mc.campaigns.map(function(c,i){
+          var isDraft=c.status==='draft'||c.status==='save';
+          return(
+            <div key={i}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 100px 70px 70px 70px 130px',gap:8,alignItems:'center',padding:'10px 0',borderBottom:'1px solid #E2E8E2'}}>
+                <div>
+                  <div style={{fontWeight:500,fontSize:13}}>{c.name}</div>
+                  {isDraft ? <Pill label="Draft" color={C.amber}/> : null}
+                </div>
+                <span style={{fontSize:12,color:C.muted}}>{c.date}</span>
+                <span style={{textAlign:'center',fontSize:13}}>{typeof c.sent==='number'?c.sent.toLocaleString():c.sent}</span>
+                <span style={{textAlign:'center'}}><Pill label={c.opens} color={C.green}/></span>
+                <span style={{textAlign:'center'}}><Pill label={c.clicks} color={C.blue}/></span>
+                <div style={{textAlign:'right'}}>
+                  {isDraft ? (
+                    confirmId===c.id ? (
+                      <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
+                        <button onClick={function(){setConfirmId(null);}} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:6,padding:'4px 8px',fontSize:11,cursor:'pointer'}}>Cancel</button>
+                        <button onClick={function(){sendCampaign(c.id);}} disabled={!!launching[c.id]}
+                          style={{background:C.red,color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',fontSize:11,fontWeight:600,cursor:'pointer'}}>
+                          {launching[c.id] ? 'Sending...' : 'Confirm'}
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={function(){setConfirmId(c.id);}}
+                        style={{background:C.green,color:'#fff',border:'none',borderRadius:6,padding:'5px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                        Start Campaign
+                      </button>
+                    )
+                  ) : <span style={{fontSize:12,color:C.muted}}>Sent</span>}
+                </div>
+              </div>
+              {launchResult[c.id] ? (
+                <Alert type={launchResult[c.id].error?'error':'success'}>
+                  {launchResult[c.id].error?'Error: '+launchResult[c.id].error:'Campaign sent successfully!'}
+                </Alert>
+              ) : null}
+            </div>
+          );
+        }) : <div style={{color:C.muted,fontSize:13}}>No campaigns found.</div>}
+      </div>
+    </div>
+  );
+}
+
+// ── Newsletter Preview ───────────────────────────────────────────────────────
+function NewsletterPreview(props){
+  var draft=props.draft,draftSubj=props.draftSubj,draftLoading=props.draftLoading;
+  var mcResult=props.mcResult,sending=props.sending,mc=props.mc;
+  var onBack=props.onBack,onRegenerate=props.onRegenerate,onSend=props.onSend;
+  var [editMode,setEditMode]=useState(false);
+  var [editedDraft,setEditedDraft]=useState('');
+
+  var bodyText=(editMode?editedDraft:draft).replace(/SUBJECT:.+\n?---\n?/,'').trim();
+  var wordCount=bodyText.trim().split(/\s+/).filter(Boolean).length;
+
+  function renderBody(text){
+    if(!text)return null;
+    return text.split('\n').map(function(line,i){
+      if(!line.trim())return <div key={i} style={{height:12}}/>;
+      var parts=line.split(/\*\*([^*]+)\*\*/g);
+      var rendered=parts.map(function(p,j){
+        if(j%2===1)return <strong key={j} style={{color:'#1C2B1D',fontWeight:700}}>{p}</strong>;
+        return <span key={j}>{p}</span>;
+      });
+      var isHead=line.startsWith('**')&&line.endsWith('**');
+      return <p key={i} style={{margin:isHead?'18px 0 6px':'0 0 10px',fontSize:isHead?15:14,lineHeight:1.7,color:'#2C2C2C'}}>{rendered}</p>;
+    });
+  }
+
+  if(draftLoading&&!draft){
+    return(
+      <div className="card" style={{textAlign:'center',padding:'40px 20px'}}>
+        <Spin s={24}/>
+        <div style={{marginTop:14,fontSize:13,color:C.muted}}>Writing your newsletter...</div>
+      </div>
+    );
+  }
+
+  if(!draft)return null;
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:10}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <button onClick={onBack} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:C.muted}}>Back</button>
+          <button onClick={onRegenerate} disabled={draftLoading} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:C.muted}}>Regenerate</button>
+          <button onClick={function(){if(editMode){setEditMode(false);}else{setEditedDraft(bodyText);setEditMode(true);}}}
+            style={{background:editMode?C.blueL:'none',border:'1px solid '+(editMode?C.blue:'#E2E8E2'),borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:editMode?C.blue:C.muted,fontWeight:editMode?600:400}}>
+            {editMode?'Done editing':'Edit'}
+          </button>
+        </div>
+        <div style={{fontSize:12,color:C.muted}}>{wordCount} words</div>
+      </div>
+
+      <div style={{border:'1px solid #E2E8E2',borderRadius:14,overflow:'hidden',boxShadow:'0 4px 24px #2C3E2D10'}}>
+        <div style={{background:'#F4F7F4',padding:'10px 16px',borderBottom:'1px solid #E2E8E2',display:'flex',alignItems:'center',gap:8}}>
+          <div style={{display:'flex',gap:5}}>
+            <div style={{width:10,height:10,borderRadius:'50%',background:'#FC5F5A'}}/>
+            <div style={{width:10,height:10,borderRadius:'50%',background:'#FDBC40'}}/>
+            <div style={{width:10,height:10,borderRadius:'50%',background:'#34C749'}}/>
+          </div>
+          <span style={{fontSize:11,color:C.muted,marginLeft:8}}>Email preview</span>
+        </div>
+
+        <div style={{background:'#2C3E2D',padding:'16px 24px',borderBottom:'3px solid #E8651A'}}>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <circle cx="14" cy="14" r="13" fill="white" stroke="#E8651A" strokeWidth="1.5"/>
+              <path d="M9 14 L13 18 L19 10" stroke="#3d8b40" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <div>
+              <div style={{color:'#fff',fontWeight:700,fontSize:12,letterSpacing:'0.05em'}}>EUNOMIA PHARMA SERVICES</div>
+              <div style={{color:'#a8c5a9',fontSize:10}}>Regulatory Intelligence Newsletter</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{background:'#FAFAFA',padding:'12px 24px',borderBottom:'1px solid #E2E8E2'}}>
+          <div style={{display:'grid',gridTemplateColumns:'60px 1fr',gap:'4px 12px',fontSize:12}}>
+            <span style={{color:C.muted,fontWeight:600}}>From:</span>
+            <span>Eunomia Pharma Services &lt;hello@eunomiapharmaservices.com&gt;</span>
+            <span style={{color:C.muted,fontWeight:600}}>To:</span>
+            <span style={{color:C.muted}}>{mc&&mc.subscribers?mc.subscribers.toLocaleString():'834'} subscribers</span>
+            <span style={{color:C.muted,fontWeight:600}}>Subject:</span>
+            <span style={{fontWeight:600,color:'#1C2B1D'}}>{draftSubj||'Newsletter'}</span>
+          </div>
+        </div>
+
+        <div style={{background:'#fff',padding:'32px 40px',maxHeight:520,overflowY:'auto'}}>
+          {editMode ? (
+            <textarea value={editedDraft} onChange={function(e){setEditedDraft(e.target.value);}}
+              style={{width:'100%',minHeight:340,border:'1px solid #E2E8E2',borderRadius:8,padding:'12px',fontSize:14,lineHeight:1.75,resize:'vertical',outline:'none',color:'#2C2C2C'}}/>
+          ) : (
+            <div style={{maxWidth:560,margin:'0 auto'}}>{renderBody(bodyText)}</div>
+          )}
+        </div>
+
+        <div style={{background:'#F4F7F4',padding:'16px 24px',borderTop:'1px solid #E2E8E2',textAlign:'center'}}>
+          <div style={{fontSize:11,color:C.muted}}>Eunomia Pharma Services &middot; hello@eunomiapharmaservices.com</div>
+        </div>
+      </div>
+
+      {mcResult ? (
+        <Alert type={mcResult.success?'success':'error'}>
+          {mcResult.success ? (
+            <span>Draft created in Mailchimp! <a href={mcResult.editUrl} target="_blank" rel="noreferrer" style={{color:C.blue,fontWeight:600}}>Open in Mailchimp to schedule</a></span>
+          ) : 'Mailchimp error: '+(mcResult.error||'Unknown error')}
+        </Alert>
+      ) : null}
+
+      {!mcResult||!mcResult.success ? (
+        <button onClick={onSend} disabled={sending}
+          style={{background:sending?C.grayL:C.blue,color:sending?C.muted:'#fff',border:'none',borderRadius:10,padding:'14px 28px',fontSize:14,fontWeight:700,cursor:sending?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10,width:'100%'}}>
+          {sending ? <Spin s={16}/> : null}
+          {sending ? 'Sending to Mailchimp...' : 'Send to Mailchimp as Draft - '+(mc&&mc.subscribers?mc.subscribers.toLocaleString():'834')+' subscribers'}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+// ── Main App ─────────────────────────────────────────────────────────────────
 function App(){
-  const[tab,setTab]=useState('overview');
-  const[mc,setMc]=useState(null);
-  const[ht,setHt]=useState(null);
-  const[li,setLi]=useState(null);
-  const[sr,setSr]=useState(null);
-  const[loading,setLoading]=useState({mc:true,ht:true,li:true,sr:true});
-  const[errors,setErrors]=useState({});
-  const[usingMock,setUsingMock]=useState({});
+  var [tab,setTab]=useState('overview');
+  var [mc,setMc]=useState(null);
+  var [ht,setHt]=useState(null);
+  var [li,setLi]=useState(null);
+  var [sr,setSr]=useState(null);
+  var [loading,setLoading]=useState({mc:true,ht:true,li:true,sr:true});
+  var [errors,setErrors]=useState({});
+  var [usingMock,setUsingMock]=useState({});
 
-  // newsletter
-  const[composerOpen,setComposerOpen]=useState(false);
-  const[step,setStep]=useState('topics');
-  const[topics,setTopics]=useState([]);
-  const[topicLoading,setTopicLoading]=useState(false);
-  const[selTopics,setSelTopics]=useState([]);
-  const[draft,setDraft]=useState('');
-  const[draftSubj,setDraftSubj]=useState('');
-  const[draftLoading,setDraftLoading]=useState(false);
-  const[sending,setSending]=useState(false);
-  const[mcResult,setMcResult]=useState(null);
+  var [composerOpen,setComposerOpen]=useState(false);
+  var [step,setStep]=useState('topics');
+  var [topics,setTopics]=useState([]);
+  var [topicLoading,setTopicLoading]=useState(false);
+  var [selTopics,setSelTopics]=useState([]);
+  var [draft,setDraft]=useState('');
+  var [draftSubj,setDraftSubj]=useState('');
+  var [draftLoading,setDraftLoading]=useState(false);
+  var [sending,setSending]=useState(false);
+  var [mcResult,setMcResult]=useState(null);
 
-  // chat
-  const[chatMsg,setChatMsg]=useState('');
-  const[chatHist,setChatHist]=useState([]);
-  const[chatLoading,setChatLoading]=useState(false);
-  const chatEnd=useRef(null);
+  var [chatMsg,setChatMsg]=useState('');
+  var [chatHist,setChatHist]=useState([]);
+  var [chatLoading,setChatLoading]=useState(false);
+  var chatEnd=useRef(null);
 
-  useEffect(()=>{
-    loadAll();
-    // Test Claude API key on mount
-    fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:'ping'}],system:'Reply with just the word OK'})})
-      .then(r=>{
-        if(!r.ok)return r.json().then(e=>{throw new Error(e.error||'HTTP '+r.status);});
-        return null;
-      })
-      .catch(e=>setErrors(prev=>({...prev,claude:'AI: '+e.message})));
-  },[]);
-  useEffect(()=>{chatEnd.current?.scrollIntoView({behavior:'smooth'});},[chatHist]);
+  useEffect(function(){loadAll();},[]);
+  useEffect(function(){if(chatEnd.current)chatEnd.current.scrollIntoView({behavior:'smooth'});},[chatHist]);
 
   async function loadAll(){
     setLoading({mc:true,ht:true,li:true,sr:true});
     setErrors({});setUsingMock({});
-    const[mcD,htD,liD,srD]=await Promise.all([
-      apig('/api/mailchimp?action=stats'),
-      apig('/api/hunter?action=account'),
-      apig('/api/linkedin?action=profile'),
-      apig('/api/salesrobot?action=campaigns'),
+    var res=await Promise.all([
+      apiGet('/api/mailchimp?action=stats'),
+      apiGet('/api/hunter?action=account'),
+      apiGet('/api/linkedin?action=profile'),
+      apiGet('/api/salesrobot?action=campaigns'),
     ]);
-    const errs={},mock={};
+    var mcD=res[0],htD=res[1],liD=res[2],srD=res[3];
+    var errs={},mock={};
     if(mcD.error){errs.mc=mcD.error;mock.mc=true;setMc(MOCK.mc);}else setMc(mcD);
     if(htD.error){errs.ht=htD.error;mock.ht=true;setHt(MOCK.ht);}else setHt(htD);
     if(liD.error){errs.li=liD.error;mock.li=true;setLi(MOCK.li);}else setLi(liD);
@@ -205,15 +691,12 @@ function App(){
 
   async function genTopics(){
     setTopicLoading(true);setTopics([]);
-    const sys=`You are a pharma compliance marketing expert for Eunomia, a UK consultancy.
-Suggest 6 newsletter topics for pharma compliance professionals.
-Respond ONLY with a JSON array, no markdown. Each: {"title":"...","hook":"one sentence","tags":["PMCPA"|"ABPI"|"ANSM"|"FCPA"|"Digital"|"Training"|"Strategy"]}`;
+    var sys='You are a pharma compliance marketing expert for Eunomia, a UK consultancy. Suggest 6 newsletter topics for pharma compliance professionals. Respond ONLY with a JSON array, no markdown. Each item: {"title":"...","hook":"one sentence why this matters now","tags":["PMCPA","ABPI","ANSM","FCPA","Digital","Training","Strategy"]}';
     try{
-      let raw='';
-      await streamClaude({messages:[{role:'user',content:'Generate 6 newsletter topics for May 2026.'}],system:sys,onChunk:c=>{raw=c;}});
+      var raw='';
+      await callClaude([{role:'user',content:'Generate 6 newsletter topics for Eunomia. Today is May 2026.'}],sys,function(c){raw=c;});
       setTopics(JSON.parse(raw.replace(/```json|```/g,'').trim()));
     }catch(e){
-      console.error('Topic gen error:',e);
       setTopics([
         {title:'PMCPA Social Media Guidance 2026: Practical Steps',hook:'New guidance changes how pharma teams use LinkedIn and X.',tags:['PMCPA','Digital']},
         {title:'ABPI Code 2024: Six Months On',hook:'Real-world compliance implications of the new code.',tags:['ABPI']},
@@ -228,76 +711,61 @@ Respond ONLY with a JSON array, no markdown. Each: {"title":"...","hook":"one se
 
   async function genDraft(){
     setStep('drafting');setDraftLoading(true);setDraft('');setDraftSubj('');
-    const chosen=topics.filter((_,i)=>selTopics.includes(i));
-    const tlist=chosen.map(t=>`- ${t.title}: ${t.hook}`).join('\n');
-    const sys=`You are a senior compliance marketing writer for Eunomia.
-Write a newsletter. Format exactly:
-SUBJECT: [subject line]
----
-[Opening hook sentence]
-
-[2-3 sections with **bold headings**]
-
-[Closing CTA to contact Eunomia]
-
-Under 400 words. Expert but readable.`;
+    var chosen=topics.filter(function(_,i){return selTopics.indexOf(i)>=0;});
+    var tlist=chosen.map(function(t){return '- '+t.title+': '+t.hook;}).join('\n');
+    var sys='You are a senior compliance marketing writer for Eunomia. Write a newsletter. Format exactly:\nSUBJECT: [subject line]\n---\n[Opening hook sentence]\n\n[2-3 sections with **bold headings**]\n\n[Closing CTA to contact Eunomia]\n\nUnder 400 words. Expert but readable.';
     try{
-      const full=await streamClaude({
-        messages:[{role:'user',content:`Write newsletter covering:\n${tlist}\n\nAudience: pharma compliance professionals. May 2026.`}],
-        system:sys,
-        onChunk:c=>setDraft(c)
-      });
-      const m=full.match(/SUBJECT:\s*(.+)/);
+      var full=await callClaude(
+        [{role:'user',content:'Write newsletter covering:\n'+tlist+'\n\nAudience: pharma compliance professionals. May 2026.'}],
+        sys,
+        function(c){setDraft(c);}
+      );
+      var m=full.match(/SUBJECT:\s*(.+)/);
       if(m)setDraftSubj(m[1].trim());
-    }catch(e){setDraft('Error: '+e.message);setDraftSubj('Generation failed');}
+    }catch(e){setDraft('Error: '+e.message);}
     setDraftLoading(false);
   }
 
   async function sendToMailchimp(){
     setSending(true);setMcResult(null);
-    const result=await apip('/api/mailchimp?action=create-campaign',{subject:draftSubj,body:draft.replace(/SUBJECT:.+\n?---\n?/,'').trim()});
+    var body=draft.replace(/SUBJECT:.+\n?---\n?/,'').trim();
+    var result=await apiPost('/api/mailchimp?action=create-campaign',{subject:draftSubj,body:body});
     setMcResult(result);setSending(false);
   }
 
   async function sendChat(){
     if(!chatMsg.trim()||chatLoading)return;
-    const msg=chatMsg.trim();setChatMsg('');
-    const hist=[...chatHist,{role:'user',content:msg}];
+    var msg=chatMsg.trim();setChatMsg('');
+    var hist=chatHist.concat([{role:'user',content:msg}]);
     setChatHist(hist);setChatLoading(true);
-    const sys=`You are Eunomia's AI marketing assistant. Live data:
-Mailchimp: ${mc?`${mc.subscribers} subscribers, ${mc.openRate}% open rate. Last: "${mc.lastSubject}" ${mc.lastSent?daysSince(mc.lastSent)+' days ago':''}.`:'Not connected.'}
-Next newsletter due: ${mc?.lastSent?fmt(nextDue(mc.lastSent))+' ('+daysUntil(mc.lastSent)+' days)':'unknown'}.
-Hunter: ${ht?`${ht.creditsUsed}/${ht.creditsTotal} credits used.`:'Not connected.'}
-LinkedIn: ${li?`${li.name}, ${li.connections||'?'} connections.`:'Not connected.'}
-Sales Robot: ${sr?`${sr.summary.activeSequences} sequences, ${sr.summary.replyRate}% reply rate.`:'Not connected.'}
-Give specific actionable advice for Eunomia's pharma compliance marketing.`;
+    var sys='You are Eunomia marketing assistant. Data: Mailchimp: '+(mc?mc.subscribers+' subscribers, '+mc.openRate+'% open rate. Last newsletter sent '+daysSince(mc.lastSent)+' days ago. Next due: '+fmtDate(nextDue(mc.lastSent))+' ('+daysUntil(mc.lastSent)+' days away).':'Not connected.')+' Hunter: '+(ht?ht.creditsUsed+'/'+ht.creditsTotal+' credits used.':'Not connected.')+' Sales Robot: '+(sr?sr.summary.activeSequences+' active sequences, '+sr.summary.replyRate+'% reply rate.':'Not connected.')+' Give specific actionable advice for Eunomia pharma compliance marketing.';
     try{
-      await streamClaude({messages:hist,system:sys,onChunk:c=>setChatHist([...hist,{role:'assistant',content:c}])});
-    }catch(e){setChatHist([...hist,{role:'assistant',content:'Error: '+e.message}]);}
+      await callClaude(hist,sys,function(c){setChatHist(hist.concat([{role:'assistant',content:c}]));});
+    }catch(e){setChatHist(hist.concat([{role:'assistant',content:'Error: '+e.message}]));}
     setChatLoading(false);
   }
 
-  const statusDot=(key,name)=>{
-    if(loading[key])return <span style={{fontSize:11,background:'#ffffff20',color:'#a8c5a9',borderRadius:5,padding:'3px 8px',fontWeight:600}}>… {name}</span>;
-    if(usingMock[key])return <span style={{fontSize:11,background:'#E8651A25',color:'#E8651A',border:'1px solid #E8651A50',borderRadius:5,padding:'3px 8px',fontWeight:600}}>⚠ {name} (demo)</span>;
-    return <span style={{fontSize:11,background:'#3d8b4025',color:'#5db860',border:'1px solid #3d8b4050',borderRadius:5,padding:'3px 8px',fontWeight:600}}>● {name}</span>;
-  };
+  function openNewsletter(){
+    setTab('newsletter');setComposerOpen(true);setStep('topics');setTopics([]);setSelTopics([]);setDraft('');setDraftSubj('');setMcResult(null);
+  }
 
-  const tabs=[
-    {id:'overview',label:'Overview'},
-    {id:'linkedin',label:'LinkedIn'},
-    {id:'salesrobot',label:'Sales Robot'},
-    {id:'mailchimp',label:'Mailchimp'},
-    {id:'hunter',label:'Hunter.io'},
-    {id:'newsletter',label:'✦ Newsletter'},
+  function statusDot(key,name){
+    if(loading[key])return <span style={{fontSize:11,background:'#ffffff20',color:'#a8c5a9',borderRadius:5,padding:'3px 8px',fontWeight:600}}>{name}</span>;
+    if(usingMock[key])return <span style={{fontSize:11,background:'#E8651A25',color:'#E8651A',border:'1px solid #E8651A50',borderRadius:5,padding:'3px 8px',fontWeight:600}}>Demo: {name}</span>;
+    return <span style={{fontSize:11,background:'#3d8b4025',color:'#5db860',border:'1px solid #3d8b4050',borderRadius:5,padding:'3px 8px',fontWeight:600}}>Live: {name}</span>;
+  }
+
+  var tabs=[
+    {id:'overview',label:'Overview'},{id:'linkedin',label:'LinkedIn'},
+    {id:'salesrobot',label:'Sales Robot'},{id:'mailchimp',label:'Mailchimp'},
+    {id:'hunter',label:'Hunter.io'},{id:'newsletter',label:'Newsletter'},
   ];
 
   return(
     <div style={{minHeight:'100vh'}}>
-      {/* topbar */}
       <div style={{background:'#2C3E2D',padding:'0 24px',display:'flex',alignItems:'center',justifyContent:'space-between',height:60,position:'sticky',top:0,zIndex:10,borderBottom:'2px solid #E8651A'}}>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
             <circle cx="19" cy="19" r="18" fill="white" stroke="#E8651A" strokeWidth="2"/>
             <circle cx="19" cy="19" r="14" fill="none" stroke="#3d8b40" strokeWidth="1.5"/>
             <path d="M12 19 L17 24 L26 13" stroke="#3d8b40" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -313,864 +781,226 @@ Give specific actionable advice for Eunomia's pharma compliance marketing.`;
           {statusDot('sr','Sales Robot')}
           {statusDot('mc','Mailchimp')}
           {statusDot('ht','Hunter.io')}
-          {errors.claude
-            ?<span style={{fontSize:11,background:'#DC262625',color:'#DC2626',border:'1px solid #DC262650',borderRadius:5,padding:'3px 8px',fontWeight:600}}>✗ AI Key Error</span>
-            :<span style={{fontSize:11,background:'#3d8b4025',color:'#5db860',border:'1px solid #3d8b4050',borderRadius:5,padding:'3px 8px',fontWeight:600}}>● AI Ready</span>
-          }
-          <button onClick={loadAll} style={{background:'none',border:'1px solid #ffffff40',borderRadius:7,color:'#a8c5a9',fontSize:12,padding:'4px 12px',cursor:'pointer',marginLeft:4}}>↻ Refresh</button>
+          <button onClick={loadAll} style={{background:'none',border:'1px solid #ffffff40',borderRadius:7,color:'#a8c5a9',fontSize:12,padding:'4px 12px',cursor:'pointer',marginLeft:4}}>Refresh</button>
         </div>
       </div>
 
-      {/* tabs */}
-      <div style={{borderBottom:'1px solid #E2E8E2',background:'#fff',padding:'0 24px',display:'flex',gap:4,overflowX:'auto',boxShadow:'0 1px 3px #2C3E2D10'}}>
-        {tabs.map(t=><button key={t.id} className={`tab ${tab===t.id?'on':''}`} onClick={()=>setTab(t.id)}>{t.label}</button>)}
+      <div style={{borderBottom:'1px solid #E2E8E2',background:'#fff',padding:'0 24px',display:'flex',gap:4,overflowX:'auto'}}>
+        {tabs.map(function(t){
+          return <button key={t.id} className={'tab '+(tab===t.id?'on':'')} onClick={function(){setTab(t.id);}}>{t.label}</button>;
+        })}
       </div>
 
       <div style={{padding:'24px',maxWidth:960,margin:'0 auto',display:'flex',flexDirection:'column',gap:18}}>
 
-        {/* OVERVIEW */}
-        {tab==='overview'&&(
-          <>
-            {Object.keys(usingMock).length>0&&(
-              <Alert type="warning">
-                <strong>Demo mode:</strong> {Object.keys(usingMock).join(', ')} showing sample data. Add API keys in Vercel → Settings → Environment Variables to see live data.
-              </Alert>
-            )}
-            {errors.claude&&(
-              <Alert type="error">
-                <strong>AI Assistant error:</strong> {errors.claude}<br/>
-                <span style={{fontSize:12}}>Check: (1) ANTHROPIC_API_KEY is set in Vercel env vars, (2) you have clicked Redeploy after adding the key, (3) your Anthropic account has a positive balance at console.anthropic.com/billing</span>
-              </Alert>
-            )}
+        {tab==='overview' ? (
+          <div style={{display:'flex',flexDirection:'column',gap:18}}>
+            {Object.keys(usingMock).length>0 ? (
+              <Alert type="warning">Demo mode: {Object.keys(usingMock).join(', ')} showing sample data. Add API keys in Vercel to see live data.</Alert>
+            ) : null}
             <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-              <Stat label="LinkedIn Connections" value={loading.li?'…':li?.connections?.toLocaleString()??'N/A'} sub={li?.name&&li.name!=='undefined undefined'?li.name:'Connected'}/>
-              <Stat label="Reply Rate" value={loading.sr?'…':sr?.summary?.replyRate?`${sr.summary.replyRate}%`:'N/A'} sub={sr?`${sr.summary.replies} replies from ${sr.summary.messagesSent} sent`:''} color={C.teal}/>
-              <Stat label="Open Rate" value={loading.mc?'…':mc?.openRate?`${mc.openRate}%`:'N/A'} sub={mc?`${mc.subscribers?.toLocaleString()} subscribers`:''} color={C.amber}/>
-              <Stat label="Hunter Credits" value={loading.ht?'…':ht?`${ht.creditsUsed}/${ht.creditsTotal}`:'N/A'} sub={ht?.plan} color={C.green}/>
+              <Stat label="LinkedIn Connections" value={loading.li?'...':li&&li.connections?li.connections.toLocaleString():null} sub={li&&li.name&&li.name!=='undefined undefined'?li.name:''}/>
+              <Stat label="Reply Rate" value={loading.sr?'...':sr&&sr.summary?sr.summary.replyRate+'%':null} sub={sr?sr.summary.replies+' replies from '+sr.summary.messagesSent+' sent':''} color={C.teal}/>
+              <Stat label="Open Rate" value={loading.mc?'...':mc&&mc.openRate?mc.openRate+'%':null} sub={mc?mc.subscribers.toLocaleString()+' subscribers':''} color={C.amber}/>
+              <Stat label="Hunter Credits" value={loading.ht?'...':ht?ht.creditsUsed+'/'+ht.creditsTotal:null} sub={ht?ht.plan:''} color={C.green}/>
             </div>
 
-            {mc?.lastSent&&(
-              <div style={{background:daysUntil(mc.lastSent)<=7?'#FEF0E8':'#EBF5EC',border:`1px solid ${daysUntil(mc.lastSent)<=7?'#E8651A':'#3d8b40'}30`,borderRadius:12,padding:'14px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+            {mc&&mc.lastSent ? (
+              <div style={{background:daysUntil(mc.lastSent)<=7?C.amberL:C.blueL,border:'1px solid '+(daysUntil(mc.lastSent)<=7?C.amber:C.blue)+'30',borderRadius:12,padding:'14px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
                 <div>
-                  <div style={{fontSize:12,fontWeight:600,color:daysUntil(mc.lastSent)<=7?'#E8651A':'#3d8b40',marginBottom:4}}>
-                    {daysUntil(mc.lastSent)<=7?'⚠ Newsletter due soon':'📅 Newsletter schedule'}
+                  <div style={{fontSize:12,fontWeight:600,color:daysUntil(mc.lastSent)<=7?C.amber:C.blue,marginBottom:4}}>
+                    {daysUntil(mc.lastSent)<=7?'Newsletter due soon':'Newsletter schedule'}
                   </div>
-                  <div style={{fontSize:14,fontWeight:600}}>Next due: {fmt(nextDue(mc.lastSent))} <span style={{fontWeight:400,color:C.muted}}>({daysUntil(mc.lastSent)} days)</span></div>
-                  <div style={{fontSize:12,color:C.muted,marginTop:2}}>Last sent {daysSince(mc.lastSent)} days ago -- "{mc.lastSubject}"</div>
+                  <div style={{fontSize:14,fontWeight:600}}>Next due: {fmtDate(nextDue(mc.lastSent))} <span style={{fontWeight:400,color:C.muted}}>({daysUntil(mc.lastSent)} days)</span></div>
+                  <div style={{fontSize:12,color:C.muted,marginTop:2}}>Last sent {daysSince(mc.lastSent)} days ago</div>
                 </div>
-                <button onClick={()=>{setTab('newsletter');setComposerOpen(true);setStep('topics');setTopics([]);setSelTopics([]);setDraft('');}}
-                  style={{background:'#3d8b40',color:'#fff',border:'none',borderRadius:8,padding:'10px 18px',fontSize:13,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap',boxShadow:'0 2px 8px #3d8b4040'}}>
-                  ✦ Create Newsletter
+                <button onClick={openNewsletter}
+                  style={{background:C.blue,color:'#fff',border:'none',borderRadius:8,padding:'10px 18px',fontSize:13,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}>
+                  Create Newsletter
                 </button>
               </div>
-            )}
+            ) : null}
 
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
-              {/* AI chat */}
               <div className="card">
-                <H>AI Marketing Assistant</H>
+                <SH>AI Marketing Assistant</SH>
                 <div style={{background:C.grayL,borderRadius:10,padding:12,minHeight:200,maxHeight:280,overflowY:'auto',display:'flex',flexDirection:'column',gap:8,marginBottom:10}}>
-                  {chatHist.length===0&&<p style={{color:C.muted,fontSize:13}}>Ask about your platform performance, newsletter timing, outreach strategy…</p>}
-                  {chatHist.map((m,i)=>(
-                    <div key={i} style={{display:'flex',justifyContent:m.role==='user'?'flex-end':'flex-start'}}>
-                      <div className={m.role==='user'?'cu':'ca'}>{m.content}</div>
-                    </div>
-                  ))}
-                  {chatLoading&&<div className="ca"><Spin s={14}/></div>}
+                  {chatHist.length===0 ? <p style={{color:C.muted,fontSize:13}}>Ask about your platform performance, newsletter timing, outreach strategy...</p> : null}
+                  {chatHist.map(function(m,i){
+                    return(
+                      <div key={i} style={{display:'flex',justifyContent:m.role==='user'?'flex-end':'flex-start'}}>
+                        <div className={m.role==='user'?'cu':'ca'}>{m.content}</div>
+                      </div>
+                    );
+                  })}
+                  {chatLoading ? <div className="ca"><Spin s={14}/></div> : null}
                   <div ref={chatEnd}/>
                 </div>
                 <div style={{display:'flex',gap:8}}>
-                  <input value={chatMsg} onChange={e=>setChatMsg(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendChat()}
+                  <input value={chatMsg} onChange={function(e){setChatMsg(e.target.value);}}
+                    onKeyDown={function(e){if(e.key==='Enter')sendChat();}}
                     placeholder="How is my reply rate? When should I send next?"
-                    style={{flex:1,border:`1px solid ${C.border}`,borderRadius:8,padding:'8px 12px',fontSize:13,outline:'none'}}/>
+                    style={{flex:1,border:'1px solid #E2E8E2',borderRadius:8,padding:'8px 12px',fontSize:13,outline:'none'}}/>
                   <button onClick={sendChat} disabled={chatLoading}
-                    style={{background:'#3d8b40',color:'#fff',border:'none',borderRadius:8,padding:'8px 16px',cursor:'pointer',fontWeight:600,fontSize:13}}>Send</button>
+                    style={{background:C.blue,color:'#fff',border:'none',borderRadius:8,padding:'8px 16px',cursor:'pointer',fontWeight:600,fontSize:13}}>Send</button>
                 </div>
               </div>
 
-              {/* Recent campaigns */}
               <div className="card">
-                <H>Recent Mailchimp Campaigns</H>
-                {loading.mc?<div className="row" style={{color:C.muted}}><Spin s={14}/> Loading…</div>
-                  :mc?.campaigns?.map((c,i)=>(
-                  <div key={i} className="row">
-                    <div style={{flex:1}}>
-                      <div style={{fontWeight:600,fontSize:13}}>{c.name}</div>
-                      <div style={{fontSize:12,color:C.muted}}>{c.date} · {typeof c.sent==='number'?c.sent.toLocaleString():c.sent} sent</div>
+                <SH>Recent Mailchimp Campaigns</SH>
+                {loading.mc ? <div style={{color:C.muted,fontSize:13}}>Loading...</div>
+                  : mc&&mc.campaigns&&mc.campaigns.length>0 ? mc.campaigns.map(function(c,i){
+                  return(
+                    <div key={i} className="row">
+                      <div style={{flex:1}}>
+                        <div style={{fontWeight:600,fontSize:13}}>{c.name}</div>
+                        <div style={{fontSize:12,color:C.muted}}>{c.date} &middot; {typeof c.sent==='number'?c.sent.toLocaleString():c.sent} sent</div>
+                      </div>
+                      <Pill label={c.opens} color={C.green}/>
+                      <Pill label={c.clicks} color={C.blue}/>
                     </div>
-                    <Pill label={c.opens} color={C.green}/>
-                    <Pill label={c.clicks} color={C.blue}/>
-                  </div>
-                ))}
+                  );
+                }) : <div style={{color:C.muted,fontSize:13}}>No campaigns found.</div>}
               </div>
             </div>
-          </>
-        )}
+          </div>
+        ) : null}
 
-        {/* LINKEDIN */}
-        {tab==='linkedin'&&(
-          <LinkedInTab li={li} usingMock={usingMock} C={C} Stat={Stat} Alert={Alert} H={H} Pill={Pill} Spin={Spin} apip={apip}/>
-        )}
+        {tab==='linkedin' ? <LinkedInTab li={li} usingMock={usingMock.li}/> : null}
 
-        {/* SALES ROBOT */}
-        {tab==='salesrobot'&&(
-          <>
-            {usingMock.sr&&<Alert type="warning">Showing demo data. Add <strong>SALES_ROBOT_API_KEY</strong> in Vercel env vars for live data.</Alert>}
-            {sr?.summary&&(
+        {tab==='salesrobot' ? (
+          <div style={{display:'flex',flexDirection:'column',gap:16}}>
+            {usingMock.sr ? <Alert type="warning">Showing demo data. Add SALES_ROBOT_API_KEY in Vercel env vars.</Alert> : null}
+            {sr&&sr.summary ? (
               <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
                 <Stat label="Active sequences" value={sr.summary.activeSequences}/>
                 <Stat label="Messages sent" value={sr.summary.messagesSent} sub="This period"/>
                 <Stat label="Replies" value={sr.summary.replies} color={C.teal}/>
-                <Stat label="Reply rate" value={`${sr.summary.replyRate}%`} color={parseFloat(sr.summary.replyRate)>=15?C.green:C.amber}/>
+                <Stat label="Reply rate" value={sr.summary.replyRate+'%'} color={parseFloat(sr.summary.replyRate)>=15?C.green:C.amber}/>
               </div>
-            )}
+            ) : null}
             <div className="card">
-              <H>Sequences</H>
-              {sr?.campaigns?.length?(
-                <>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 70px 70px 80px',gap:8,fontSize:11,fontWeight:600,color:C.muted,paddingBottom:8,borderBottom:`1px solid ${C.border}`,textTransform:'uppercase',letterSpacing:'0.05em'}}>
+              <SH>Sequences</SH>
+              {sr&&sr.campaigns&&sr.campaigns.length>0 ? (
+                <div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 70px 70px 80px',gap:8,fontSize:11,fontWeight:600,color:C.muted,paddingBottom:8,borderBottom:'1px solid #E2E8E2',textTransform:'uppercase',letterSpacing:'0.05em'}}>
                     <span>Sequence</span><span style={{textAlign:'center'}}>Sent</span><span style={{textAlign:'center'}}>Replies</span><span style={{textAlign:'right'}}>Rate</span>
                   </div>
-                  {sr.campaigns.map((s,i)=>(
-                    <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 70px 70px 80px',gap:8,alignItems:'center',padding:'10px 0',borderBottom:`1px solid ${C.border}`}}>
-                      <div>
-                        <div style={{fontWeight:600,fontSize:13}}>{s.name}</div>
-                        <Pill label={s.status} color={s.status==='active'?C.green:C.gray}/>
+                  {sr.campaigns.map(function(s,i){
+                    return(
+                      <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 70px 70px 80px',gap:8,alignItems:'center',padding:'10px 0',borderBottom:'1px solid #E2E8E2'}}>
+                        <div>
+                          <div style={{fontWeight:600,fontSize:13}}>{s.name}</div>
+                          <Pill label={s.status} color={s.status==='active'?C.green:C.gray}/>
+                        </div>
+                        <span style={{textAlign:'center'}}>{s.sent}</span>
+                        <span style={{textAlign:'center'}}>{s.replies}</span>
+                        <div style={{textAlign:'right'}}><Pill label={s.rate+'%'} color={parseFloat(s.rate)>=18?C.green:parseFloat(s.rate)>=10?C.amber:C.red}/></div>
                       </div>
-                      <span style={{textAlign:'center'}}>{s.sent}</span>
-                      <span style={{textAlign:'center'}}>{s.replies}</span>
-                      <div style={{textAlign:'right'}}><Pill label={`${s.rate}%`} color={parseFloat(s.rate)>=18?C.green:parseFloat(s.rate)>=10?C.amber:C.red}/></div>
-                    </div>
-                  ))}
-                </>
-              ):<div style={{color:C.muted,fontSize:13}}>No sequences found.</div>}
+                    );
+                  })}
+                </div>
+              ) : <div style={{color:C.muted,fontSize:13}}>No sequences found.</div>}
             </div>
-          </>
-        )}
+          </div>
+        ) : null}
 
-        {/* MAILCHIMP */}
-        {tab==='mailchimp'&&(
-          <MailchimpTab mc={mc} usingMock={usingMock} C={C} Stat={Stat} Alert={Alert} H={H} Pill={Pill} Spin={Spin} daysSince={daysSince} daysUntil={daysUntil} nextDue={nextDue} fmt={fmt} apip={apip} setTab={setTab} setComposerOpen={setComposerOpen} setStep={setStep} setTopics={setTopics} setSelTopics={setSelTopics} setDraft={setDraft} setDraftSubj={setDraftSubj} setMcResult={setMcResult}/>
-        )}
+        {tab==='mailchimp' ? <MailchimpTab mc={mc} usingMock={usingMock.mc} onCreateNewsletter={openNewsletter}/> : null}
 
-        {/* HUNTER */}
-        {tab==='hunter'&&(
-          <HunterTab ht={ht} usingMock={usingMock} C={C} Stat={Stat} Alert={Alert} H={H} Pill={Pill} Spin={Spin}/>
-        )}
+        {tab==='hunter' ? <HunterTab ht={ht} usingMock={usingMock.ht}/> : null}
 
-        {/* NEWSLETTER */}
-        {tab==='newsletter'&&(
-          <>
-            {mc?.lastSent&&(
+        {tab==='newsletter' ? (
+          <div style={{display:'flex',flexDirection:'column',gap:16}}>
+            {mc&&mc.lastSent ? (
               <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
-                <Stat label="Last newsletter" value={`${daysSince(mc.lastSent)}d ago`} sub={mc.lastSubject?.slice(0,42)+'…'}/>
-                <Stat label="Next due" value={fmt(nextDue(mc.lastSent))} sub={`${daysUntil(mc.lastSent)} days away`} color={daysUntil(mc.lastSent)<=7?C.amber:C.green}/>
-                <Stat label="Subscribers" value={mc?.subscribers?.toLocaleString()} sub="Will receive newsletter" color={C.blue}/>
+                <Stat label="Last newsletter" value={daysSince(mc.lastSent)+'d ago'} sub={mc.lastSubject?mc.lastSubject.slice(0,42)+'...':''}/>
+                <Stat label="Next due" value={fmtDate(nextDue(mc.lastSent))} sub={daysUntil(mc.lastSent)+' days away'} color={daysUntil(mc.lastSent)<=7?C.amber:C.green}/>
+                <Stat label="Subscribers" value={mc.subscribers?mc.subscribers.toLocaleString():null} sub="Will receive newsletter" color={C.blue}/>
               </div>
-            )}
+            ) : null}
 
-            {!composerOpen&&(
+            {!composerOpen ? (
               <div className="card" style={{textAlign:'center',padding:'36px 20px'}}>
                 <div style={{fontSize:36,marginBottom:12}}>✦</div>
                 <div style={{fontSize:17,fontWeight:700,marginBottom:8}}>Create your next newsletter</div>
-                <div style={{fontSize:13,color:C.muted,marginBottom:24,maxWidth:360,margin:'0 auto 24px'}}>AI researches current pharma regulatory topics, you choose, then it drafts a full newsletter and sends it to Mailchimp.</div>
-                <button onClick={()=>{setComposerOpen(true);setStep('topics');setTopics([]);setSelTopics([]);setDraft('');setDraftSubj('');setMcResult(null);}}
-                  style={{background:'#3d8b40',color:'#fff',border:'none',borderRadius:10,padding:'13px 30px',fontSize:14,fontWeight:700,cursor:'pointer',boxShadow:'0 2px 8px #3d8b4040'}}>
-                  ✦ Start Newsletter Creator
+                <div style={{fontSize:13,color:C.muted,marginBottom:24}}>AI researches current pharma regulatory topics, you choose, then it drafts a full newsletter and sends to Mailchimp.</div>
+                <button onClick={function(){setComposerOpen(true);setStep('topics');setTopics([]);setSelTopics([]);setDraft('');setDraftSubj('');setMcResult(null);}}
+                  style={{background:C.blue,color:'#fff',border:'none',borderRadius:10,padding:'13px 30px',fontSize:14,fontWeight:700,cursor:'pointer'}}>
+                  Start Newsletter Creator
                 </button>
               </div>
-            )}
+            ) : null}
 
-            {composerOpen&&step==='topics'&&(
+            {composerOpen&&step==='topics' ? (
               <div className="card">
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-                  <H>Step 1 -- Choose topics</H>
-                  <button onClick={()=>setComposerOpen(false)} style={{background:'none',border:'none',cursor:'pointer',color:C.muted,fontSize:22,lineHeight:1}}>x</button>
+                  <SH>Step 1: Choose topics</SH>
+                  <button onClick={function(){setComposerOpen(false);}} style={{background:'none',border:'none',cursor:'pointer',color:C.muted,fontSize:22,lineHeight:1}}>x</button>
                 </div>
-                {topics.length===0&&!topicLoading&&(
+                {topics.length===0&&!topicLoading ? (
                   <div style={{textAlign:'center',padding:'20px 0'}}>
                     <div style={{fontSize:13,color:C.muted,marginBottom:16}}>AI will research current pharma regulatory topics for your audience</div>
-                    <button onClick={genTopics} style={{background:C.blue,color:'#fff',border:'none',borderRadius:8,padding:'10px 24px',fontSize:13,fontWeight:600,cursor:'pointer'}}>🔍 Research Topics</button>
+                    <button onClick={genTopics} style={{background:C.blue,color:'#fff',border:'none',borderRadius:8,padding:'10px 24px',fontSize:13,fontWeight:600,cursor:'pointer'}}>Research Topics</button>
                   </div>
-                )}
-                {topicLoading&&<div style={{textAlign:'center',padding:'28px 0',color:C.muted,fontSize:13}}><Spin/> <span style={{marginLeft:10}}>Researching topics…</span></div>}
-                {topics.length>0&&(
-                  <>
+                ) : null}
+                {topicLoading ? (
+                  <div style={{textAlign:'center',padding:'28px 0',color:C.muted,fontSize:13,display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
+                    <Spin/>
+                    <span>Researching topics...</span>
+                  </div>
+                ) : null}
+                {topics.length>0&&!topicLoading ? (
+                  <div>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16}}>
-                      {topics.map((t,i)=>(
-                        <div key={i} className={`tc ${selTopics.includes(i)?'sel':''}`}
-                          onClick={()=>setSelTopics(p=>p.includes(i)?p.filter(x=>x!==i):[...p,i])}>
-                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
-                            <span style={{fontSize:13,fontWeight:600,flex:1,marginRight:8}}>{t.title}</span>
-                            <div style={{width:20,height:20,borderRadius:'50%',border:`2px solid ${selTopics.includes(i)?C.blue:C.border}`,background:selTopics.includes(i)?C.blue:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                              {selTopics.includes(i)&&<span style={{color:'#fff',fontSize:11,fontWeight:800}}>✓</span>}
+                      {topics.map(function(t,i){
+                        var isSel=selTopics.indexOf(i)>=0;
+                        return(
+                          <div key={i} className={'tc '+(isSel?'sel':'')}
+                            onClick={function(){setSelTopics(function(p){return p.indexOf(i)>=0?p.filter(function(x){return x!==i;}):[...p,i];});}}>
+                            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+                              <span style={{fontSize:13,fontWeight:600,flex:1,marginRight:8}}>{t.title}</span>
+                              <div style={{width:20,height:20,borderRadius:'50%',border:'2px solid '+(isSel?C.blue:'#E2E8E2'),background:isSel?C.blue:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:11,fontWeight:800,color:'#fff'}}>
+                                {isSel?'v':''}
+                              </div>
+                            </div>
+                            <p style={{fontSize:12,color:C.muted,margin:'0 0 8px'}}>{t.hook}</p>
+                            <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                              {t.tags.map(function(tag){
+                                return <span key={tag} style={{fontSize:10,fontWeight:600,background:(tagColor[tag]||C.gray)+'20',color:tagColor[tag]||C.gray,borderRadius:4,padding:'2px 6px'}}>{tag}</span>;
+                              })}
                             </div>
                           </div>
-                          <p style={{fontSize:12,color:C.muted,margin:'0 0 8px'}}>{t.hook}</p>
-                          <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
-                            {t.tags.map(tag=><span key={tag} style={{fontSize:10,fontWeight:600,background:(tagColor[tag]||C.gray)+'20',color:tagColor[tag]||C.gray,borderRadius:4,padding:'2px 6px'}}>{tag}</span>)}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     <div style={{display:'flex',gap:10}}>
-                      <button onClick={genTopics} style={{background:'none',border:`1px solid ${C.border}`,borderRadius:8,padding:'8px 14px',fontSize:13,cursor:'pointer'}}>↺ Regenerate</button>
+                      <button onClick={genTopics} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:8,padding:'8px 14px',fontSize:13,cursor:'pointer'}}>Regenerate</button>
                       <button disabled={selTopics.length===0} onClick={genDraft}
                         style={{background:selTopics.length>0?C.blue:C.grayL,color:selTopics.length>0?'#fff':C.muted,border:'none',borderRadius:8,padding:'10px 20px',fontSize:13,fontWeight:600,cursor:selTopics.length>0?'pointer':'default'}}>
-                        ✦ Draft Newsletter ({selTopics.length} topic{selTopics.length!==1?'s':''})
+                        Draft Newsletter ({selTopics.length} topic{selTopics.length!==1?'s':''})
                       </button>
                     </div>
-                  </>
-                )}
+                  </div>
+                ) : null}
               </div>
-            )}
+            ) : null}
 
-            {composerOpen&&step==='drafting'&&(
+            {composerOpen&&step==='drafting' ? (
               <NewsletterPreview
-                draft={draft}
-                draftSubj={draftSubj}
-                draftLoading={draftLoading}
-                mcResult={mcResult}
-                sending={sending}
-                C={C}
-                Spin={Spin}
-                Alert={Alert}
-                onBack={()=>{setStep('topics');setDraft('');setDraftSubj('');setMcResult(null);}}
-                onRegenerate={genDraft}
-                onSend={sendToMailchimp}
-                mc={mc}
+                draft={draft} draftSubj={draftSubj} draftLoading={draftLoading}
+                mcResult={mcResult} sending={sending} mc={mc}
+                onBack={function(){setStep('topics');setDraft('');setDraftSubj('');setMcResult(null);}}
+                onRegenerate={genDraft} onSend={sendToMailchimp}
               />
-            )}
-          </>
-        )}
+            ) : null}
+          </div>
+        ) : null}
+
       </div>
     </div>
   );
 }
 
-
-// ── HunterTab component ───────────────────────────────────────────────────────
-function HunterTab({ht,usingMock,C,Stat,Alert,H,Pill,Spin}){
-  const[domain,setDomain]=useState('');
-  const[searching,setSearching]=useState(false);
-  const[results,setResults]=useState(null);
-  const[searchErr,setSearchErr]=useState('');
-  const[selected,setSelected]=useState([]);
-  const[exporting,setExporting]=useState(false);
-  const[exportResult,setExportResult]=useState(null);
-  const[verifying,setVerifying]=useState(false);
-
-  async function doSearch(){
-    if(!domain.trim())return;
-    const raw=domain.trim();
-    // Detect if user typed a company name instead of a domain
-    if(raw.includes(' ')||(!raw.includes('.'))){
-      setSearchErr('Please enter a domain name (e.g. pfizer.com), not a company name. Hunter.io searches by domain only.');
-      return;
-    }
-    setSearching(true);setResults(null);setSearchErr('');setSelected([]);setExportResult(null);
-    const d=raw.replace(/^https?:\/\//,'').replace(/\/.*/,'').toLowerCase();
-    const r=await fetch(`/api/hunter?action=domain-search&domain=${encodeURIComponent(d)}`);
-    const data=await r.json();
-    if(data.error){setSearchErr(data.error);}
-    else{
-      setResults(data);
-    }
-    setSearching(false);
-  }
-
-  async function verifySelected(){
-    if(!selected.length)return;
-    setVerifying(true);
-    // Call verify for each selected email
-    const updated={...results};
-    for(const email of selected){
-      const r=await fetch(`/api/hunter?action=verify&email=${encodeURIComponent(email)}`);
-      const d=await r.json();
-      updated.emails=updated.emails.map(e=>e.email===email?{...e,verified:d.status,score:d.score}:e);
-    }
-    setResults(updated);
-    setVerifying(false);
-  }
-
-  async function exportToMailchimp(){
-    if(!selected.length)return;
-    setExporting(true);setExportResult(null);
-    const emails=results.emails.filter(e=>selected.includes(e.email));
-    const r=await fetch('/api/mailchimp?action=add-members',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({members:emails,tag:'ABM-Hunter'})
-    });
-    const data=await r.json();
-    setExportResult(data);
-    setExporting(false);
-  }
-
-  function toggleAll(){
-    if(selected.length===results?.emails?.length) setSelected([]);
-    else setSelected(results.emails.map(e=>e.email));
-  }
-
-  function csvDownload(){
-    if(!results?.emails?.length)return;
-    const rows=[['Name','Email','Role','Confidence'],
-      ...results.emails.filter(e=>selected.includes(e.email)).map(e=>[e.name,e.email,e.role||'',e.confidence])];
-    const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
-    const blob=new Blob([csv],{type:'text/csv'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download=`hunter-${results.domain}.csv`;a.click();
-  }
-
-  return(
-    <>
-      {usingMock?.ht&&<Alert type="warning">Add <strong>HUNTER_API_KEY</strong> in Vercel env vars for live results. Showing sample results for now.</Alert>}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-        <Stat label="Plan" value={ht?.plan??'--'}/>
-        <Stat label="Search credits" value={ht?`${ht.creditsUsed}/${ht.creditsTotal}`:'--'} color={ht&&ht.creditsUsed/ht.creditsTotal>0.8?C.red:C.green}/>
-        <Stat label="Verifications" value={ht?`${ht.verificationUsed}/${ht.verificationTotal}`:'--'} color={C.teal}/>
-        <Stat label="Credits left" value={ht?ht.creditsTotal-ht.creditsUsed:'--'}/>
-      </div>
-
-      {/* Domain search */}
-      <div className="card">
-        <H>Find emails by company domain</H>
-        <div style={{fontSize:13,color:C.muted,marginBottom:14}}>Enter a company domain to find verified email addresses. Results can be exported to Mailchimp or downloaded as CSV.</div>
-        <div style={{display:'flex',gap:10,marginBottom:16}}>
-          <input value={domain} onChange={e=>setDomain(e.target.value)}
-            onKeyDown={e=>e.key==='Enter'&&doSearch()}
-            placeholder="Enter a domain e.g. pfizer.com (not a company name)"
-            style={{flex:1,border:`1px solid ${C.border}`,borderRadius:8,padding:'10px 14px',fontSize:13,outline:'none'}}/>
-          <button onClick={doSearch} disabled={searching||!domain.trim()}
-            style={{background:domain.trim()?C.blue:C.grayL,color:domain.trim()?'#fff':C.muted,border:'none',borderRadius:8,padding:'10px 20px',fontSize:13,fontWeight:600,cursor:domain.trim()?'pointer':'default',display:'flex',alignItems:'center',gap:8}}>
-            {searching?<><Spin s={14}/> Searching…</>:'🔍 Search'}
-          </button>
-        </div>
-
-        {searchErr&&<Alert type="error">{searchErr}</Alert>}
-
-        {results&&(
-          <>
-            {results.emails.length===0&&(
-              <div style={{background:'#FEF0E8',border:'1px solid #E8651A30',borderRadius:10,padding:'14px 18px',fontSize:13}}>
-                <strong style={{color:'#E8651A'}}>No emails found for {results.domain}</strong>
-                <div style={{color:C.muted,marginTop:4,fontSize:12}}>Hunter.io may not have data for this domain yet. Try the company's main domain (e.g. try "gsk.com" not "uk.gsk.com"). Some smaller companies are not in Hunter's database.</div>
-              </div>
-            )}
-            {results.emails.length>0&&(
-              <>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-                  <div style={{fontSize:13,color:C.muted}}>Found <strong style={{color:C.text}}>{results.emails.length}</strong> emails at <strong style={{color:C.text}}>{results.domain}</strong></div>
-                  <div style={{display:'flex',gap:8}}>
-                    <button onClick={toggleAll} style={{background:'none',border:`1px solid ${C.border}`,borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
-                      {selected.length===results.emails.length?'Deselect all':'Select all'}
-                    </button>
-                    <button onClick={verifySelected} disabled={!selected.length||verifying}
-                      style={{background:selected.length?C.teal:'#e5e7eb',color:selected.length?'#fff':C.muted,border:'none',borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:selected.length?'pointer':'default',display:'flex',alignItems:'center',gap:6}}>
-                      {verifying?'Verifying...':'Verify selected'}
-                    </button>
-                  </div>
-                </div>
-
-                <div style={{border:`1px solid ${C.border}`,borderRadius:10,overflow:'hidden',marginBottom:14}}>
-                  <div style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 90px 80px',gap:8,padding:'8px 12px',background:C.grayL,fontSize:11,fontWeight:600,color:C.muted,textTransform:'uppercase',letterSpacing:'0.05em'}}>
-                    <span/>
-                    <span>Name</span><span>Email</span><span>Role</span><span style={{textAlign:'right'}}>Confidence</span>
-                  </div>
-                  {results.emails.map((e,i)=>(
-                    <div key={i} onClick={()=>setSelected(p=>p.includes(e.email)?p.filter(x=>x!==e.email):[...p,e.email])}
-                      style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 90px 80px',gap:8,padding:'10px 12px',borderTop:`1px solid ${C.border}`,cursor:'pointer',background:selected.includes(e.email)?C.blueL:'#fff',transition:'background .1s'}}>
-                      <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${selected.includes(e.email)?C.blue:C.border}`,background:selected.includes(e.email)?C.blue:'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                        {selected.includes(e.email)&&<span style={{color:'#fff',fontSize:11,fontWeight:800}}>v</span>}
-                      </div>
-                      <div>
-                        <div style={{fontWeight:600,fontSize:13}}>{e.name}</div>
-                        {e.verified&&<span style={{fontSize:10,background:e.verified==='valid'?C.greenL:C.amberL,color:e.verified==='valid'?C.green:C.amber,borderRadius:4,padding:'1px 5px',fontWeight:600}}>{e.verified}</span>}
-                      </div>
-                      <span style={{fontSize:12,color:C.blue,fontFamily:'monospace'}}>{e.email}</span>
-                      <span style={{fontSize:12,color:C.muted}}>{e.role||'--'}</span>
-                      <div style={{textAlign:'right'}}>
-                        <Pill label={e.confidence+'%'} color={e.confidence>=90?C.green:e.confidence>=75?C.amber:C.red}/>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-                {selected.length>0&&(
-                  <div style={{display:'flex',gap:10,alignItems:'center',padding:'12px 14px',background:C.blueL,borderRadius:10}}>
-                    <span style={{fontSize:13,fontWeight:600,flex:1}}>{selected.length} email{selected.length!==1?'s':''} selected</span>
-                    <button onClick={csvDownload}
-                      style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:8,padding:'8px 14px',fontSize:13,fontWeight:600,cursor:'pointer'}}>
-                      Download CSV
-                    </button>
-                    <button onClick={exportToMailchimp} disabled={exporting}
-                      style={{background:exporting?C.grayL:C.amber,color:exporting?C.muted:'#fff',border:'none',borderRadius:8,padding:'8px 16px',fontSize:13,fontWeight:600,cursor:exporting?'default':'pointer',display:'flex',alignItems:'center',gap:6}}>
-                      {exporting?'Exporting...':'Export to Mailchimp'}
-                    </button>
-                  </div>
-                )}
-
-                {exportResult&&(
-                  <div style={{marginTop:10}}>
-                    <Alert type={exportResult.error?'error':'success'}>
-                      {exportResult.error?'Mailchimp error: '+exportResult.error
-                        :(exportResult.added||selected.length)+' contacts added to Mailchimp with tag ABM-Hunter'}
-                    </Alert>
-                  </div>
-                )}
-              </>
-            )}
-          </>
-        )}
-      </div>
-    </>
-  );
-}
-
-// ── MailchimpTab component ────────────────────────────────────────────────────
-function MailchimpTab({mc,usingMock,C,Stat,Alert,H,Pill,Spin,daysSince,daysUntil,nextDue,fmt,apip,setTab,setComposerOpen,setStep,setTopics,setSelTopics,setDraft,setDraftSubj,setMcResult}){
-  const[launching,setLaunching]=useState({});
-  const[launchResult,setLaunchResult]=useState({});
-  const[confirmId,setConfirmId]=useState(null);
-
-  async function sendCampaign(campaignId,name){
-    setLaunching(p=>({...p,[campaignId]:true}));
-    setLaunchResult(p=>({...p,[campaignId]:null}));
-    const r=await apip(`/api/mailchimp?action=send-campaign`,{campaignId});
-    setLaunchResult(p=>({...p,[campaignId]:r}));
-    setLaunching(p=>({...p,[campaignId]:false}));
-    setConfirmId(null);
-  }
-
-  return(
-    <>
-      {usingMock?.mc&&<Alert type="warning">Showing demo data. Add <strong>MAILCHIMP_API_KEY</strong>, <strong>MAILCHIMP_SERVER_PREFIX</strong> and <strong>MAILCHIMP_LIST_ID</strong> in Vercel env vars.</Alert>}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-        <Stat label="Subscribers" value={mc?.subscribers?.toLocaleString()??'--'} sub="Active list"/>
-        <Stat label="Open rate" value={mc?.openRate?`${mc.openRate}%`:'--'} sub="Avg last 5 campaigns" color={C.green}/>
-        <Stat label="Days since last" value={mc?.lastSent?daysSince(mc.lastSent):'--'} color={C.amber}/>
-        <Stat label="Next due in" value={mc?.lastSent?`${daysUntil(mc.lastSent)}d`:'--'} sub={mc?.lastSent?fmt(nextDue(mc.lastSent)):''} color={mc?.lastSent&&daysUntil(mc.lastSent)<=7?C.red:C.blue}/>
-      </div>
-
-      {/* Quick actions */}
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-        <button onClick={()=>{setTab('newsletter');setComposerOpen(true);setStep('topics');setTopics([]);setSelTopics([]);setDraft('');setDraftSubj('');setMcResult(null);}}
-          style={{background:'#3d8b40',color:'#fff',border:'none',borderRadius:10,padding:'14px 20px',fontSize:14,fontWeight:700,cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:12}}>
-          <span style={{fontSize:24}}>✦</span>
-          <div><div>Create new newsletter</div><div style={{fontSize:12,fontWeight:400,opacity:0.8}}>AI-powered topic research + draft</div></div>
-        </button>
-        <a href="https://us1.admin.mailchimp.com/campaigns/" target="_blank" rel="noreferrer"
-          style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:10,padding:'14px 20px',fontSize:14,fontWeight:700,cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:12,textDecoration:'none',color:C.text}}>
-          <span style={{fontSize:24}}>↗</span>
-          <div><div>Open Mailchimp</div><div style={{fontSize:12,fontWeight:400,color:C.muted}}>Go to campaign manager</div></div>
-        </a>
-      </div>
-
-      <div className="card">
-        <H>Campaign History</H>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 100px 70px 70px 70px 120px',gap:8,fontSize:11,fontWeight:600,color:C.muted,paddingBottom:8,borderBottom:`1px solid ${C.border}`,textTransform:'uppercase',letterSpacing:'0.05em'}}>
-          <span>Campaign</span><span>Date</span><span style={{textAlign:'center'}}>Sent</span><span style={{textAlign:'center'}}>Opens</span><span style={{textAlign:'center'}}>Clicks</span><span style={{textAlign:'right'}}>Action</span>
-        </div>
-        {mc?.campaigns?.map((c,i)=>(
-          <div key={i}>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 100px 70px 70px 70px 120px',gap:8,alignItems:'center',padding:'10px 0',borderBottom:`1px solid ${C.border}`}}>
-              <div>
-                <div style={{fontWeight:500,fontSize:13}}>{c.name}</div>
-                {c.status==='draft'&&<Pill label="Draft" color={C.amber}/>}
-              </div>
-              <span style={{fontSize:12,color:C.muted}}>{c.date}</span>
-              <span style={{textAlign:'center',fontSize:13}}>{typeof c.sent==='number'?c.sent.toLocaleString():c.sent}</span>
-              <span style={{textAlign:'center'}}><Pill label={c.opens} color={C.green}/></span>
-              <span style={{textAlign:'center'}}><Pill label={c.clicks} color={C.blue}/></span>
-              <div style={{textAlign:'right'}}>
-                {c.status==='draft'||c.status==='save'?(
-                  confirmId===c.id?(
-                    <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
-                      <button onClick={()=>setConfirmId(null)} style={{background:'none',border:`1px solid ${C.border}`,borderRadius:6,padding:'4px 8px',fontSize:11,cursor:'pointer'}}>Cancel</button>
-                      <button onClick={()=>sendCampaign(c.id,c.name)} disabled={launching[c.id]}
-                        style={{background:C.red,color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',fontSize:11,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:4}}>
-                        {launching[c.id]?<><Spin s={11}/> Sending…</>:'Confirm send'}
-                      </button>
-                    </div>
-                  ):(
-                    <button onClick={()=>setConfirmId(c.id)}
-                      style={{background:'#3d8b40',color:'#fff',border:'none',borderRadius:6,padding:'5px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
-                      ▶ Start Campaign
-                    </button>
-                  )
-                ):(
-                  <span style={{fontSize:12,color:C.muted}}>Sent</span>
-                )}
-              </div>
-            </div>
-            {launchResult[c.id]&&(
-              <div style={{padding:'6px 0'}}>
-                <Alert type={launchResult[c.id].error?'error':'success'}>
-                  {launchResult[c.id].error?`Error: ${launchResult[c.id].error}`:'✓ Campaign sent successfully!'}
-                </Alert>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </>
-  );
-}
-
-// ── LinkedInComposer component ───────────────────────────────────────────────
-function LinkedInComposer({li, C, Spin, Alert, apip}){
-  const[text,setText]=useState('');
-  const[postAs,setPostAs]=useState('person');
-  const[posting,setPosting]=useState(false);
-  const[result,setResult]=useState(null);
-  const[aiLoading,setAiLoading]=useState(false);
-  const maxChars=3000;
-  const charColor=text.length>2800?'#DC2626':text.length>2500?'#D97706':'#6B7280';
-
-  async function generateAIDraft(){
-    setAiLoading(true);
-    try{
-      const resp=await fetch('/api/claude',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          messages:[{role:'user',content:'Write a LinkedIn post for Eunomia Pharma Services, a UK pharma compliance consultancy. The post should be about a current pharma regulatory topic (PMCPA, ABPI Code, or compliance best practice). Make it insightful, professional and engaging. 150-200 words. Include 3-4 relevant hashtags at the end. No emojis. Write it ready to post - no introduction or explanation needed.'}],
-          system:'You are a LinkedIn content expert for pharma compliance. Write posts that position Eunomia as a thought leader. Be direct and insightful, not salesy. Use line breaks for readability.'
-        })
-      });
-      const reader=resp.body.getReader();
-      const dec=new TextDecoder();
-      let full='';
-      while(true){
-        const{done,value}=await reader.read();
-        if(done)break;
-        for(const line of dec.decode(value,{stream:true}).split('\n')){
-          if(line.startsWith('data: ')){
-            try{
-              const j=JSON.parse(line.slice(6));
-              if(j.type==='content_block_delta'&&j.delta?.text){full+=j.delta.text;setText(full);}
-            }catch{}
-          }
-        }
-      }
-    }catch(e){setText('Could not generate draft. Check ANTHROPIC_API_KEY.');}
-    setAiLoading(false);
-  }
-
-  async function doPost(){
-    if(!text.trim())return;
-    setPosting(true);setResult(null);
-    const r=await apip('/api/linkedin?action=post',{text,postAs});
-    setResult(r);
-    if(r.success)setText('');
-    setPosting(false);
-  }
-
-  return(
-    <div className="card" style={{border:'1.5px solid #3d8b40'}}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
-        <div style={{fontWeight:700,fontSize:15,color:'#1C2B1D'}}>Create LinkedIn Post</div>
-        <div style={{display:'flex',gap:8,alignItems:'center'}}>
-          <span style={{fontSize:12,color:'#5C6B5D'}}>Post as:</span>
-          <select value={postAs} onChange={e=>setPostAs(e.target.value)}
-            style={{fontSize:12,border:'1px solid #E2E8E2',borderRadius:6,padding:'4px 8px',fontFamily:'inherit',background:'#fff'}}>
-            <option value="person">Personal profile ({li?.name||'You'})</option>
-            <option value="org">Eunomia company page</option>
-          </select>
-        </div>
-      </div>
-
-      {/* AI draft button */}
-      <div style={{display:'flex',gap:8,marginBottom:10}}>
-        <button onClick={generateAIDraft} disabled={aiLoading}
-          style={{background:aiLoading?'#F5F6F5':'#EBF5EC',color:aiLoading?'#5C6B5D':'#3d8b40',border:'1px solid #3d8b4040',borderRadius:7,padding:'7px 14px',fontSize:12,fontWeight:600,cursor:aiLoading?'default':'pointer',display:'flex',alignItems:'center',gap:6}}>
-          {aiLoading?<><Spin s={13}/> Writing draft...</>:'✦ Generate AI draft'}
-        </button>
-        {text&&<button onClick={()=>setText('')}
-          style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:'#5C6B5D'}}>
-          Clear
-        </button>}
-      </div>
-
-      {/* Text area */}
-      <textarea
-        value={text}
-        onChange={e=>setText(e.target.value.slice(0,maxChars))}
-        placeholder="Write your post here, or click Generate AI draft above..."
-        rows={8}
-        style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:10,padding:'12px 14px',fontSize:13,lineHeight:1.7,resize:'vertical',outline:'none',fontFamily:'inherit',color:'#1C2B1D'}}
-      />
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:6,marginBottom:14}}>
-        <span style={{fontSize:12,color:charColor}}>{text.length}/{maxChars} characters</span>
-        {text.length>0&&<span style={{fontSize:12,color:'#5C6B5D'}}>~{Math.ceil(text.split(' ').length/238)} min read</span>}
-      </div>
-
-      {/* Post result */}
-      {result&&(
-        <div style={{marginBottom:12}}>
-          {result.success?(
-            <div style={{background:'#EBF5EC',border:'1px solid #3d8b4030',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#1C2B1D'}}>
-              ✓ Posted successfully to LinkedIn!
-              <a href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer"
-                style={{color:'#3d8b40',fontWeight:600,marginLeft:8}}>View your feed →</a>
-            </div>
-          ):(
-            <div style={{background:'#FEF0E8',border:'1px solid #E8651A30',borderRadius:8,padding:'10px 14px',fontSize:13}}>
-              <strong style={{color:'#E8651A'}}>Could not post:</strong> {result.error}
-              {result.detail&&<div style={{marginTop:6,fontSize:12,color:'#5C6B5D'}}>{result.detail}</div>}
-              {result.error==='Permission denied'&&(
-                <div style={{marginTop:8,padding:'8px 12px',background:'#fff',borderRadius:6,fontSize:12,color:'#1C2B1D',lineHeight:1.6}}>
-                  <strong>To fix this:</strong><br/>
-                  1. Go to linkedin.com/developers → your app → Auth tab<br/>
-                  2. Add <code style={{background:'#F5F6F5',padding:'1px 4px',borderRadius:3}}>w_member_social</code> to OAuth 2.0 scopes<br/>
-                  3. Generate a new access token with this scope<br/>
-                  4. Update LINKEDIN_ACCESS_TOKEN in Vercel env vars → Redeploy
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Post button */}
-      <button onClick={doPost} disabled={posting||!text.trim()}
-        style={{background:text.trim()&&!posting?'#3d8b40':'#E2E8E2',color:text.trim()&&!posting?'#fff':'#9CA3AF',border:'none',borderRadius:9,padding:'11px 24px',fontSize:14,fontWeight:700,cursor:text.trim()&&!posting?'pointer':'default',display:'flex',alignItems:'center',gap:8,width:'100%',justifyContent:'center'}}>
-        {posting?<><Spin s={16}/> Posting to LinkedIn...</>:<>Post to LinkedIn</>}
-      </button>
-    </div>
-  );
-}
-
-// ── LinkedInTab component (needs own state for composer toggle) ───────────────
-function LinkedInTab({li,usingMock,C,Stat,Alert,H,Pill,Spin,apip}){
-  const[showComposer,setShowComposer]=useState(false);
-  return(
-    <>
-      {usingMock?.li&&<Alert type="warning">Showing demo data. Add <strong>LINKEDIN_ACCESS_TOKEN</strong> in Vercel env vars for live data.</Alert>}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
-        <Stat label="Account" value={li?.name&&li.name!=='undefined undefined'?li.name:li?.email??'Connected'} sub={li?.email?li.email:'LinkedIn profile'}/>
-        <Stat label="Connections" value={li?.connections?.toLocaleString()??'N/A'} sub="Total network"/>
-        <Stat label="Status" value={usingMock?.li?'Demo':'Live'} sub={usingMock?.li?'Add token for live data':'Token connected'} color={usingMock?.li?C.amber:C.green}/>
-      </div>
-
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-        <a href="https://www.linkedin.com/company/eunomia-pharma-services" target="_blank" rel="noreferrer"
-          style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:10,padding:'14px 20px',textDecoration:'none',color:C.text,display:'flex',alignItems:'center',gap:12}}>
-          <div style={{width:36,height:36,borderRadius:8,background:'#E8F0F8',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>in</div>
-          <div><div style={{fontWeight:700,fontSize:14}}>Open Company Page</div><div style={{fontSize:12,color:C.muted}}>View your LinkedIn presence</div></div>
-        </a>
-        <button onClick={()=>setShowComposer(p=>!p)}
-          style={{background:showComposer?'#EBF5EC':'#fff',border:`1.5px solid ${showComposer?'#3d8b40':C.border}`,borderRadius:10,padding:'14px 20px',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:12}}>
-          <div style={{width:36,height:36,borderRadius:8,background:'#3d8b4020',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>✍</div>
-          <div><div style={{fontWeight:700,fontSize:14,color:C.text}}>Create a Post</div><div style={{fontSize:12,color:C.muted}}>Post directly to LinkedIn</div></div>
-        </button>
-      </div>
-
-      {showComposer&&<LinkedInComposer li={li} C={C} Spin={Spin} Alert={Alert} apip={apip}/>}
-
-      <div className="card">
-        <H>LinkedIn content strategy for Eunomia</H>
-        {[
-          {day:'Mon',tip:'Share a regulatory insight',detail:'Post a 3-sentence take on the latest PMCPA or ABPI development. Tag the relevant body. Best posting time: 8-9am.',icon:'📋'},
-          {day:'Wed',tip:'Publish a webinar clip',detail:'Uday clips 60-90 seconds from your last webinar. Add captions. Video gets 3x more reach than text posts.',icon:'🎬'},
-          {day:'Thu',tip:'Engagement hour',detail:'Spend 15 minutes replying to comments on your posts and commenting on posts from your ICP. LinkedIn rewards fast engagement.',icon:'💬'},
-          {day:'Fri',tip:'Newsletter teaser',detail:'Short preview of your upcoming Mailchimp newsletter - 2 key takeaways and a link to subscribe.',icon:'✉'},
-        ].map((t,i)=>(
-          <div key={i} className="row" style={{alignItems:'flex-start',gap:14}}>
-            <div style={{width:44,height:44,borderRadius:8,background:'#EBF5EC',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-              <span style={{fontSize:16}}>{t.icon}</span>
-              <span style={{fontSize:9,fontWeight:700,color:'#3d8b40',textTransform:'uppercase',letterSpacing:'0.05em'}}>{t.day}</span>
-            </div>
-            <div>
-              <div style={{fontWeight:600,fontSize:13,marginBottom:2}}>{t.tip}</div>
-              <div style={{fontSize:12,color:C.muted,lineHeight:1.5}}>{t.detail}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="card" style={{background:'#F4F7F4'}}>
-        <H>Token and permissions status</H>
-        {[
-          {label:'Access token',status:!usingMock?.li,note:usingMock?.li?'Add LINKEDIN_ACCESS_TOKEN in Vercel env vars':'Connected'},
-          {label:'Profile data (openid scope)',status:!!(li?.name&&li.name!=='undefined undefined'),note:'Returns your name and email'},
-          {label:'Connection count (r_network)',status:!!li?.connections,note:li?.connections?`${li.connections} connections`:'Regenerate token with r_network scope'},
-          {label:'Post to LinkedIn (w_member_social)',status:false,note:'Regenerate token at linkedin.com/developers with w_member_social scope'},
-          {label:'Org page analytics',status:false,note:'Requires Marketing Developer Platform approval'},
-        ].map((r,i)=>(
-          <div key={i} className="row">
-            <div style={{width:8,height:8,borderRadius:'50%',background:r.status?'#3d8b40':'#E8651A',flexShrink:0}}/>
-            <span style={{fontWeight:600,fontSize:13,flex:1}}>{r.label}</span>
-            <span style={{fontSize:12,color:C.muted}}>{r.note}</span>
-          </div>
-        ))}
-      </div>
-    </>
-  );
-}
-
-// ── NewsletterPreview component ───────────────────────────────────────────────
-function NewsletterPreview({draft,draftSubj,draftLoading,mcResult,sending,C,Spin,Alert,onBack,onRegenerate,onSend,mc}){
-  const[editMode,setEditMode]=useState(false);
-  const[editedDraft,setEditedDraft]=useState('');
-
-  // Strip the SUBJECT/--- header from display
-  const bodyText = (editMode ? editedDraft : draft).replace(/SUBJECT:.+\n?---\n?/,'').trim();
-
-  // Parse **bold** markdown into segments for rendering
-  function renderBody(text){
-    if(!text) return null;
-    return text.split('\n').map((line,i)=>{
-      if(!line.trim()) return <div key={i} style={{height:12}}/>;
-      // Bold headings: **text**
-      const parts = line.split(/\*\*([^*]+)\*\*/g);
-      const rendered = parts.map((p,j)=>
-        j%2===1
-          ? <strong key={j} style={{color:'#1C2B1D',fontWeight:700}}>{p}</strong>
-          : <span key={j}>{p}</span>
-      );
-      const isHeading = line.startsWith('**') && line.endsWith('**');
-      return(
-        <p key={i} style={{
-          margin: isHeading ? '18px 0 6px' : '0 0 10px',
-          fontSize: isHeading ? 15 : 14,
-          lineHeight: 1.7,
-          color: '#2C2C2C'
-        }}>{rendered}</p>
-      );
-    });
-  }
-
-  function startEdit(){
-    setEditedDraft(bodyText);
-    setEditMode(true);
-  }
-
-  function wordCount(text){ return text.trim().split(/\s+/).filter(Boolean).length; }
-
-  return(
-    <div style={{display:'flex',flexDirection:'column',gap:16}}>
-
-      {/* Loading state */}
-      {draftLoading&&!draft&&(
-        <div className="card" style={{textAlign:'center',padding:'40px 20px'}}>
-          <Spin s={24}/>
-          <div style={{marginTop:14,fontSize:13,color:C.muted}}>Writing your newsletter...</div>
-          <div style={{marginTop:6,fontSize:12,color:C.muted,opacity:0.7}}>Claude is researching and drafting your content</div>
-        </div>
-      )}
-
-      {/* Email preview */}
-      {draft&&(
-        <>
-          {/* Toolbar */}
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:10}}>
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <button onClick={onBack}
-                style={{background:'none',border:`1px solid ${C.border}`,borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:C.muted}}>
-                ← Back
-              </button>
-              <button onClick={onRegenerate} disabled={draftLoading}
-                style={{background:'none',border:`1px solid ${C.border}`,borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:C.muted}}>
-                ↺ Regenerate
-              </button>
-              <button onClick={editMode?()=>setEditMode(false):startEdit}
-                style={{background:editMode?'#EBF5EC':'none',border:`1px solid ${editMode?'#3d8b40':C.border}`,borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:editMode?'#3d8b40':C.muted,fontWeight:editMode?600:400}}>
-                {editMode?'✓ Done editing':'✏ Edit'}
-              </button>
-            </div>
-            <div style={{fontSize:12,color:C.muted}}>
-              {wordCount(bodyText)} words · ~{Math.ceil(wordCount(bodyText)/200)} min read
-            </div>
-          </div>
-
-          {/* Email frame */}
-          <div style={{border:`1px solid ${C.border}`,borderRadius:14,overflow:'hidden',boxShadow:'0 4px 24px #2C3E2D10'}}>
-
-            {/* Email client chrome */}
-            <div style={{background:'#F4F7F4',padding:'10px 16px',borderBottom:`1px solid ${C.border}`,display:'flex',alignItems:'center',gap:8}}>
-              <div style={{display:'flex',gap:5}}>
-                <div style={{width:10,height:10,borderRadius:'50%',background:'#FC5F5A'}}/>
-                <div style={{width:10,height:10,borderRadius:'50%',background:'#FDBC40'}}/>
-                <div style={{width:10,height:10,borderRadius:'50%',background:'#34C749'}}/>
-              </div>
-              <span style={{fontSize:11,color:C.muted,marginLeft:8}}>Email preview</span>
-            </div>
-
-            {/* Email header bar */}
-            <div style={{background:'#2C3E2D',padding:'16px 24px',borderBottom:'3px solid #E8651A'}}>
-              <div style={{display:'flex',alignItems:'center',gap:10}}>
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <circle cx="14" cy="14" r="13" fill="white" stroke="#E8651A" strokeWidth="1.5"/>
-                  <path d="M9 14 L13 18 L19 10" stroke="#3d8b40" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <div>
-                  <div style={{color:'#fff',fontWeight:700,fontSize:12,letterSpacing:'0.05em'}}>EUNOMIA PHARMA SERVICES</div>
-                  <div style={{color:'#a8c5a9',fontSize:10}}>Regulatory Intelligence Newsletter</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Email meta */}
-            <div style={{background:'#FAFAFA',padding:'12px 24px',borderBottom:`1px solid ${C.border}`}}>
-              <div style={{display:'grid',gridTemplateColumns:'60px 1fr',gap:'4px 12px',fontSize:12}}>
-                <span style={{color:C.muted,fontWeight:600}}>From:</span>
-                <span>Eunomia Pharma Services &lt;hello@eunomiapharmaservices.com&gt;</span>
-                <span style={{color:C.muted,fontWeight:600}}>To:</span>
-                <span style={{color:C.muted}}>{mc?.subscribers?.toLocaleString()||'834'} subscribers</span>
-                <span style={{color:C.muted,fontWeight:600}}>Subject:</span>
-                <span style={{fontWeight:600,color:'#1C2B1D'}}>{draftSubj||'Newsletter'}</span>
-              </div>
-            </div>
-
-            {/* Email body */}
-            <div style={{background:'#fff',padding:'32px 40px',maxHeight:520,overflowY:'auto'}}>
-              {editMode?(
-                <textarea
-                  value={editedDraft}
-                  onChange={e=>setEditedDraft(e.target.value)}
-                  style={{width:'100%',minHeight:340,border:`1px solid ${C.border}`,borderRadius:8,padding:'12px',fontSize:14,lineHeight:1.75,fontFamily:'inherit',resize:'vertical',outline:'none',color:'#2C2C2C'}}
-                />
-              ):(
-                <div style={{maxWidth:560,margin:'0 auto'}}>
-                  {renderBody(bodyText)}
-                </div>
-              )}
-            </div>
-
-            {/* Email footer */}
-            <div style={{background:'#F4F7F4',padding:'16px 24px',borderTop:`1px solid ${C.border}`,textAlign:'center'}}>
-              <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
-                Eunomia Pharma Services · hello@eunomiapharmaservices.com<br/>
-                <span style={{color:'#3d8b40',cursor:'pointer',textDecoration:'underline'}}>Unsubscribe</span> · <span style={{color:'#3d8b40',cursor:'pointer',textDecoration:'underline'}}>View in browser</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Send result */}
-          {mcResult&&(
-            <Alert type={mcResult.success?'success':'error'}>
-              {mcResult.success
-                ?<>✓ Draft created in Mailchimp! <a href={mcResult.editUrl} target="_blank" rel="noreferrer" style={{color:'#3d8b40',fontWeight:600}}>Open in Mailchimp to schedule →</a></>
-                :`Mailchimp error: ${mcResult.error}`}
-            </Alert>
-          )}
-
-          {/* Send button */}
-          {!mcResult?.success&&(
-            <button onClick={onSend} disabled={sending}
-              style={{background:sending?C.grayL:'#3d8b40',color:sending?C.muted:'#fff',border:'none',borderRadius:10,padding:'14px 28px',fontSize:14,fontWeight:700,cursor:sending?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10,width:'100%',boxShadow:sending?'none':'0 2px 8px #3d8b4040'}}>
-              {sending
-                ?<><Spin s={16}/> Sending to Mailchimp...</>
-                :<>✉ Send to Mailchimp as Draft - {mc?.subscribers?.toLocaleString()||'834'} subscribers</>}
-            </button>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
