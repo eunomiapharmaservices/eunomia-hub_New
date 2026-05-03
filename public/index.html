@@ -103,14 +103,14 @@ input:focus,select:focus,textarea:focus{border-color:#3d8b40;}
 
 <!-- TABS -->
 <div class="tabs">
-  <button class="tab active" onclick="showTab('overview')">Overview</button>
-  <button class="tab" onclick="showTab('linkedin')">LinkedIn</button>
-  <button class="tab" onclick="showTab('salesrobot')">Sales Robot</button>
-  <button class="tab" onclick="showTab('mailchimp')">Mailchimp</button>
-  <button class="tab" onclick="showTab('hunter')">Hunter.io</button>
-  <button class="tab" onclick="showTab('newsletter')">Newsletter</button>
-  <button class="tab" onclick="showTab('regulatory')">Regulatory</button>
-  <button class="tab" onclick="showTab('clients')">Clients</button>
+  <button class="tab active" onclick=""showTab(&quot;overview&quot;)">Overview</button>
+  <button class="tab" onclick=""showTab(&quot;linkedin&quot;)">LinkedIn</button>
+  <button class="tab" onclick=""showTab(&quot;salesrobot&quot;)">Sales Robot</button>
+  <button class="tab" onclick=""showTab(&quot;mailchimp&quot;)">Mailchimp</button>
+  <button class="tab" onclick=""showTab(&quot;hunter&quot;)">Hunter.io</button>
+  <button class="tab" onclick=""showTab(&quot;newsletter&quot;)">Newsletter</button>
+  <button class="tab" onclick=""showTab(&quot;regulatory&quot;)">Regulatory</button>
+  <button class="tab" onclick=""showTab(&quot;clients&quot;)">Clients</button>
 </div>
 
 <!-- CONTENT PANELS -->
@@ -893,7 +893,7 @@ function renderTopicStep(){
     html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">';
     STATE.topics.forEach(function(t,i){
       var isSel=STATE.selTopics.indexOf(i)>=0;
-      html+='<div class="topic-card '+(isSel?'selected':'')+'" onclick="toggleTopic('+i+')">';
+      html+='<div class="topic-card '+(isSel?'selected':'')+'" onclick=""toggleTopic(&quot;+i+&quot;)">';
       html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">';
       html+='<span style="font-size:13px;font-weight:600;flex:1;margin-right:8px;">'+esc(t.title)+'</span>';
       html+='<span class="check '+(isSel?'on':'')+'" style="flex-shrink:0;">'+(isSel?'v':'')+'</span></div>';
@@ -943,7 +943,15 @@ async function genDraft(){
   renderNewsletter();
   var chosen=STATE.selTopics.map(function(i){return STATE.topics[i];});
   var tlist=chosen.map(function(t){return '- '+t.title+': '+t.hook;}).join('\n');
-  var sys='You are a senior compliance marketing writer for Eunomia. Write a newsletter. Format exactly:\nSUBJECT: [subject line]\n---\n[Opening hook]\n\n[2-3 sections with **bold headings**]\n\n[Closing CTA]\n\nUnder 400 words. Expert but readable.';
+  var sys=['You are a senior compliance marketing writer for Eunomia.',
+    'Write a newsletter. Format exactly:',
+    'SUBJECT: [subject line]',
+    '---',
+    '[Opening hook]',
+    '[2-3 sections with bold headings]',
+    '[Closing CTA]',
+    'Under 400 words. Expert but readable.'
+  ].join(' ');
   try{
     var full=await aiCall([{role:'user',content:'Write newsletter covering:\n'+tlist+'\n\nAudience: pharma compliance professionals. May 2026.'}],sys);
     STATE.draft=full;
@@ -1023,6 +1031,10 @@ async function sendToMailchimp(){
 // REGULATORY INTELLIGENCE
 // ============================================================
 var REG_STATE = {feeds:null, loading:false, insight:'', insightLoading:false, insightTopic:''};
+var LAST_DOC = ''; var LAST_DOC_META = {};
+function copyLastDoc(){if(LAST_DOC)navigator.clipboard.writeText(LAST_DOC).then(function(){alert('Copied!');});}
+function downloadLastDoc(fn){if(!LAST_DOC)return;var b=new Blob([LAST_DOC],{type:'text/plain'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn||'eunomia-doc.txt';a.click();}
+function saveLastCaseStudy(){if(!LAST_DOC)return;var stored=lsGet('eunomia-casestudies',[]);stored.unshift({title:LAST_DOC_META.title||'Case Study',service:LAST_DOC_META.service||'',content:LAST_DOC,date:new Date().toLocaleDateString('en-GB')});lsSet('eunomia-casestudies',stored);alert('Saved!');renderClients();}
 
 // Safe localStorage wrapper - prevents crashes if localStorage unavailable
 function lsGet(key,def){try{var v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch(e){return def;}}
@@ -1094,7 +1106,7 @@ function renderRegulatory(){
   GOOGLE_ALERTS.forEach(function(q,i){
     html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:'+(i<GOOGLE_ALERTS.length-1?'1px solid #E2E8E2':'none')+';font-size:13px;">';
     html += '<span style="font-family:monospace;color:#1C2B1D;">'+esc(q)+'</span>';
-    html += '<button onclick="copyAlert('+i+')" id="alert-copy-'+i+'" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;color:#5C6B5D;">Copy</button>';
+    html += '<button onclick=""copyAlert(&quot;+i+&quot;)" id="alert-copy-'+i+'" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;color:#5C6B5D;">Copy</button>';
     html += '</div>';
   });
   html += '</div></div>';
@@ -1190,7 +1202,7 @@ function renderClients(){
   html+='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">';
   ['onboarding','testimonial','casestudy','tracker'].forEach(function(s){
     var labels={onboarding:'Onboarding Pack',testimonial:'Testimonial Request',casestudy:'Case Study Generator',tracker:'Client Tracker'};
-    html+='<button class="toggle-btn '+(CLIENT_STATE.activeSection===s?'active':'')+'" onclick="setClientSection(''+s+'')">'+labels[s]+'</button>';
+    html+='<button class="toggle-btn '+(CLIENT_STATE.activeSection===s?'active':'')+'" onclick="CLIENT_STATE.activeSection=\"'+s+'\";renderClients()">'+labels[s]+'</button>';
   });
   html+='</div>';
   if(CLIENT_STATE.activeSection==='onboarding')html+=renderOnboarding();
@@ -1248,9 +1260,9 @@ async function genOnboarding(){
     if(out){
       out.innerHTML='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
       out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;">Onboarding Pack - '+esc(client.value)+'</span>';
-      out.innerHTML+='<div style="display:flex;gap:8px;"><button onclick="copyDoc('ob-doc-text')" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>';
-      out.innerHTML+='<button onclick="downloadDoc('ob-doc-text','Onboarding-'+esc(client.value.replace(/\s+/g,'-'))+'.txt')" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download</button></div></div>';
-      out.innerHTML+='<div style="padding:20px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#1C2B1D;max-height:500px;overflow-y:auto;" id="ob-doc-text">'+esc(text)+'</div></div>';
+      out.innerHTML+='<div style="display:flex;gap:8px;"><button onclick="copyDoc(&quot;ob-doc-text&quot;)" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>';
+      out.innerHTML+='<button onclick="downloadLastDoc(&quot;onboarding.txt&quot;)" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download</button></div></div>';
+      out.innerHTML+='<div style="padding:20px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#1C2B1D;max-height:500px;overflow-y:auto;">'+esc(text)+'</div></div>';
     }
   }catch(e){if(out)out.innerHTML=alert_('error','Error: '+e.message);}
   if(btn)btn.textContent='Generate Onboarding Pack';
@@ -1278,8 +1290,8 @@ function renderTestimonial(){
       html+='<div style="border:1px solid #E2E8E2;border-radius:10px;padding:14px;margin-bottom:10px;">';
       html+='<div style="font-size:13px;line-height:1.6;color:#1C2B1D;font-style:italic;margin-bottom:8px;">&#8220;'+esc(t.text)+'&#8221;</div>';
       html+='<div style="font-size:12px;font-weight:600;color:#3d8b40;">-- '+esc(t.author)+'</div>';
-      html+='<div style="margin-top:8px;display:flex;gap:8px;"><button onclick="copyTestimonial('+i+')" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Copy</button>';
-      html+='<button onclick="deleteTestimonial('+i+')" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Delete</button></div></div>';
+      html+='<div style="margin-top:8px;display:flex;gap:8px;"><button onclick=""copyTestimonial(&quot;+i+&quot;)" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Copy</button>';
+      html+='<button onclick=""deleteTestimonial(&quot;+i+&quot;)" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Delete</button></div></div>';
     });
   }else{html+='<div style="color:#5C6B5D;font-size:13px;">No testimonials saved yet.</div>';}
   html+='</div>';
@@ -1310,9 +1322,10 @@ async function genTestimonial(){
   try{
     var text=await aiCall([{role:'user',content:prompt}],'You are writing a professional but warm client testimonial request email for Eunomia Pharma Services.');
     if(out){
+      LAST_DOC = text;
       out.innerHTML='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
-      out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;">Testimonial Request - '+esc(client.value)+'</span><button onclick="copyDoc('tm-doc-text')" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button></div>';
-      out.innerHTML+='<div style="padding:16px;font-size:13px;line-height:1.75;white-space:pre-wrap;color:#1C2B1D;" id="tm-doc-text">'+esc(text)+'</div></div>';
+      out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;">Testimonial Request</span><button onclick="copyLastDoc()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button></div>';
+      out.innerHTML+='<div style="padding:16px;font-size:13px;line-height:1.75;white-space:pre-wrap;color:#1C2B1D;">'+esc(text)+'</div></div>';
     }
   }catch(e){if(out)out.innerHTML=alert_('error','Error: '+e.message);}
   if(btn)btn.textContent='Generate Testimonial Request';
@@ -1363,9 +1376,9 @@ function renderCaseStudy(){
       html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">';
       html+='<div><div style="font-weight:600;font-size:14px;margin-bottom:4px;">'+esc(cs.title)+'</div><div style="font-size:12px;color:#5C6B5D;">'+esc(cs.service)+' &middot; Saved '+esc(cs.date)+'</div></div>';
       html+='<div style="display:flex;gap:6px;flex-shrink:0;">';
-      html+='<button onclick="viewCaseStudy('+i+')" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">View</button>';
-      html+='<button onclick="copyCaseStudy('+i+')" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Copy</button>';
-      html+='<button onclick="deleteCaseStudy('+i+')" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Delete</button></div></div>';
+      html+='<button onclick=""viewCaseStudy(&quot;+i+&quot;)" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">View</button>';
+      html+='<button onclick=""copyCaseStudy(&quot;+i+&quot;)" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Copy</button>';
+      html+='<button onclick=""deleteCaseStudy(&quot;+i+&quot;)" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Delete</button></div></div>';
       html+='<div id="cs-view-'+i+'" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid #E2E8E2;font-size:13px;line-height:1.7;white-space:pre-wrap;color:#1C2B1D;">'+esc(cs.content)+'</div>';
       html+='</div>';
     });
@@ -1405,12 +1418,13 @@ async function genCaseStudy(){
     if(out){
       var clientDesc=client?client.value:'Pharma Client';
       var serviceDesc=service?service.value:'Compliance';
+      LAST_DOC = text; LAST_DOC_META = {title:clientDesc, service:serviceDesc};
       out.innerHTML='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
       out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;">Case Study Generated</span><div style="display:flex;gap:8px;">';
-      out.innerHTML+='<button onclick="copyDoc('cs-doc-text')" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>';
-      out.innerHTML+='<button onclick="saveCaseStudy(''+esc(clientDesc)+'',''+esc(serviceDesc)+'')" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Save</button>';
-      out.innerHTML+='<button onclick="downloadDoc('cs-doc-text','CaseStudy-'+esc(clientDesc.replace(/\s+/g,'-'))+'.txt')" style="background:#3d8b40;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download</button></div></div>';
-      out.innerHTML+='<div style="padding:20px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#1C2B1D;max-height:500px;overflow-y:auto;" id="cs-doc-text">'+esc(text)+'</div></div>';
+      out.innerHTML+='<button onclick="copyLastDoc()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>';
+      out.innerHTML+='<button onclick="saveLastCaseStudy()" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Save</button>';
+      out.innerHTML+='<button onclick=""downloadLastDoc(&quot;casestudy.txt&quot;)" style="background:#3d8b40;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download</button></div></div>';
+      out.innerHTML+='<div style="padding:20px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#1C2B1D;max-height:500px;overflow-y:auto;">'+esc(text)+'</div></div>';
     }
   }catch(e){if(out)out.innerHTML=alert_('error','Error: '+e.message);}
   if(btn)btn.textContent='Generate Case Study';
@@ -1464,7 +1478,7 @@ function renderClientTracker(){
       html+='<span style="font-size:12px;color:#5C6B5D;">'+esc(start.toLocaleDateString('en-GB'))+'</span>';
       html+='<span style="font-size:12px;color:#5C6B5D;">'+esc(testimonialDue.toLocaleDateString('en-GB'))+'</span>';
       html+='<span style="font-size:11px;font-weight:600;color:'+tmColor+';">'+tmStatus+'</span>';
-      html+='<button onclick="markTestimonialReceived('+i+')" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;">'+(c.testimonialReceived?'Received':'Mark done')+'</button>';
+      html+='<button onclick=""markTestimonialReceived(&quot;+i+&quot;)" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;">'+(c.testimonialReceived?'Received':'Mark done')+'</button>';
       html+='</div>';
     });
     html+='</div>';
