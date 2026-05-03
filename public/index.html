@@ -142,6 +142,15 @@ function HunterTab(props){
   var [exporting,setExporting]=useState(false);
   var [exportResult,setExportResult]=useState(null);
   var [verifying,setVerifying]=useState(false);
+  var [activeView,setActiveView]=useState('search');
+  var [leads,setLeads]=useState(null);
+  var [leadsLoading,setLeadsLoading]=useState(false);
+  var [leadsErr,setLeadsErr]=useState('');
+  var [leadsSelected,setLeadsSelected]=useState([]);
+  var [leadsExporting,setLeadsExporting]=useState(false);
+  var [leadsExportResult,setLeadsExportResult]=useState(null);
+  var [hubspotExporting,setHubspotExporting]=useState(false);
+  var [hubspotResult,setHubspotResult]=useState(null);
 
   async function doSearch(){
     var raw=domain.trim();
@@ -201,6 +210,74 @@ function HunterTab(props){
     });
   }
 
+  async function loadLeads(){
+    setLeadsLoading(true);setLeads(null);setLeadsErr('');setLeadsSelected([]);setLeadsExportResult(null);setHubspotResult(null);
+    var data=await apiGet('/api/hunter?action=leads&limit=100');
+    if(data.error){setLeadsErr(data.error);}
+    else{setLeads(data);}
+    setLeadsLoading(false);
+  }
+
+  function toggleLead(email){
+    setLeadsSelected(function(p){
+      if(p.indexOf(email)>=0)return p.filter(function(x){return x!==email;});
+      return p.concat([email]);
+    });
+  }
+
+  function toggleAllLeads(){
+    if(!leads||!leads.leads)return;
+    if(leadsSelected.length===leads.leads.length)setLeadsSelected([]);
+    else setLeadsSelected(leads.leads.map(function(l){return l.email;}).filter(Boolean));
+  }
+
+  function csvDownloadLeads(){
+    if(!leads||!leads.leads)return;
+    var chosen=leadsSelected.length>0
+      ?leads.leads.filter(function(l){return leadsSelected.indexOf(l.email)>=0;})
+      :leads.leads;
+    var rows=[['First Name','Last Name','Email','Company','Position','Phone','LinkedIn']].concat(
+      chosen.map(function(l){return [l.firstName,l.lastName,l.email,l.company,l.position,l.phone,l.linkedinUrl];})
+    );
+    var csv=rows.map(function(r){return r.map(function(v){return '"'+(v||'')+'"';}).join(',');}).join('
+');
+    var blob=new Blob([csv],{type:'text/csv'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='hunter-leads-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  }
+
+  async function exportLeadsToMailchimp(){
+    var chosen=leadsSelected.length>0
+      ?leads.leads.filter(function(l){return leadsSelected.indexOf(l.email)>=0&&l.email;})
+      :leads.leads.filter(function(l){return l.email;});
+    if(!chosen.length){setLeadsExportResult({error:'No contacts with email addresses selected'});return;}
+    setLeadsExporting(true);setLeadsExportResult(null);
+    var members=chosen.map(function(l){return {name:l.name,email:l.email,role:l.position};});
+    var data=await apiPost('/api/mailchimp?action=add-members',{members:members,tag:'Hunter-Leads'});
+    setLeadsExportResult(data);
+    setLeadsExporting(false);
+  }
+
+  async function exportLeadsToHubspot(){
+    var chosen=leadsSelected.length>0
+      ?leads.leads.filter(function(l){return leadsSelected.indexOf(l.email)>=0&&l.email;})
+      :leads.leads.filter(function(l){return l.email;});
+    if(!chosen.length){setHubspotResult({error:'No contacts with email addresses'});return;}
+    setHubspotExporting(true);setHubspotResult(null);
+    // HubSpot batch create contacts via their public API
+    // Since we don't have HubSpot API integrated, we generate a HubSpot-ready CSV
+    var rows=[['First Name','Last Name','Email Address','Company Name','Job Title','Phone Number','LinkedIn Bio']].concat(
+      chosen.map(function(l){return [l.firstName,l.lastName,l.email,l.company,l.position,l.phone,l.linkedinUrl];})
+    );
+    var csv=rows.map(function(r){return r.map(function(v){return '"'+(v||'')+'"';}).join(',');}).join('
+');
+    var blob=new Blob([csv],{type:'text/csv'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='hubspot-import-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+    setHubspotResult({success:true,count:chosen.length});
+    setHubspotExporting(false);
+  }
+
   return(
     <div style={{display:'flex',flexDirection:'column',gap:16}}>
       {usingMock ? <Alert type="warning">Showing demo data. Add HUNTER_API_KEY in Vercel env vars for live data.</Alert> : null}
@@ -211,6 +288,113 @@ function HunterTab(props){
         <Stat label="Credits left" value={ht?ht.creditsTotal-ht.creditsUsed:null}/>
       </div>
 
+      {/* View toggle */}
+      <div style={{display:'flex',gap:8}}>
+        <button onClick={function(){setActiveView('search');}}
+          style={{background:activeView==='search'?C.blue:'#fff',color:activeView==='search'?'#fff':C.muted,border:'1px solid '+(activeView==='search'?C.blue:'#E2E8E2'),borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+          Domain Search
+        </button>
+        <button onClick={function(){setActiveView('leads');if(!leads&&!leadsLoading)loadLeads();}}
+          style={{background:activeView==='leads'?C.blue:'#fff',color:activeView==='leads'?'#fff':C.muted,border:'1px solid '+(activeView==='leads'?C.blue:'#E2E8E2'),borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+          My Leads {leads?' ('+leads.total+')':''}
+        </button>
+      </div>
+
+      {/* Leads panel */}
+      {activeView==='leads' ? (
+        <div className="card">
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+            <SH>All saved leads from Hunter.io</SH>
+            <button onClick={loadLeads} disabled={leadsLoading}
+              style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'6px 14px',fontSize:12,cursor:'pointer',color:C.muted}}>
+              {leadsLoading?'Loading...':'Refresh'}
+            </button>
+          </div>
+
+          {leadsLoading ? <div style={{textAlign:'center',padding:'28px 0',color:C.muted,display:'flex',alignItems:'center',justifyContent:'center',gap:10}}><Spin/> Loading your leads...</div> : null}
+          {leadsErr ? <Alert type="error">{leadsErr}</Alert> : null}
+
+          {leads&&leads.leads ? (
+            <div>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12,flexWrap:'wrap',gap:8}}>
+                <div style={{fontSize:13,color:C.muted}}>
+                  <strong style={{color:C.text}}>{leads.total}</strong> leads in your Hunter account
+                  {leadsSelected.length>0?' — '+leadsSelected.length+' selected':''}
+                </div>
+                <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                  <button onClick={toggleAllLeads}
+                    style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                    {leadsSelected.length===leads.leads.filter(function(l){return l.email;}).length?'Deselect all':'Select all'}
+                  </button>
+                </div>
+              </div>
+
+              {leads.leads.length===0 ? (
+                <div style={{textAlign:'center',padding:'24px',color:C.muted,fontSize:13}}>
+                  No leads saved in Hunter.io yet. Use Domain Search to find emails and save them, or add leads directly at hunter.io/leads.
+                </div>
+              ) : (
+                <div style={{border:'1px solid #E2E8E2',borderRadius:10,overflow:'hidden',marginBottom:14}}>
+                  <div style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 1fr 100px',gap:8,padding:'8px 12px',background:C.grayL,fontSize:11,fontWeight:600,color:C.muted,textTransform:'uppercase',letterSpacing:'0.05em'}}>
+                    <span/><span>Name</span><span>Email</span><span>Company</span><span>Position</span>
+                  </div>
+                  {leads.leads.map(function(l,idx){
+                    var isSel=leadsSelected.indexOf(l.email)>=0;
+                    return(
+                      <div key={idx} onClick={function(){if(l.email)toggleLead(l.email);}}
+                        style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 1fr 100px',gap:8,padding:'10px 12px',borderTop:'1px solid #E2E8E2',cursor:l.email?'pointer':'default',background:isSel?C.blueL:'#fff'}}>
+                        <div style={{width:18,height:18,borderRadius:4,border:'2px solid '+(isSel?C.blue:'#E2E8E2'),background:isSel?C.blue:'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'#fff'}}>
+                          {isSel?'v':''}
+                        </div>
+                        <div style={{fontWeight:600,fontSize:13}}>{l.name||'—'}</div>
+                        <span style={{fontSize:12,color:C.blue,fontFamily:'monospace',wordBreak:'break-all'}}>{l.email||'No email'}</span>
+                        <span style={{fontSize:12,color:C.muted}}>{l.company||'—'}</span>
+                        <span style={{fontSize:12,color:C.muted}}>{l.position?l.position.slice(0,20)+'...':'—'}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {leads.leads.length>0 ? (
+                <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                  <div style={{display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}}>
+                    <span style={{fontSize:13,color:C.muted,flex:1}}>
+                      {leadsSelected.length>0?leadsSelected.length+' selected':'All '+leads.leads.filter(function(l){return l.email;}).length+' with emails will be exported'}
+                    </span>
+                    <button onClick={csvDownloadLeads}
+                      style={{background:'#fff',border:'1px solid #E2E8E2',borderRadius:8,padding:'9px 16px',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
+                      Download CSV
+                    </button>
+                    <button onClick={exportLeadsToMailchimp} disabled={leadsExporting}
+                      style={{background:leadsExporting?C.grayL:C.amber,color:leadsExporting?C.muted:'#fff',border:'none',borderRadius:8,padding:'9px 16px',fontSize:13,fontWeight:600,cursor:leadsExporting?'default':'pointer'}}>
+                      {leadsExporting?'Exporting...':'Export to Mailchimp'}
+                    </button>
+                    <button onClick={exportLeadsToHubspot} disabled={hubspotExporting}
+                      style={{background:hubspotExporting?C.grayL:'#FF7A59',color:hubspotExporting?C.muted:'#fff',border:'none',borderRadius:8,padding:'9px 16px',fontSize:13,fontWeight:600,cursor:hubspotExporting?'default':'pointer',display:'flex',alignItems:'center',gap:6}}>
+                      {hubspotExporting?'Preparing...':'Export for HubSpot'}
+                    </button>
+                  </div>
+
+                  {leadsExportResult ? (
+                    <Alert type={leadsExportResult.error?'error':'success'}>
+                      {leadsExportResult.error?'Mailchimp error: '+leadsExportResult.error:(leadsExportResult.added||leadsSelected.length)+' contacts added to Mailchimp with tag Hunter-Leads'}
+                    </Alert>
+                  ) : null}
+
+                  {hubspotResult ? (
+                    <Alert type={hubspotResult.error?'error':'success'}>
+                      {hubspotResult.error?hubspotResult.error:'HubSpot CSV downloaded with '+hubspotResult.count+' contacts. Now go to HubSpot → Contacts → Import → Import a file, and upload the downloaded CSV.'}
+                    </Alert>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {activeView==='search' ? (
       <div className="card">
         <SH>Find emails by company domain</SH>
         <div style={{fontSize:13,color:C.muted,marginBottom:14}}>Enter a company website domain to find verified emails. Use pfizer.com not "Pfizer".</div>
@@ -301,6 +485,7 @@ function HunterTab(props){
           ) : null
         ) : null}
       </div>
+      ) : null}
     </div>
   );
 }
