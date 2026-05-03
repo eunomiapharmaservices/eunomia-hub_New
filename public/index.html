@@ -641,8 +641,11 @@ function renderHunter(){
   html+=statCard('Credits left',ht?ht.creditsTotal-ht.creditsUsed:'--');
   html+='</div>';
   html+='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">';
-  var hvs=[['search','Domain Search'],['finder','Email Finder'],['jobrole','Job Role + Location'],['leads','My Leads '+(HUNTER_STATE.leads?'('+HUNTER_STATE.leads.total+')':'')+'']];
-  hvs.forEach(function(v){html+='<button class="toggle-btn '+(STATE.hunterView===v[0]?'active':'')+'" data-view="'+v[0]+'" onclick="setHunterView(this.dataset.view)">'+v[1]+'</button>';}); 
+  var hv=STATE.hunterView;
+  html+='<button class="toggle-btn '+(hv==="search"?"active":"")+'" data-view="search" onclick="setHunterView(this.dataset.view)">Domain Search</button>';
+  html+='<button class="toggle-btn '+(hv==="finder"?"active":"")+'" data-view="finder" onclick="setHunterView(this.dataset.view)">Email Finder</button>';
+  html+='<button class="toggle-btn '+(hv==="jobrole"?"active":"")+'" data-view="jobrole" onclick="setHunterView(this.dataset.view)">Job Role + Location</button>';
+  html+='<button class="toggle-btn '+(hv==="leads"?"active":"")+'" data-view="leads" onclick="setHunterView(this.dataset.view)">My Leads'+(HUNTER_STATE.leads?' ('+HUNTER_STATE.leads.total+')':'')+'</button>';
   html+='</div>';
   if(STATE.hunterView==='search')html+=renderHunterSearch();
   else if(STATE.hunterView==='finder')html+=renderHunterFinder();
