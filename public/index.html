@@ -60,7 +60,7 @@ function Stat({label,value,sub,color=C.blue}){
   return(
     <div style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:12,padding:'16px 18px'}}>
       <div style={{fontSize:11,fontWeight:600,color:C.muted,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>{label}</div>
-      <div style={{fontSize:26,fontWeight:700,color:C.text,lineHeight:1.1}}>{value??'—'}</div>
+      <div style={{fontSize:26,fontWeight:700,color:C.text,lineHeight:1.1}}>{value??'--'}</div>
       {sub&&<div style={{fontSize:12,color:C.muted,marginTop:4}}>{sub}</div>}
     </div>
   );
@@ -132,7 +132,7 @@ const MOCK={
     campaigns:[
       {name:'PMCPA Social Media Guidance Alert',date:'08/04/2025',sent:834,opens:'34.2%',clicks:'5.1%'},
       {name:'March Regulatory Roundup',date:'18/03/2025',sent:801,opens:'29.7%',clicks:'3.9%'},
-      {name:'ABPI Code 2024 — Key Changes',date:'28/02/2025',sent:788,opens:'38.1%',clicks:'6.2%'},
+      {name:'ABPI Code 2024 -- Key Changes',date:'28/02/2025',sent:788,opens:'38.1%',clicks:'6.2%'},
     ]},
   ht:{creditsUsed:312,creditsTotal:500,verificationUsed:289,verificationTotal:500,plan:'Starter'},
   li:{name:'Eunomia Consulting',connections:1247},
@@ -336,7 +336,7 @@ Give specific actionable advice for Eunomia's pharma compliance marketing.`;
                     {daysUntil(mc.lastSent)<=7?'⚠ Newsletter due soon':'📅 Newsletter schedule'}
                   </div>
                   <div style={{fontSize:14,fontWeight:600}}>Next due: {fmt(nextDue(mc.lastSent))} <span style={{fontWeight:400,color:C.muted}}>({daysUntil(mc.lastSent)} days)</span></div>
-                  <div style={{fontSize:12,color:C.muted,marginTop:2}}>Last sent {daysSince(mc.lastSent)} days ago — "{mc.lastSubject}"</div>
+                  <div style={{fontSize:12,color:C.muted,marginTop:2}}>Last sent {daysSince(mc.lastSent)} days ago -- "{mc.lastSubject}"</div>
                 </div>
                 <button onClick={()=>{setTab('newsletter');setComposerOpen(true);setStep('topics');setTopics([]);setSelTopics([]);setDraft('');}}
                   style={{background:'#3d8b40',color:'#fff',border:'none',borderRadius:8,padding:'10px 18px',fontSize:13,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap',boxShadow:'0 2px 8px #3d8b4040'}}>
@@ -415,10 +415,10 @@ Give specific actionable advice for Eunomia's pharma compliance marketing.`;
             <div className="card">
               <H>LinkedIn content strategy for Eunomia</H>
               {[
-                {day:'Mon',tip:'Share a regulatory insight',detail:'Post a 3-sentence take on the latest PMCPA or ABPI development. Tag the relevant body. Best posting time: 8–9am.',icon:'📋'},
-                {day:'Wed',tip:'Publish a webinar clip',detail:'Uday's 60–90 second video clip from your last webinar. Add captions. Video gets 3× more reach than text posts.',icon:'🎬'},
-                {day:'Thu',tip:'Engagement hour',detail:'Spend 15 minutes replying to comments on your posts and commenting on posts from your ICP. LinkedIn rewards fast engagement.',icon:'💬'},
-                {day:'Fri',tip:'Newsletter teaser',detail:'Short preview of your upcoming Mailchimp newsletter — 2 key takeaways and a link to subscribe.',icon:'✉'},
+                {day:'Mon',tip:'Share a regulatory insight',detail:'Post a 3-sentence take on the latest PMCPA or ABPI development. Tag the relevant body. Best posting time: 8-9am.',icon:'📋'},
+                {day:'Wed',tip:'Publish a webinar clip',detail:"Uday's 60-90 second video clip from your last webinar. Add captions. Video gets 3x more reach than text posts.",icon:'🎬'},
+                {day:'Thu',tip:'Engagement hour',detail:"Spend 15 minutes replying to comments on your posts and commenting on posts from your ICP. LinkedIn rewards fast engagement.",icon:'💬'},
+                {day:'Fri',tip:'Newsletter teaser',detail:'Short preview of your upcoming Mailchimp newsletter -- 2 key takeaways and a link to subscribe.',icon:'✉'},
               ].map((t,i)=>(
                 <div key={i} className="row" style={{alignItems:'flex-start',gap:14}}>
                   <div style={{width:44,height:44,borderRadius:8,background:'#EBF5EC',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
@@ -439,8 +439,8 @@ Give specific actionable advice for Eunomia's pharma compliance marketing.`;
               {[
                 {label:'Access token',status:!usingMock.li,note:usingMock.li?'Add LINKEDIN_ACCESS_TOKEN in Vercel env vars':'Connected'},
                 {label:'Profile data (openid scope)',status:li?.name&&li.name!=='undefined undefined',note:'Returns your name and email'},
-                {label:'Connection count (r_network)',status:!!li?.connections,note:li?.connections?`${li.connections} connections`:'Requires r_network scope — regenerate token with this scope'},
-                {label:'Org page analytics',status:false,note:'Requires Marketing Developer Platform — apply at linkedin.com/developers'},
+                {label:'Connection count (r_network)',status:!!li?.connections,note:li?.connections?`${li.connections} connections`:'Requires r_network scope -- regenerate token with this scope'},
+                {label:'Org page analytics',status:false,note:'Requires Marketing Developer Platform -- apply at linkedin.com/developers'},
               ].map((r,i)=>(
                 <div key={i} className="row">
                   <div style={{width:8,height:8,borderRadius:'50%',background:r.status?'#3d8b40':'#E8651A',flexShrink:0}}/>
@@ -524,8 +524,8 @@ Give specific actionable advice for Eunomia's pharma compliance marketing.`;
             {composerOpen&&step==='topics'&&(
               <div className="card">
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-                  <H>Step 1 — Choose topics</H>
-                  <button onClick={()=>setComposerOpen(false)} style={{background:'none',border:'none',cursor:'pointer',color:C.muted,fontSize:22,lineHeight:1}}>×</button>
+                  <H>Step 1 -- Choose topics</H>
+                  <button onClick={()=>setComposerOpen(false)} style={{background:'none',border:'none',cursor:'pointer',color:C.muted,fontSize:22,lineHeight:1}}>x</button>
                 </div>
                 {topics.length===0&&!topicLoading&&(
                   <div style={{textAlign:'center',padding:'20px 0'}}>
@@ -567,7 +567,7 @@ Give specific actionable advice for Eunomia's pharma compliance marketing.`;
 
             {composerOpen&&step==='drafting'&&(
               <div className="card">
-                <H>Step 2 — Newsletter draft</H>
+                <H>Step 2 -- Newsletter draft</H>
                 {draftSubj&&(
                   <div style={{background:C.blueL,borderRadius:8,padding:'10px 14px',marginBottom:14,fontSize:13}}>
                     <span style={{fontWeight:600,color:C.blue}}>Subject: </span>{draftSubj}
@@ -691,10 +691,10 @@ function HunterTab({ht,usingMock,C,Stat,Alert,H,Pill,Spin}){
     <>
       {usingMock?.ht&&<Alert type="warning">Add <strong>HUNTER_API_KEY</strong> in Vercel env vars for live results. Showing sample results for now.</Alert>}
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-        <Stat label="Plan" value={ht?.plan??'—'}/>
-        <Stat label="Search credits" value={ht?`${ht.creditsUsed}/${ht.creditsTotal}`:'—'} color={ht&&ht.creditsUsed/ht.creditsTotal>0.8?C.red:C.green}/>
-        <Stat label="Verifications" value={ht?`${ht.verificationUsed}/${ht.verificationTotal}`:'—'} color={C.teal}/>
-        <Stat label="Credits left" value={ht?ht.creditsTotal-ht.creditsUsed:'—'}/>
+        <Stat label="Plan" value={ht?.plan??'--'}/>
+        <Stat label="Search credits" value={ht?`${ht.creditsUsed}/${ht.creditsTotal}`:'--'} color={ht&&ht.creditsUsed/ht.creditsTotal>0.8?C.red:C.green}/>
+        <Stat label="Verifications" value={ht?`${ht.verificationUsed}/${ht.verificationTotal}`:'--'} color={C.teal}/>
+        <Stat label="Credits left" value={ht?ht.creditsTotal-ht.creditsUsed:'--'}/>
       </div>
 
       {/* Domain search */}
@@ -745,7 +745,7 @@ function HunterTab({ht,usingMock,C,Stat,Alert,H,Pill,Spin}){
                     {e.verified&&<span style={{fontSize:10,background:e.verified==='valid'?C.greenL:C.amberL,color:e.verified==='valid'?C.green:C.amber,borderRadius:4,padding:'1px 5px',fontWeight:600}}>{e.verified}</span>}
                   </div>
                   <span style={{fontSize:12,color:C.blue,fontFamily:'monospace'}}>{e.email}</span>
-                  <span style={{fontSize:12,color:C.muted}}>{e.role||'—'}</span>
+                  <span style={{fontSize:12,color:C.muted}}>{e.role||'--'}</span>
                   <div style={{textAlign:'right'}}>
                     <Pill label={`${e.confidence}%`} color={e.confidence>=90?C.green:e.confidence>=75?C.amber:C.red}/>
                   </div>
@@ -801,10 +801,10 @@ function MailchimpTab({mc,usingMock,C,Stat,Alert,H,Pill,Spin,daysSince,daysUntil
     <>
       {usingMock?.mc&&<Alert type="warning">Showing demo data. Add <strong>MAILCHIMP_API_KEY</strong>, <strong>MAILCHIMP_SERVER_PREFIX</strong> and <strong>MAILCHIMP_LIST_ID</strong> in Vercel env vars.</Alert>}
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-        <Stat label="Subscribers" value={mc?.subscribers?.toLocaleString()??'—'} sub="Active list"/>
-        <Stat label="Open rate" value={mc?.openRate?`${mc.openRate}%`:'—'} sub="Avg last 5 campaigns" color={C.green}/>
-        <Stat label="Days since last" value={mc?.lastSent?daysSince(mc.lastSent):'—'} color={C.amber}/>
-        <Stat label="Next due in" value={mc?.lastSent?`${daysUntil(mc.lastSent)}d`:'—'} sub={mc?.lastSent?fmt(nextDue(mc.lastSent)):''} color={mc?.lastSent&&daysUntil(mc.lastSent)<=7?C.red:C.blue}/>
+        <Stat label="Subscribers" value={mc?.subscribers?.toLocaleString()??'--'} sub="Active list"/>
+        <Stat label="Open rate" value={mc?.openRate?`${mc.openRate}%`:'--'} sub="Avg last 5 campaigns" color={C.green}/>
+        <Stat label="Days since last" value={mc?.lastSent?daysSince(mc.lastSent):'--'} color={C.amber}/>
+        <Stat label="Next due in" value={mc?.lastSent?`${daysUntil(mc.lastSent)}d`:'--'} sub={mc?.lastSent?fmt(nextDue(mc.lastSent)):''} color={mc?.lastSent&&daysUntil(mc.lastSent)<=7?C.red:C.blue}/>
       </div>
 
       {/* Quick actions */}
