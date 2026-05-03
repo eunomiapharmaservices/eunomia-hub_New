@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     // Non-streaming call — works reliably on Vercel serverless
     const body = {
       model: 'claude-sonnet-4-5',
-      max_tokens: 1500,
+      max_tokens: 4000,
       stream: false,
       messages,
       ...(system ? { system } : {})
