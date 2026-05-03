@@ -640,13 +640,14 @@ function renderHunter(){
   html+=statCard('Verifications',ht?ht.verificationUsed+'/'+ht.verificationTotal:'--');
   html+=statCard('Credits left',ht?ht.creditsTotal-ht.creditsUsed:'--');
   html+='</div>';
-  html+='<div style="display:flex;gap:8px;margin-bottom:16px;">';
-  html+='<button class="toggle-btn '+(STATE.hunterView==='search'?'active':'')+'" onclick="setHunterView(\'search\')">Domain Search</button>';
-  html+='<button class="toggle-btn '+(STATE.hunterView==='leads'?'active':'')+'" onclick="setHunterView(\'leads\')">My Leads '+(HUNTER_STATE.leads?'('+HUNTER_STATE.leads.total+')':'')+'</button>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">';
+  var hvs=[['search','Domain Search'],['finder','Email Finder'],['jobrole','Job Role + Location'],['leads','My Leads '+(HUNTER_STATE.leads?'('+HUNTER_STATE.leads.total+')':'')+'']];
+  hvs.forEach(function(v){html+='<button class="toggle-btn '+(STATE.hunterView===v[0]?'active':'')+'" data-view="'+v[0]+'" onclick="setHunterView(this.dataset.view)">'+v[1]+'</button>';}); 
   html+='</div>';
   if(STATE.hunterView==='search')html+=renderHunterSearch();
+  else if(STATE.hunterView==='finder')html+=renderHunterFinder();
+  else if(STATE.hunterView==='jobrole')html+=renderHunterJobRole();
   else html+=renderHunterLeads();
-  document.getElementById('panel-hunter').innerHTML=html;
 }
 
 // ── Hunter Email Finder ──────────────────────────────────────────────────────
