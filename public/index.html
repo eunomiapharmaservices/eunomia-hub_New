@@ -173,7 +173,16 @@ function App(){
   const[chatLoading,setChatLoading]=useState(false);
   const chatEnd=useRef(null);
 
-  useEffect(()=>{loadAll();},[]);
+  useEffect(()=>{
+    loadAll();
+    // Test Claude API key on mount
+    fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:'ping'}],system:'Reply with just the word OK'})})
+      .then(r=>{
+        if(!r.ok)return r.json().then(e=>{throw new Error(e.error||'HTTP '+r.status);});
+        return null;
+      })
+      .catch(e=>setErrors(prev=>({...prev,claude:'AI: '+e.message})));
+  },[]);
   useEffect(()=>{chatEnd.current?.scrollIntoView({behavior:'smooth'});},[chatHist]);
 
   async function loadAll(){
@@ -203,7 +212,8 @@ Respond ONLY with a JSON array, no markdown. Each: {"title":"...","hook":"one se
       let raw='';
       await streamClaude({messages:[{role:'user',content:'Generate 6 newsletter topics for May 2026.'}],system:sys,onChunk:c=>{raw=c;}});
       setTopics(JSON.parse(raw.replace(/```json|```/g,'').trim()));
-    }catch{
+    }catch(e){
+      console.error('Topic gen error:',e);
       setTopics([
         {title:'PMCPA Social Media Guidance 2026: Practical Steps',hook:'New guidance changes how pharma teams use LinkedIn and X.',tags:['PMCPA','Digital']},
         {title:'ABPI Code 2024: Six Months On',hook:'Real-world compliance implications of the new code.',tags:['ABPI']},
@@ -239,7 +249,7 @@ Under 400 words. Expert but readable.`;
       });
       const m=full.match(/SUBJECT:\s*(.+)/);
       if(m)setDraftSubj(m[1].trim());
-    }catch{setDraft('Error generating. Please try again.');}
+    }catch(e){setDraft('Error: '+e.message);setDraftSubj('Generation failed');}
     setDraftLoading(false);
   }
 
@@ -263,7 +273,7 @@ Sales Robot: ${sr?`${sr.summary.activeSequences} sequences, ${sr.summary.replyRa
 Give specific actionable advice for Eunomia's pharma compliance marketing.`;
     try{
       await streamClaude({messages:hist,system:sys,onChunk:c=>setChatHist([...hist,{role:'assistant',content:c}])});
-    }catch{setChatHist([...hist,{role:'assistant',content:'Connection error. Check ANTHROPIC_API_KEY in Vercel.'}]);}
+    }catch(e){setChatHist([...hist,{role:'assistant',content:'Error: '+e.message}]);}
     setChatLoading(false);
   }
 
@@ -303,6 +313,10 @@ Give specific actionable advice for Eunomia's pharma compliance marketing.`;
           {statusDot('sr','Sales Robot')}
           {statusDot('mc','Mailchimp')}
           {statusDot('ht','Hunter.io')}
+          {errors.claude
+            ?<span style={{fontSize:11,background:'#DC262625',color:'#DC2626',border:'1px solid #DC262650',borderRadius:5,padding:'3px 8px',fontWeight:600}}>✗ AI Key Error</span>
+            :<span style={{fontSize:11,background:'#3d8b4025',color:'#5db860',border:'1px solid #3d8b4050',borderRadius:5,padding:'3px 8px',fontWeight:600}}>● AI Ready</span>
+          }
           <button onClick={loadAll} style={{background:'none',border:'1px solid #ffffff40',borderRadius:7,color:'#a8c5a9',fontSize:12,padding:'4px 12px',cursor:'pointer',marginLeft:4}}>↻ Refresh</button>
         </div>
       </div>
@@ -320,6 +334,12 @@ Give specific actionable advice for Eunomia's pharma compliance marketing.`;
             {Object.keys(usingMock).length>0&&(
               <Alert type="warning">
                 <strong>Demo mode:</strong> {Object.keys(usingMock).join(', ')} showing sample data. Add API keys in Vercel → Settings → Environment Variables to see live data.
+              </Alert>
+            )}
+            {errors.claude&&(
+              <Alert type="error">
+                <strong>AI Assistant error:</strong> {errors.claude}<br/>
+                <span style={{fontSize:12}}>Check: (1) ANTHROPIC_API_KEY is set in Vercel env vars, (2) you have clicked Redeploy after adding the key, (3) your Anthropic account has a positive balance at console.anthropic.com/billing</span>
               </Alert>
             )}
             <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
