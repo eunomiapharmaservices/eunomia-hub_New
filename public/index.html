@@ -103,14 +103,14 @@ input:focus,select:focus,textarea:focus{border-color:#3d8b40;}
 
 <!-- TABS -->
 <div class="tabs">
-  <button class="tab active" onclick=""showTab(&quot;overview&quot;)">Overview</button>
-  <button class="tab" onclick=""showTab(&quot;linkedin&quot;)">LinkedIn</button>
-  <button class="tab" onclick=""showTab(&quot;salesrobot&quot;)">Sales Robot</button>
-  <button class="tab" onclick=""showTab(&quot;mailchimp&quot;)">Mailchimp</button>
-  <button class="tab" onclick=""showTab(&quot;hunter&quot;)">Hunter.io</button>
-  <button class="tab" onclick=""showTab(&quot;newsletter&quot;)">Newsletter</button>
-  <button class="tab" onclick=""showTab(&quot;regulatory&quot;)">Regulatory</button>
-  <button class="tab" onclick=""showTab(&quot;clients&quot;)">Clients</button>
+  <button class="tab active" onclick="showTab('overview')">Overview</button>
+  <button class="tab" onclick="showTab('linkedin')">LinkedIn</button>
+  <button class="tab" onclick="showTab('salesrobot')">Sales Robot</button>
+  <button class="tab" onclick="showTab('mailchimp')">Mailchimp</button>
+  <button class="tab" onclick="showTab('hunter')">Hunter.io</button>
+  <button class="tab" onclick="showTab('newsletter')">Newsletter</button>
+  <button class="tab" onclick="showTab('regulatory')">Regulatory</button>
+  <button class="tab" onclick="showTab('clients')">Clients</button>
 </div>
 
 <!-- CONTENT PANELS -->
@@ -224,10 +224,15 @@ async function aiCall(messages,system){
 // ============================================================
 function showTab(id){
   STATE.currentTab=id;
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.classList.remove('active');
+    // Match tab to id by checking onclick attribute
+    var oc=t.getAttribute('onclick')||'';
+    if(oc.indexOf("'"+id+"'")>=0||oc.indexOf(id)>=0)t.classList.add('active');
+  });
   document.querySelectorAll('[id^="panel-"]').forEach(function(p){p.style.display='none';});
-  event.target.classList.add('active');
-  document.getElementById('panel-'+id).style.display='block';
+  var panel=document.getElementById('panel-'+id);
+  if(panel)panel.style.display='block';
   renderTab(id);
 }
 function renderTab(id){
