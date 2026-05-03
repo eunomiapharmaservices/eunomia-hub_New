@@ -109,6 +109,8 @@ input:focus,select:focus,textarea:focus{border-color:#3d8b40;}
   <button class="tab" onclick="showTab('mailchimp')">Mailchimp</button>
   <button class="tab" onclick="showTab('hunter')">Hunter.io</button>
   <button class="tab" onclick="showTab('newsletter')">Newsletter</button>
+  <button class="tab" onclick="showTab('regulatory')">Regulatory</button>
+  <button class="tab" onclick="showTab('clients')">Clients</button>
 </div>
 
 <!-- CONTENT PANELS -->
@@ -119,6 +121,8 @@ input:focus,select:focus,textarea:focus{border-color:#3d8b40;}
   <div id="panel-mailchimp" style="display:none"></div>
   <div id="panel-hunter" style="display:none"></div>
   <div id="panel-newsletter" style="display:none"></div>
+  <div id="panel-regulatory" style="display:none"></div>
+  <div id="panel-clients" style="display:none"></div>
 </div>
 
 <script>
@@ -233,6 +237,8 @@ function renderTab(id){
   else if(id==='mailchimp')renderMailchimp();
   else if(id==='hunter')renderHunter();
   else if(id==='newsletter')renderNewsletter();
+  else if(id==='regulatory')renderRegulatory();
+  else if(id==='clients')renderClients();
 }
 
 // ============================================================
@@ -1008,6 +1014,480 @@ async function sendToMailchimp(){
     if(data.success)el.innerHTML=alert_('success','Draft created in Mailchimp! <a href="'+esc(data.editUrl)+'" target="_blank" style="color:#3d8b40;font-weight:600;">Open in Mailchimp to schedule</a>');
     else el.innerHTML=alert_('error','Mailchimp error: '+esc(data.error||'Unknown'));
   }
+}
+
+
+// ============================================================
+// REGULATORY INTELLIGENCE
+// ============================================================
+var REG_STATE = {feeds:null, loading:false, insight:'', insightLoading:false, insightTopic:''};
+
+var REG_BODIES = [
+  {name:'PMCPA', country:'UK', url:'https://www.pmcpa.org.uk', rss:'https://www.pmcpa.org.uk/feed/', desc:'UK pharma advertising self-regulator. Issues rulings and guidance on digital channels, social media and the ABPI Code.', color:'#3d8b40', lastUpdate:'Social media guidance updated Feb 2026'},
+  {name:'ABPI', country:'UK', url:'https://www.abpi.org.uk', rss:'https://www.abpi.org.uk/media/news/rss.xml', desc:'Sets the UK Code of Practice for pharma promotion. Current version: ABPI Code 2024, in force since 1 Jan 2025.', color:'#1a5c1d', lastUpdate:'Code 2024 in full force Jan 2025'},
+  {name:'ANSM', country:'France', url:'https://ansm.sante.fr', rss:'https://ansm.sante.fr/rss.xml', desc:'French medicines regulator. Publishes guidance on pharma advertising, digital channels and enforcement actions.', color:'#0E9E8E', lastUpdate:'Digital promotion charter published 2025'},
+  {name:'FCPA', country:'USA', url:'https://www.justice.gov/criminal/fraud/fcpa', rss:'', desc:'US anti-bribery law with extraterritorial reach. Enforced by DOJ and SEC. Applies to UK pharma firms with any US business nexus.', color:'#E8651A', lastUpdate:'Monitor DOJ enforcement actions'},
+  {name:'EMA', country:'EU', url:'https://www.ema.europa.eu', rss:'https://www.ema.europa.eu/en/about-us/whats-new/rss', desc:'European Medicines Agency. Regulatory guidance for EU market authorisations and post-market surveillance.', color:'#2563EB', lastUpdate:'Ongoing EU regulatory updates'},
+  {name:'EFPIA', country:'EU', url:'https://www.efpia.eu', rss:'', desc:'European Federation of Pharmaceutical Industries. Sets the EFPIA Code governing member interactions across EU markets.', color:'#7C3AED', lastUpdate:'EFPIA Code 2023 in force'}
+];
+
+var GOOGLE_ALERTS = [
+  '"PMCPA" ruling OR guidance OR update',
+  '"ABPI Code" update OR amendment OR guidance',
+  '"ANSM" guidance OR regulation OR enforcement',
+  '"FCPA" enforcement OR settlement OR guidance',
+  '"pharma advertising" UK regulation update',
+  '"prescription medicines" code update UK',
+  '"EMA" guideline OR guidance 2025 OR 2026',
+  '"EFPIA Code" update OR guidance'
+];
+
+function renderRegulatory(){
+  var html = '';
+  html += '<div class="grid3" style="margin-bottom:16px;">';
+  html += '<div class="stat"><div class="stat-label">Bodies monitored</div><div class="stat-value">6</div><div class="stat-sub">PMCPA, ABPI, ANSM, FCPA, EMA, EFPIA</div></div>';
+  html += '<div class="stat"><div class="stat-label">Alert queries</div><div class="stat-value">'+GOOGLE_ALERTS.length+'</div><div class="stat-sub">Google Alerts to set up</div></div>';
+  html += '<div class="stat"><div class="stat-label">Next action</div><div class="stat-value">Daily</div><div class="stat-sub">Check Regulatory Intelligence folder in Outlook</div></div>';
+  html += '</div>';
+
+  // AI Insight Generator
+  html += '<div class="card" style="border:1.5px solid #3d8b40;margin-bottom:16px;">';
+  html += '<div class="card-title">AI Regulatory Insight Generator</div>';
+  html += '<div style="font-size:13px;color:#5C6B5D;margin-bottom:14px;">Select a regulatory body and generate a plain-English briefing your clients can act on. Use this to create LinkedIn posts, newsletter sections, or client alerts.</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
+  html += '<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">REGULATORY BODY</label>';
+  html += '<select id="reg-body" style="width:100%;"><option value="">-- Select body --</option>';
+  REG_BODIES.forEach(function(b){html+='<option value="'+esc(b.name)+'">'+esc(b.name)+' ('+esc(b.country)+')</option>';});
+  html += '</select></div>';
+  html += '<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">OUTPUT FORMAT</label>';
+  html += '<select id="reg-format" style="width:100%;"><option value="client-alert">Client alert email</option><option value="linkedin">LinkedIn post</option><option value="newsletter">Newsletter section</option><option value="briefing">Internal team briefing</option></select></div></div>';
+  html += '<div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">SPECIFIC UPDATE OR TOPIC (optional)</label>';
+  html += '<input id="reg-topic" placeholder="e.g. new social media guidance, recent enforcement action, code amendment..."/></div>';
+  html += '<button class="btn btn-primary" id="reg-gen-btn" onclick="genRegulatoryInsight()" style="margin-bottom:14px;">Generate Insight</button>';
+  html += '<div id="reg-output"></div></div>';
+
+  // Regulatory bodies
+  html += '<div class="card" style="margin-bottom:16px;"><div class="card-title">Regulatory Bodies Dashboard</div>';
+  REG_BODIES.forEach(function(b){
+    html += '<div style="display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid #E2E8E2;">';
+    html += '<div style="width:56px;height:56px;border-radius:10px;background:'+b.color+'15;border:2px solid '+b.color+'40;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-weight:800;font-size:13px;color:'+b.color+';">'+esc(b.name)+'</span></div>';
+    html += '<div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><strong style="font-size:14px;">'+esc(b.name)+'</strong><span style="font-size:11px;background:#F5F6F5;border-radius:4px;padding:2px 7px;color:#5C6B5D;">'+esc(b.country)+'</span></div>';
+    html += '<div style="font-size:13px;color:#5C6B5D;line-height:1.5;margin-bottom:6px;">'+esc(b.desc)+'</div>';
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+    html += '<span style="font-size:11px;background:'+b.color+'10;color:'+b.color+';border-radius:4px;padding:2px 8px;font-weight:600;">'+esc(b.lastUpdate)+'</span>';
+    if(b.url)html += '<a href="'+esc(b.url)+'" target="_blank" style="font-size:11px;color:#3d8b40;text-decoration:none;font-weight:600;">Visit site &rarr;</a>';
+    if(b.rss)html += '<span style="font-size:11px;color:#5C6B5D;">RSS: '+esc(b.rss)+'</span>';
+    html += '</div></div></div>';
+  });
+  html += '</div>';
+
+  // Google Alerts setup
+  html += '<div class="card" style="margin-bottom:16px;"><div class="card-title">Google Alert Queries to Set Up</div>';
+  html += '<div style="font-size:13px;color:#5C6B5D;margin-bottom:14px;">Go to <a href="https://google.com/alerts" target="_blank" style="color:#3d8b40;font-weight:600;">google.com/alerts</a> and create each alert below. Set delivery to "As it happens" and send to a dedicated email like regulatory@eunomiapharmaservices.com</div>';
+  html += '<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
+  GOOGLE_ALERTS.forEach(function(q,i){
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:'+(i<GOOGLE_ALERTS.length-1?'1px solid #E2E8E2':'none')+';font-size:13px;">';
+    html += '<span style="font-family:monospace;color:#1C2B1D;">'+esc(q)+'</span>';
+    html += '<button onclick="copyAlert('+i+')" id="alert-copy-'+i+'" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;color:#5C6B5D;">Copy</button>';
+    html += '</div>';
+  });
+  html += '</div></div>';
+
+  // Outlook RSS setup
+  html += '<div class="card"><div class="card-title">Outlook RSS Feed Setup (Microsoft 365)</div>';
+  html += '<div style="font-size:13px;color:#5C6B5D;margin-bottom:14px;">Add these RSS feeds to Outlook: File > Account Settings > RSS Feeds > New. Create a folder called "Regulatory Intelligence" and auto-route all feeds there.</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
+  REG_BODIES.filter(function(b){return b.rss;}).forEach(function(b){
+    html += '<div style="border:1px solid #E2E8E2;border-radius:8px;padding:12px;">';
+    html += '<div style="font-weight:600;font-size:13px;color:'+b.color+';margin-bottom:4px;">'+esc(b.name)+'</div>';
+    html += '<div style="font-size:11px;color:#5C6B5D;font-family:monospace;word-break:break-all;">'+esc(b.rss)+'</div></div>';
+  });
+  html += '</div></div>';
+
+  document.getElementById('panel-regulatory').innerHTML = html;
+}
+
+function copyAlert(i){
+  navigator.clipboard.writeText(GOOGLE_ALERTS[i]).then(function(){
+    var btn=document.getElementById('alert-copy-'+i);
+    if(btn){btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy';},2000);}
+  });
+}
+
+async function genRegulatoryInsight(){
+  var body=document.getElementById('reg-body');
+  var format=document.getElementById('reg-format');
+  var topic=document.getElementById('reg-topic');
+  var btn=document.getElementById('reg-gen-btn');
+  var out=document.getElementById('reg-output');
+  if(!body||!body.value){if(out)out.innerHTML=alert_('error','Please select a regulatory body.');return;}
+  if(btn)btn.textContent='Generating...';
+  var bodyName=body.value;
+  var formatName=format?format.value:'client-alert';
+  var topicText=topic?topic.value:'';
+  var bodyInfo=REG_BODIES.find(function(b){return b.name===bodyName;})||{};
+  var formatInstructions={
+    'client-alert':'Write a short client alert email (150-200 words). Subject line first, then body. Professional, plain English, explains what changed and what clients should do. Sign off as Eunomia Pharma Services.',
+    'linkedin':'Write a LinkedIn post (150-200 words) positioning Eunomia as a regulatory intelligence leader. End with 3-4 relevant hashtags. No emojis.',
+    'newsletter':'Write a newsletter section (200-300 words) with a bold heading. Explain the regulatory development and its practical implications for pharma compliance teams.',
+    'briefing':'Write an internal team briefing (200-300 words). Heading, summary of the update, client impact assessment, and recommended Eunomia actions.'
+  }[formatName]||'Write a professional compliance briefing.';
+  var prompt='You are a senior pharma compliance expert at Eunomia Pharma Services. Generate '+formatName+' content about '+bodyName+' ('+bodyInfo.country+') for pharma compliance professionals. '+bodyInfo.desc+(topicText?' Specific topic: '+topicText+'.':' Focus on the most recent and relevant guidance or update.')+' '+formatInstructions+' Be specific, authoritative, and practically useful. Include a clear call to action to contact Eunomia for guidance.';
+  try{
+    var text=await aiCall([{role:'user',content:prompt}],'You are a senior pharma regulatory compliance expert at Eunomia Pharma Services. Write clear, authoritative content that positions Eunomia as the go-to compliance partner.');
+    if(out){
+      out.innerHTML='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
+      out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;font-size:13px;">'+esc(bodyName)+' - '+esc(formatName.replace('-',' '))+'</span><button onclick="copyInsight()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;" id="copy-insight-btn">Copy</button></div>';
+      out.innerHTML+='<div style="padding:16px;font-size:13px;line-height:1.75;white-space:pre-wrap;color:#1C2B1D;" id="insight-text">'+esc(text)+'</div></div>';
+      out.innerHTML+='<div style="margin-top:10px;display:flex;gap:10px;"><button class="btn btn-secondary" onclick="genRegulatoryInsight()">Regenerate</button><button class="btn btn-primary" onclick="shareToLinkedIn()">Post to LinkedIn</button></div>';
+      REG_STATE.insight=text;
+    }
+  }catch(e){if(out)out.innerHTML=alert_('error','Error: '+e.message);}
+  if(btn)btn.textContent='Generate Insight';
+}
+
+function copyInsight(){
+  var el=document.getElementById('insight-text');
+  if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(function(){
+    var btn=document.getElementById('copy-insight-btn');
+    if(btn){btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy';},2000);}
+  });
+}
+
+function shareToLinkedIn(){
+  var el=document.getElementById('insight-text');
+  if(!el)return;
+  STATE.showComposer=true;
+  showTab('linkedin');
+  setTimeout(function(){
+    var ta=document.getElementById('li-text');
+    if(ta)ta.value=el.textContent;
+  },300);
+}
+
+// ============================================================
+// CLIENTS HUB
+// ============================================================
+var CLIENT_STATE = {
+  clients: JSON.parse(localStorage.getItem('eunomia-clients')||'[]'),
+  activeSection: 'onboarding',
+  caseStudy: '', caseStudyLoading: false,
+  testimonial: '', testimonialLoading: false,
+  onboardingDoc: '', onboardingLoading: false
+};
+
+function saveClients(){localStorage.setItem('eunomia-clients',JSON.stringify(CLIENT_STATE.clients));}
+
+function renderClients(){
+  var html='';
+  html+='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">';
+  ['onboarding','testimonial','casestudy','tracker'].forEach(function(s){
+    var labels={onboarding:'Onboarding Pack',testimonial:'Testimonial Request',casestudy:'Case Study Generator',tracker:'Client Tracker'};
+    html+='<button class="toggle-btn '+(CLIENT_STATE.activeSection===s?'active':'')+'" onclick="setClientSection(''+s+'')">'+labels[s]+'</button>';
+  });
+  html+='</div>';
+  if(CLIENT_STATE.activeSection==='onboarding')html+=renderOnboarding();
+  else if(CLIENT_STATE.activeSection==='testimonial')html+=renderTestimonial();
+  else if(CLIENT_STATE.activeSection==='casestudy')html+=renderCaseStudy();
+  else if(CLIENT_STATE.activeSection==='tracker')html+=renderClientTracker();
+  document.getElementById('panel-clients').innerHTML=html;
+}
+
+function setClientSection(s){CLIENT_STATE.activeSection=s;renderClients();}
+
+// ONBOARDING PACK
+function renderOnboarding(){
+  var html='<div class="card"><div class="card-title">New Client Onboarding Pack Generator</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">Generate a professional onboarding pack for a new client including welcome letter, key contacts, service scope summary, and communication cadence.</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">CLIENT NAME</label><input id="ob-client" placeholder="e.g. AstraZeneca UK Ltd"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">CLIENT CONTACT NAME</label><input id="ob-contact" placeholder="e.g. Dr Sarah Mitchell"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">SERVICES ENGAGED</label><input id="ob-services" placeholder="e.g. ABPI Code compliance review, HCP training"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">EUNOMIA LEAD CONSULTANT</label><input id="ob-consultant" placeholder="e.g. Your name"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">CONTRACT START DATE</label><input id="ob-start" type="date"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">REVIEW CADENCE</label><select id="ob-cadence" style="width:100%;"><option>Monthly</option><option>Quarterly</option><option>Bi-monthly</option></select></div></div>';
+  html+='<button class="btn btn-primary" id="ob-btn" onclick="genOnboarding()" style="margin-bottom:14px;">Generate Onboarding Pack</button>';
+  html+='<div id="ob-output"></div></div>';
+  return html;
+}
+
+async function genOnboarding(){
+  var client=document.getElementById('ob-client');
+  var contact=document.getElementById('ob-contact');
+  var services=document.getElementById('ob-services');
+  var consultant=document.getElementById('ob-consultant');
+  var start=document.getElementById('ob-start');
+  var cadence=document.getElementById('ob-cadence');
+  var btn=document.getElementById('ob-btn');
+  var out=document.getElementById('ob-output');
+  if(!client||!client.value.trim()){if(out)out.innerHTML=alert_('error','Please enter the client name.');return;}
+  if(btn)btn.textContent='Generating...';
+  var prompt='Generate a professional new client onboarding pack for Eunomia Pharma Services. Client: '+client.value+'. Contact: '+(contact?contact.value:'[Contact Name]')+'. Services: '+(services?services.value:'pharma compliance consulting')+'. Eunomia lead: '+(consultant?consultant.value:'Eunomia Team')+'. Start date: '+(start&&start.value?start.value:'[Start Date]')+'. Review cadence: '+(cadence?cadence.value:'Monthly')+'.
+
+Generate a complete onboarding pack with these four sections:
+1. WELCOME LETTER - Warm, professional letter from Eunomia welcoming the client, expressing commitment to the partnership, outlining what happens next in the first 30 days.
+2. KEY CONTACTS - Eunomia team contacts (use the consultant name provided), escalation path, and expected response times.
+3. SERVICE SCOPE SUMMARY - Clear summary of exactly what is included in the engagement, what is out of scope, and key deliverables with indicative timelines.
+4. COMMUNICATION CADENCE - Meeting schedule (30-day check-in, then recurring reviews), reporting format, how to raise urgent issues, and how regulatory updates will be communicated.
+
+Tone: professional, warm, reassuring. Format with clear section headings. This will be sent to the client as their first impression of working with Eunomia.';
+  try{
+    var text=await aiCall([{role:'user',content:prompt}],'You are a senior pharma compliance consultant at Eunomia Pharma Services writing a new client onboarding document. Be professional, warm and specific.');
+    if(out){
+      out.innerHTML='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
+      out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;">Onboarding Pack - '+esc(client.value)+'</span>';
+      out.innerHTML+='<div style="display:flex;gap:8px;"><button onclick="copyDoc('ob-doc-text')" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>';
+      out.innerHTML+='<button onclick="downloadDoc('ob-doc-text','Onboarding-'+esc(client.value.replace(/\s+/g,'-'))+'.txt')" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download</button></div></div>';
+      out.innerHTML+='<div style="padding:20px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#1C2B1D;max-height:500px;overflow-y:auto;" id="ob-doc-text">'+esc(text)+'</div></div>';
+    }
+  }catch(e){if(out)out.innerHTML=alert_('error','Error: '+e.message);}
+  if(btn)btn.textContent='Generate Onboarding Pack';
+}
+
+// TESTIMONIAL REQUEST
+function renderTestimonial(){
+  var html='<div class="card"><div class="card-title">Testimonial Request Generator</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">Generate a personalised testimonial request email for clients who have been with Eunomia for 3+ months. The email makes it easy for the client to respond with a 2-4 sentence testimonial.</div>';
+  html+=alert_('info','<strong>When to send:</strong> 90 days after engagement start. Add a reminder in your calendar for each new client on day 85.');
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;margin-top:14px;">';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">CLIENT NAME</label><input id="tm-client" placeholder="e.g. Novartis UK"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">CONTACT NAME</label><input id="tm-contact" placeholder="e.g. Dr James Thornton"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">SERVICES PROVIDED</label><input id="tm-services" placeholder="e.g. ABPI Code compliance audit and training"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">KEY OUTCOME ACHIEVED</label><input id="tm-outcome" placeholder="e.g. reduced review turnaround by 40%"/></div></div>';
+  html+='<button class="btn btn-primary" id="tm-btn" onclick="genTestimonial()" style="margin-bottom:14px;">Generate Testimonial Request</button>';
+  html+='<div id="tm-output"></div></div>';
+  html+='<div class="card"><div class="card-title">Testimonial Library</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:14px;">Paste received testimonials here to keep them organised and ready to use in proposals and on the website.</div>';
+  html+='<textarea id="new-testimonial" rows="3" placeholder="Paste a received testimonial here..." style="margin-bottom:8px;"></textarea>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:16px;"><input id="tm-author" placeholder="Client name and title" style="flex:1;"/><button class="btn btn-primary" onclick="saveTestimonial()">Save</button></div>';
+  var stored=JSON.parse(localStorage.getItem('eunomia-testimonials')||'[]');
+  if(stored.length){
+    stored.forEach(function(t,i){
+      html+='<div style="border:1px solid #E2E8E2;border-radius:10px;padding:14px;margin-bottom:10px;">';
+      html+='<div style="font-size:13px;line-height:1.6;color:#1C2B1D;font-style:italic;margin-bottom:8px;">&#8220;'+esc(t.text)+'&#8221;</div>';
+      html+='<div style="font-size:12px;font-weight:600;color:#3d8b40;">-- '+esc(t.author)+'</div>';
+      html+='<div style="margin-top:8px;display:flex;gap:8px;"><button onclick="copyTestimonial('+i+')" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Copy</button>';
+      html+='<button onclick="deleteTestimonial('+i+')" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Delete</button></div></div>';
+    });
+  }else{html+='<div style="color:#5C6B5D;font-size:13px;">No testimonials saved yet.</div>';}
+  html+='</div>';
+  return html;
+}
+
+async function genTestimonial(){
+  var client=document.getElementById('tm-client');
+  var contact=document.getElementById('tm-contact');
+  var services=document.getElementById('tm-services');
+  var outcome=document.getElementById('tm-outcome');
+  var btn=document.getElementById('tm-btn');
+  var out=document.getElementById('tm-output');
+  if(!client||!client.value.trim()){if(out)out.innerHTML=alert_('error','Please enter the client name.');return;}
+  if(btn)btn.textContent='Generating...';
+  var prompt='Write a professional testimonial request email from Eunomia Pharma Services to '+client.value+', contact name '+(contact?contact.value:'[Contact]')+'. Services: '+(services?services.value:'compliance consulting')+'. Key outcome: '+(outcome&&outcome.value?outcome.value:'improved compliance processes')+'.
+
+The email should:
+- Be warm and personal, referencing the specific work done
+- Acknowledge the 3-month milestone
+- Make it genuinely easy to respond - suggest they could reply with just 2-4 sentences
+- Give them prompts to guide what to write (e.g. what challenge were you facing, how did Eunomia help, what would you say to others considering working with us)
+- Offer to draft the testimonial for them to approve if they prefer
+- Include subject line at the top
+- Be 150-200 words maximum
+- Sign off from Eunomia Pharma Services';
+  try{
+    var text=await aiCall([{role:'user',content:prompt}],'You are writing a professional but warm client testimonial request email for Eunomia Pharma Services.');
+    if(out){
+      out.innerHTML='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
+      out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;">Testimonial Request - '+esc(client.value)+'</span><button onclick="copyDoc('tm-doc-text')" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button></div>';
+      out.innerHTML+='<div style="padding:16px;font-size:13px;line-height:1.75;white-space:pre-wrap;color:#1C2B1D;" id="tm-doc-text">'+esc(text)+'</div></div>';
+    }
+  }catch(e){if(out)out.innerHTML=alert_('error','Error: '+e.message);}
+  if(btn)btn.textContent='Generate Testimonial Request';
+}
+
+function saveTestimonial(){
+  var text=document.getElementById('new-testimonial');
+  var author=document.getElementById('tm-author');
+  if(!text||!text.value.trim())return;
+  var stored=JSON.parse(localStorage.getItem('eunomia-testimonials')||'[]');
+  stored.push({text:text.value.trim(),author:(author?author.value:'Anonymous'),date:new Date().toLocaleDateString('en-GB')});
+  localStorage.setItem('eunomia-testimonials',JSON.stringify(stored));
+  text.value='';if(author)author.value='';
+  renderClients();
+}
+function copyTestimonial(i){
+  var stored=JSON.parse(localStorage.getItem('eunomia-testimonials')||'[]');
+  if(stored[i])navigator.clipboard.writeText('"'+stored[i].text+'" -- '+stored[i].author);
+}
+function deleteTestimonial(i){
+  var stored=JSON.parse(localStorage.getItem('eunomia-testimonials')||'[]');
+  stored.splice(i,1);
+  localStorage.setItem('eunomia-testimonials',JSON.stringify(stored));
+  renderClients();
+}
+
+// CASE STUDY GENERATOR
+function renderCaseStudy(){
+  var html='<div class="card"><div class="card-title">Case Study Generator</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">Generate a professional anonymised case study ready to add to your website, proposals, and LinkedIn content. Based on your service delivery for a client.</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">CLIENT TYPE (anonymised)</label><input id="cs-client" placeholder="e.g. Mid-size UK biotech, 300 employees"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">SERVICE PROVIDED</label><select id="cs-service" style="width:100%;"><option>ABPI Code compliance review</option><option>HCP engagement compliance</option><option>ABAC and anti-bribery framework</option><option>Due diligence programme</option><option>Compliance training - Sales Reps and MSLs</option><option>SOP development and review</option><option>Gifts and hospitality policy</option><option>Conflict of interest management</option><option>Audit preparation and readiness</option><option>Regulatory monitoring and analytics</option><option>Medical affairs compliance</option><option>Third-party vendor risk</option></select></div>';
+  html+='<div style="grid-column:1/-1;"><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">CHALLENGE THE CLIENT FACED</label><textarea id="cs-challenge" rows="3" placeholder="e.g. The client was preparing for an ABPI audit with inconsistent SOPs across three EU affiliates and no centralised review process..."></textarea></div>';
+  html+='<div style="grid-column:1/-1;"><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">WHAT EUNOMIA DID</label><textarea id="cs-approach" rows="3" placeholder="e.g. Eunomia conducted a gap analysis across all affiliates, standardised the SOP library, and delivered a 2-day audit readiness workshop..."></textarea></div>';
+  html+='<div style="grid-column:1/-1;"><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">MEASURABLE OUTCOME</label><input id="cs-outcome" placeholder="e.g. Client passed ABPI audit with zero critical findings; review turnaround reduced by 40%"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">FORMAT</label><select id="cs-format" style="width:100%;"><option value="website">Website case study</option><option value="proposal">Proposal insert (concise)</option><option value="linkedin">LinkedIn story post</option></select></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">INCLUDE QUOTE</label><select id="cs-quote" style="width:100%;"><option value="yes">Yes - generate an illustrative quote</option><option value="no">No quote</option></select></div></div>';
+  html+='<button class="btn btn-primary" id="cs-btn" onclick="genCaseStudy()" style="margin-bottom:14px;">Generate Case Study</button>';
+  html+='<div id="cs-output"></div></div>';
+
+  // Saved case studies
+  var stored=JSON.parse(localStorage.getItem('eunomia-casestudies')||'[]');
+  html+='<div class="card"><div class="card-title">Saved Case Studies ('+stored.length+')</div>';
+  if(stored.length){
+    stored.forEach(function(cs,i){
+      html+='<div style="border:1px solid #E2E8E2;border-radius:10px;padding:14px;margin-bottom:10px;">';
+      html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">';
+      html+='<div><div style="font-weight:600;font-size:14px;margin-bottom:4px;">'+esc(cs.title)+'</div><div style="font-size:12px;color:#5C6B5D;">'+esc(cs.service)+' &middot; Saved '+esc(cs.date)+'</div></div>';
+      html+='<div style="display:flex;gap:6px;flex-shrink:0;">';
+      html+='<button onclick="viewCaseStudy('+i+')" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">View</button>';
+      html+='<button onclick="copyCaseStudy('+i+')" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Copy</button>';
+      html+='<button onclick="deleteCaseStudy('+i+')" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Delete</button></div></div>';
+      html+='<div id="cs-view-'+i+'" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid #E2E8E2;font-size:13px;line-height:1.7;white-space:pre-wrap;color:#1C2B1D;">'+esc(cs.content)+'</div>';
+      html+='</div>';
+    });
+  }else{html+='<div style="color:#5C6B5D;font-size:13px;">No case studies saved yet. Generate your first one above.</div>';}
+  html+='</div>';
+  return html;
+}
+
+async function genCaseStudy(){
+  var client=document.getElementById('cs-client');
+  var service=document.getElementById('cs-service');
+  var challenge=document.getElementById('cs-challenge');
+  var approach=document.getElementById('cs-approach');
+  var outcome=document.getElementById('cs-outcome');
+  var format=document.getElementById('cs-format');
+  var quote=document.getElementById('cs-quote');
+  var btn=document.getElementById('cs-btn');
+  var out=document.getElementById('cs-output');
+  if(!challenge||!challenge.value.trim()){if(out)out.innerHTML=alert_('error','Please describe the challenge the client faced.');return;}
+  if(btn)btn.textContent='Generating...';
+  var formatInstructions={'website':'Write a full website case study with sections: The Client (anonymised), The Challenge, Our Approach, The Outcome. 400-500 words. Professional and compelling. Add a 2-sentence client quote if requested.','proposal':'Write a concise case study for a proposal insert. 150-200 words. Challenge, approach, outcome format. Punchy and results-focused.','linkedin':'Write a LinkedIn story post about this client success. 200-250 words. First-person narrative from Eunomia perspective. End with a question or CTA. No emojis.'}[format?format.value:'website'];
+  var prompt='Generate a professional anonymised case study for Eunomia Pharma Services.
+
+Client type: '+(client?client.value:'pharma company')+'
+Service: '+(service?service.value:'compliance consulting')+'
+Challenge: '+(challenge?challenge.value:'')+'
+Approach: '+(approach&&approach.value?approach.value:'Eunomia provided expert compliance support')+'
+Outcome: '+(outcome&&outcome.value?outcome.value:'significant compliance improvements achieved')+'
+Include quote: '+(quote?quote.value:'yes')+'
+
+'+formatInstructions+'
+
+Do not name the client. Use language like "a leading UK biotech" or "a mid-size pharma company". Position Eunomia as expert, agile and commercially aware.';
+  try{
+    var text=await aiCall([{role:'user',content:prompt}],'You are a senior pharma compliance expert writing a case study for Eunomia Pharma Services. Be specific, results-focused, and position Eunomia as the go-to compliance partner for growing pharma companies.');
+    if(out){
+      var clientDesc=client?client.value:'Pharma Client';
+      var serviceDesc=service?service.value:'Compliance';
+      out.innerHTML='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
+      out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;">Case Study Generated</span><div style="display:flex;gap:8px;">';
+      out.innerHTML+='<button onclick="copyDoc('cs-doc-text')" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>';
+      out.innerHTML+='<button onclick="saveCaseStudy(''+esc(clientDesc)+'',''+esc(serviceDesc)+'')" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Save</button>';
+      out.innerHTML+='<button onclick="downloadDoc('cs-doc-text','CaseStudy-'+esc(clientDesc.replace(/\s+/g,'-'))+'.txt')" style="background:#3d8b40;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download</button></div></div>';
+      out.innerHTML+='<div style="padding:20px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#1C2B1D;max-height:500px;overflow-y:auto;" id="cs-doc-text">'+esc(text)+'</div></div>';
+    }
+  }catch(e){if(out)out.innerHTML=alert_('error','Error: '+e.message);}
+  if(btn)btn.textContent='Generate Case Study';
+}
+
+function saveCaseStudy(clientDesc,serviceDesc){
+  var el=document.getElementById('cs-doc-text');
+  if(!el)return;
+  var stored=JSON.parse(localStorage.getItem('eunomia-casestudies')||'[]');
+  stored.unshift({title:clientDesc+' - '+serviceDesc,service:serviceDesc,content:el.textContent,date:new Date().toLocaleDateString('en-GB')});
+  localStorage.setItem('eunomia-casestudies',JSON.stringify(stored));
+  alert('Case study saved!');
+  renderClients();
+}
+function viewCaseStudy(i){
+  var el=document.getElementById('cs-view-'+i);
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
+}
+function copyCaseStudy(i){
+  var stored=JSON.parse(localStorage.getItem('eunomia-casestudies')||'[]');
+  if(stored[i])navigator.clipboard.writeText(stored[i].content);
+}
+function deleteCaseStudy(i){
+  var stored=JSON.parse(localStorage.getItem('eunomia-casestudies')||'[]');
+  stored.splice(i,1);
+  localStorage.setItem('eunomia-casestudies',JSON.stringify(stored));
+  renderClients();
+}
+
+// CLIENT TRACKER
+function renderClientTracker(){
+  var clients=JSON.parse(localStorage.getItem('eunomia-clients-list')||'[]');
+  var html='<div class="card"><div class="card-title">Client Tracker</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">Track your active clients, their 90-day testimonial due date, and onboarding status.</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">';
+  html+='<input id="new-client-name" placeholder="Client name"/>';
+  html+='<input id="new-client-start" type="date" title="Engagement start date"/>';
+  html+='<button class="btn btn-primary" onclick="addClient()">Add Client</button></div>';
+  if(clients.length){
+    html+='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
+    html+='<div style="display:grid;grid-template-columns:1fr 100px 120px 100px 80px;gap:8px;padding:8px 12px;background:#F5F6F5;font-size:11px;font-weight:600;color:#5C6B5D;text-transform:uppercase;letter-spacing:0.05em;">';
+    html+='<span>Client</span><span>Start</span><span>Testimonial due</span><span>Status</span><span>Action</span></div>';
+    clients.forEach(function(c,i){
+      var start=new Date(c.start);
+      var testimonialDue=new Date(c.start);testimonialDue.setDate(testimonialDue.getDate()+90);
+      var daysToTm=Math.ceil((testimonialDue-Date.now())/86400000);
+      var tmStatus=c.testimonialReceived?'Received':daysToTm<0?'Overdue':daysToTm<14?'Due soon':'Pending';
+      var tmColor=c.testimonialReceived?'#3d8b40':daysToTm<0?'#DC2626':daysToTm<14?'#E8651A':'#6B7280';
+      html+='<div style="display:grid;grid-template-columns:1fr 100px 120px 100px 80px;gap:8px;padding:10px 12px;border-top:1px solid #E2E8E2;align-items:center;">';
+      html+='<span style="font-weight:600;font-size:13px;">'+esc(c.name)+'</span>';
+      html+='<span style="font-size:12px;color:#5C6B5D;">'+esc(start.toLocaleDateString('en-GB'))+'</span>';
+      html+='<span style="font-size:12px;color:#5C6B5D;">'+esc(testimonialDue.toLocaleDateString('en-GB'))+'</span>';
+      html+='<span style="font-size:11px;font-weight:600;color:'+tmColor+';">'+tmStatus+'</span>';
+      html+='<button onclick="markTestimonialReceived('+i+')" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;">'+(c.testimonialReceived?'Received':'Mark done')+'</button>';
+      html+='</div>';
+    });
+    html+='</div>';
+  }else{html+='<div style="color:#5C6B5D;font-size:13px;">No clients added yet. Add your first client above to start tracking.</div>';}
+  html+='</div>';
+  return html;
+}
+
+function addClient(){
+  var name=document.getElementById('new-client-name');
+  var start=document.getElementById('new-client-start');
+  if(!name||!name.value.trim())return;
+  var clients=JSON.parse(localStorage.getItem('eunomia-clients-list')||'[]');
+  clients.push({name:name.value.trim(),start:start&&start.value?start.value:new Date().toISOString().slice(0,10),testimonialReceived:false});
+  localStorage.setItem('eunomia-clients-list',JSON.stringify(clients));
+  name.value='';if(start)start.value='';
+  renderClients();
+}
+function markTestimonialReceived(i){
+  var clients=JSON.parse(localStorage.getItem('eunomia-clients-list')||'[]');
+  clients[i].testimonialReceived=!clients[i].testimonialReceived;
+  localStorage.setItem('eunomia-clients-list',JSON.stringify(clients));
+  renderClients();
+}
+
+function copyDoc(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(function(){alert('Copied to clipboard!');});
+}
+function downloadDoc(id,filename){
+  var el=document.getElementById(id);
+  if(!el)return;
+  var blob=new Blob([el.textContent],{type:'text/plain'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=filename||'eunomia-document.txt';a.click();
 }
 
 // ============================================================
