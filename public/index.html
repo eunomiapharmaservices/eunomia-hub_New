@@ -389,67 +389,7 @@ Give specific actionable advice for Eunomia's pharma compliance marketing.`;
 
         {/* LINKEDIN */}
         {tab==='linkedin'&&(
-          <>
-            {usingMock.li&&<Alert type="warning">Showing demo data. Add <strong>LINKEDIN_ACCESS_TOKEN</strong> in Vercel env vars for live data.</Alert>}
-            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
-              <Stat label="Account" value={li?.name&&li.name!=='undefined undefined'?li.name:li?.email??'Connected'} sub={li?.email?li.email:'LinkedIn profile'}/>
-              <Stat label="Connections" value={li?.connections?.toLocaleString()??'N/A'} sub="Total network"/>
-              <Stat label="Status" value={usingMock.li?'Demo':'Live'} sub={usingMock.li?'Add token for live data':'Token connected'} color={usingMock.li?C.amber:C.green}/>
-            </div>
-
-            {/* Quick actions */}
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-              <a href="https://www.linkedin.com/company/eunomia-pharma-services" target="_blank" rel="noreferrer"
-                style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:10,padding:'14px 20px',textDecoration:'none',color:C.text,display:'flex',alignItems:'center',gap:12}}>
-                <div style={{width:36,height:36,borderRadius:8,background:'#E8F0F8',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>in</div>
-                <div><div style={{fontWeight:700,fontSize:14}}>Open Company Page</div><div style={{fontSize:12,color:C.muted}}>View your LinkedIn presence</div></div>
-              </a>
-              <a href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer"
-                style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:10,padding:'14px 20px',textDecoration:'none',color:C.text,display:'flex',alignItems:'center',gap:12}}>
-                <div style={{width:36,height:36,borderRadius:8,background:'#3d8b4020',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>✍</div>
-                <div><div style={{fontWeight:700,fontSize:14}}>Create a Post</div><div style={{fontSize:12,color:C.muted}}>Share a regulatory update</div></div>
-              </a>
-            </div>
-
-            {/* Tips */}
-            <div className="card">
-              <H>LinkedIn content strategy for Eunomia</H>
-              {[
-                {day:'Mon',tip:'Share a regulatory insight',detail:'Post a 3-sentence take on the latest PMCPA or ABPI development. Tag the relevant body. Best posting time: 8-9am.',icon:'📋'},
-                {day:'Wed',tip:'Publish a webinar clip',detail:"Uday's 60-90 second video clip from your last webinar. Add captions. Video gets 3x more reach than text posts.",icon:'🎬'},
-                {day:'Thu',tip:'Engagement hour',detail:"Spend 15 minutes replying to comments on your posts and commenting on posts from your ICP. LinkedIn rewards fast engagement.",icon:'💬'},
-                {day:'Fri',tip:'Newsletter teaser',detail:'Short preview of your upcoming Mailchimp newsletter -- 2 key takeaways and a link to subscribe.',icon:'✉'},
-              ].map((t,i)=>(
-                <div key={i} className="row" style={{alignItems:'flex-start',gap:14}}>
-                  <div style={{width:44,height:44,borderRadius:8,background:'#EBF5EC',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                    <span style={{fontSize:16}}>{t.icon}</span>
-                    <span style={{fontSize:9,fontWeight:700,color:'#3d8b40',textTransform:'uppercase',letterSpacing:'0.05em'}}>{t.day}</span>
-                  </div>
-                  <div>
-                    <div style={{fontWeight:600,fontSize:13,marginBottom:2}}>{t.tip}</div>
-                    <div style={{fontSize:12,color:C.muted,lineHeight:1.5}}>{t.detail}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Token status */}
-            <div className="card" style={{background:'#F4F7F4'}}>
-              <H>Token & permissions status</H>
-              {[
-                {label:'Access token',status:!usingMock.li,note:usingMock.li?'Add LINKEDIN_ACCESS_TOKEN in Vercel env vars':'Connected'},
-                {label:'Profile data (openid scope)',status:li?.name&&li.name!=='undefined undefined',note:'Returns your name and email'},
-                {label:'Connection count (r_network)',status:!!li?.connections,note:li?.connections?`${li.connections} connections`:'Requires r_network scope -- regenerate token with this scope'},
-                {label:'Org page analytics',status:false,note:'Requires Marketing Developer Platform -- apply at linkedin.com/developers'},
-              ].map((r,i)=>(
-                <div key={i} className="row">
-                  <div style={{width:8,height:8,borderRadius:'50%',background:r.status?'#3d8b40':'#E8651A',flexShrink:0}}/>
-                  <span style={{fontWeight:600,fontSize:13,flex:1}}>{r.label}</span>
-                  <span style={{fontSize:12,color:C.muted}}>{r.note}</span>
-                </div>
-              ))}
-            </div>
-          </>
+          <LinkedInTab li={li} usingMock={usingMock} C={C} Stat={Stat} Alert={Alert} H={H} Pill={Pill} Spin={Spin} apip={apip}/>
         )}
 
         {/* SALES ROBOT */}
@@ -566,41 +506,20 @@ Give specific actionable advice for Eunomia's pharma compliance marketing.`;
             )}
 
             {composerOpen&&step==='drafting'&&(
-              <div className="card">
-                <H>Step 2 -- Newsletter draft</H>
-                {draftSubj&&(
-                  <div style={{background:C.blueL,borderRadius:8,padding:'10px 14px',marginBottom:14,fontSize:13}}>
-                    <span style={{fontWeight:600,color:C.blue}}>Subject: </span>{draftSubj}
-                  </div>
-                )}
-                {draftLoading&&!draft&&<div style={{textAlign:'center',padding:'28px 0',color:C.muted,fontSize:13}}><Spin/> <span style={{marginLeft:10}}>Writing your newsletter…</span></div>}
-                {draft&&(
-                  <div style={{background:C.grayL,borderRadius:10,padding:16,fontSize:13,lineHeight:1.75,whiteSpace:'pre-wrap',maxHeight:440,overflowY:'auto',marginBottom:16}}>
-                    {draft.replace(/SUBJECT:.+\n?---\n?/,'')}
-                  </div>
-                )}
-                {!draftLoading&&draft&&(
-                  <>
-                    {mcResult&&(
-                      <Alert type={mcResult.success?'success':'error'} style={{marginBottom:12}}>
-                        {mcResult.success
-                          ?<>✓ Draft created in Mailchimp! <a href={mcResult.editUrl} target="_blank" rel="noreferrer" style={{color:C.blue}}>Open in Mailchimp →</a></>
-                          :`Mailchimp error: ${mcResult.error}`}
-                      </Alert>
-                    )}
-                    <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-                      <button onClick={()=>{setStep('topics');setDraft('');setDraftSubj('');setMcResult(null);}}
-                        style={{background:'none',border:`1px solid ${C.border}`,borderRadius:8,padding:'8px 14px',fontSize:13,cursor:'pointer'}}>← Back</button>
-                      <button onClick={genDraft}
-                        style={{background:'none',border:`1px solid ${C.blue}`,color:C.blue,borderRadius:8,padding:'8px 14px',fontSize:13,fontWeight:600,cursor:'pointer'}}>↺ Regenerate</button>
-                      <button onClick={sendToMailchimp} disabled={sending}
-                        style={{background:sending?C.grayL:C.green,color:sending?C.muted:'#fff',border:'none',borderRadius:8,padding:'10px 20px',fontSize:13,fontWeight:600,cursor:sending?'default':'pointer',display:'flex',alignItems:'center',gap:8}}>
-                        {sending?<><Spin s={14}/> Sending…</>:'✓ Send to Mailchimp as Draft'}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+              <NewsletterPreview
+                draft={draft}
+                draftSubj={draftSubj}
+                draftLoading={draftLoading}
+                mcResult={mcResult}
+                sending={sending}
+                C={C}
+                Spin={Spin}
+                Alert={Alert}
+                onBack={()=>{setStep('topics');setDraft('');setDraftSubj('');setMcResult(null);}}
+                onRegenerate={genDraft}
+                onSend={sendToMailchimp}
+                mc={mc}
+              />
             )}
           </>
         )}
@@ -869,6 +788,360 @@ function MailchimpTab({mc,usingMock,C,Stat,Alert,H,Pill,Spin,daysSince,daysUntil
         ))}
       </div>
     </>
+  );
+}
+
+// ── LinkedInComposer component ───────────────────────────────────────────────
+function LinkedInComposer({li, C, Spin, Alert, apip}){
+  const[text,setText]=useState('');
+  const[postAs,setPostAs]=useState('person');
+  const[posting,setPosting]=useState(false);
+  const[result,setResult]=useState(null);
+  const[aiLoading,setAiLoading]=useState(false);
+  const maxChars=3000;
+  const charColor=text.length>2800?'#DC2626':text.length>2500?'#D97706':'#6B7280';
+
+  async function generateAIDraft(){
+    setAiLoading(true);
+    try{
+      const resp=await fetch('/api/claude',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          messages:[{role:'user',content:'Write a LinkedIn post for Eunomia Pharma Services, a UK pharma compliance consultancy. The post should be about a current pharma regulatory topic (PMCPA, ABPI Code, or compliance best practice). Make it insightful, professional and engaging. 150-200 words. Include 3-4 relevant hashtags at the end. No emojis. Write it ready to post - no introduction or explanation needed.'}],
+          system:'You are a LinkedIn content expert for pharma compliance. Write posts that position Eunomia as a thought leader. Be direct and insightful, not salesy. Use line breaks for readability.'
+        })
+      });
+      const reader=resp.body.getReader();
+      const dec=new TextDecoder();
+      let full='';
+      while(true){
+        const{done,value}=await reader.read();
+        if(done)break;
+        for(const line of dec.decode(value,{stream:true}).split('\n')){
+          if(line.startsWith('data: ')){
+            try{
+              const j=JSON.parse(line.slice(6));
+              if(j.type==='content_block_delta'&&j.delta?.text){full+=j.delta.text;setText(full);}
+            }catch{}
+          }
+        }
+      }
+    }catch(e){setText('Could not generate draft. Check ANTHROPIC_API_KEY.');}
+    setAiLoading(false);
+  }
+
+  async function doPost(){
+    if(!text.trim())return;
+    setPosting(true);setResult(null);
+    const r=await apip('/api/linkedin?action=post',{text,postAs});
+    setResult(r);
+    if(r.success)setText('');
+    setPosting(false);
+  }
+
+  return(
+    <div className="card" style={{border:'1.5px solid #3d8b40'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+        <div style={{fontWeight:700,fontSize:15,color:'#1C2B1D'}}>Create LinkedIn Post</div>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          <span style={{fontSize:12,color:'#5C6B5D'}}>Post as:</span>
+          <select value={postAs} onChange={e=>setPostAs(e.target.value)}
+            style={{fontSize:12,border:'1px solid #E2E8E2',borderRadius:6,padding:'4px 8px',fontFamily:'inherit',background:'#fff'}}>
+            <option value="person">Personal profile ({li?.name||'You'})</option>
+            <option value="org">Eunomia company page</option>
+          </select>
+        </div>
+      </div>
+
+      {/* AI draft button */}
+      <div style={{display:'flex',gap:8,marginBottom:10}}>
+        <button onClick={generateAIDraft} disabled={aiLoading}
+          style={{background:aiLoading?'#F5F6F5':'#EBF5EC',color:aiLoading?'#5C6B5D':'#3d8b40',border:'1px solid #3d8b4040',borderRadius:7,padding:'7px 14px',fontSize:12,fontWeight:600,cursor:aiLoading?'default':'pointer',display:'flex',alignItems:'center',gap:6}}>
+          {aiLoading?<><Spin s={13}/> Writing draft...</>:'✦ Generate AI draft'}
+        </button>
+        {text&&<button onClick={()=>setText('')}
+          style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:'#5C6B5D'}}>
+          Clear
+        </button>}
+      </div>
+
+      {/* Text area */}
+      <textarea
+        value={text}
+        onChange={e=>setText(e.target.value.slice(0,maxChars))}
+        placeholder="Write your post here, or click Generate AI draft above..."
+        rows={8}
+        style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:10,padding:'12px 14px',fontSize:13,lineHeight:1.7,resize:'vertical',outline:'none',fontFamily:'inherit',color:'#1C2B1D'}}
+      />
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:6,marginBottom:14}}>
+        <span style={{fontSize:12,color:charColor}}>{text.length}/{maxChars} characters</span>
+        {text.length>0&&<span style={{fontSize:12,color:'#5C6B5D'}}>~{Math.ceil(text.split(' ').length/238)} min read</span>}
+      </div>
+
+      {/* Post result */}
+      {result&&(
+        <div style={{marginBottom:12}}>
+          {result.success?(
+            <div style={{background:'#EBF5EC',border:'1px solid #3d8b4030',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#1C2B1D'}}>
+              ✓ Posted successfully to LinkedIn!
+              <a href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer"
+                style={{color:'#3d8b40',fontWeight:600,marginLeft:8}}>View your feed →</a>
+            </div>
+          ):(
+            <div style={{background:'#FEF0E8',border:'1px solid #E8651A30',borderRadius:8,padding:'10px 14px',fontSize:13}}>
+              <strong style={{color:'#E8651A'}}>Could not post:</strong> {result.error}
+              {result.detail&&<div style={{marginTop:6,fontSize:12,color:'#5C6B5D'}}>{result.detail}</div>}
+              {result.error==='Permission denied'&&(
+                <div style={{marginTop:8,padding:'8px 12px',background:'#fff',borderRadius:6,fontSize:12,color:'#1C2B1D',lineHeight:1.6}}>
+                  <strong>To fix this:</strong><br/>
+                  1. Go to linkedin.com/developers → your app → Auth tab<br/>
+                  2. Add <code style={{background:'#F5F6F5',padding:'1px 4px',borderRadius:3}}>w_member_social</code> to OAuth 2.0 scopes<br/>
+                  3. Generate a new access token with this scope<br/>
+                  4. Update LINKEDIN_ACCESS_TOKEN in Vercel env vars → Redeploy
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Post button */}
+      <button onClick={doPost} disabled={posting||!text.trim()}
+        style={{background:text.trim()&&!posting?'#3d8b40':'#E2E8E2',color:text.trim()&&!posting?'#fff':'#9CA3AF',border:'none',borderRadius:9,padding:'11px 24px',fontSize:14,fontWeight:700,cursor:text.trim()&&!posting?'pointer':'default',display:'flex',alignItems:'center',gap:8,width:'100%',justifyContent:'center'}}>
+        {posting?<><Spin s={16}/> Posting to LinkedIn...</>:<>Post to LinkedIn</>}
+      </button>
+    </div>
+  );
+}
+
+// ── LinkedInTab component (needs own state for composer toggle) ───────────────
+function LinkedInTab({li,usingMock,C,Stat,Alert,H,Pill,Spin,apip}){
+  const[showComposer,setShowComposer]=useState(false);
+  return(
+    <>
+      {usingMock?.li&&<Alert type="warning">Showing demo data. Add <strong>LINKEDIN_ACCESS_TOKEN</strong> in Vercel env vars for live data.</Alert>}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
+        <Stat label="Account" value={li?.name&&li.name!=='undefined undefined'?li.name:li?.email??'Connected'} sub={li?.email?li.email:'LinkedIn profile'}/>
+        <Stat label="Connections" value={li?.connections?.toLocaleString()??'N/A'} sub="Total network"/>
+        <Stat label="Status" value={usingMock?.li?'Demo':'Live'} sub={usingMock?.li?'Add token for live data':'Token connected'} color={usingMock?.li?C.amber:C.green}/>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+        <a href="https://www.linkedin.com/company/eunomia-pharma-services" target="_blank" rel="noreferrer"
+          style={{background:'#fff',border:`1px solid ${C.border}`,borderRadius:10,padding:'14px 20px',textDecoration:'none',color:C.text,display:'flex',alignItems:'center',gap:12}}>
+          <div style={{width:36,height:36,borderRadius:8,background:'#E8F0F8',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>in</div>
+          <div><div style={{fontWeight:700,fontSize:14}}>Open Company Page</div><div style={{fontSize:12,color:C.muted}}>View your LinkedIn presence</div></div>
+        </a>
+        <button onClick={()=>setShowComposer(p=>!p)}
+          style={{background:showComposer?'#EBF5EC':'#fff',border:`1.5px solid ${showComposer?'#3d8b40':C.border}`,borderRadius:10,padding:'14px 20px',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:12}}>
+          <div style={{width:36,height:36,borderRadius:8,background:'#3d8b4020',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>✍</div>
+          <div><div style={{fontWeight:700,fontSize:14,color:C.text}}>Create a Post</div><div style={{fontSize:12,color:C.muted}}>Post directly to LinkedIn</div></div>
+        </button>
+      </div>
+
+      {showComposer&&<LinkedInComposer li={li} C={C} Spin={Spin} Alert={Alert} apip={apip}/>}
+
+      <div className="card">
+        <H>LinkedIn content strategy for Eunomia</H>
+        {[
+          {day:'Mon',tip:'Share a regulatory insight',detail:'Post a 3-sentence take on the latest PMCPA or ABPI development. Tag the relevant body. Best posting time: 8-9am.',icon:'📋'},
+          {day:'Wed',tip:'Publish a webinar clip',detail:'Uday clips 60-90 seconds from your last webinar. Add captions. Video gets 3x more reach than text posts.',icon:'🎬'},
+          {day:'Thu',tip:'Engagement hour',detail:'Spend 15 minutes replying to comments on your posts and commenting on posts from your ICP. LinkedIn rewards fast engagement.',icon:'💬'},
+          {day:'Fri',tip:'Newsletter teaser',detail:'Short preview of your upcoming Mailchimp newsletter - 2 key takeaways and a link to subscribe.',icon:'✉'},
+        ].map((t,i)=>(
+          <div key={i} className="row" style={{alignItems:'flex-start',gap:14}}>
+            <div style={{width:44,height:44,borderRadius:8,background:'#EBF5EC',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+              <span style={{fontSize:16}}>{t.icon}</span>
+              <span style={{fontSize:9,fontWeight:700,color:'#3d8b40',textTransform:'uppercase',letterSpacing:'0.05em'}}>{t.day}</span>
+            </div>
+            <div>
+              <div style={{fontWeight:600,fontSize:13,marginBottom:2}}>{t.tip}</div>
+              <div style={{fontSize:12,color:C.muted,lineHeight:1.5}}>{t.detail}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card" style={{background:'#F4F7F4'}}>
+        <H>Token and permissions status</H>
+        {[
+          {label:'Access token',status:!usingMock?.li,note:usingMock?.li?'Add LINKEDIN_ACCESS_TOKEN in Vercel env vars':'Connected'},
+          {label:'Profile data (openid scope)',status:!!(li?.name&&li.name!=='undefined undefined'),note:'Returns your name and email'},
+          {label:'Connection count (r_network)',status:!!li?.connections,note:li?.connections?`${li.connections} connections`:'Regenerate token with r_network scope'},
+          {label:'Post to LinkedIn (w_member_social)',status:false,note:'Regenerate token at linkedin.com/developers with w_member_social scope'},
+          {label:'Org page analytics',status:false,note:'Requires Marketing Developer Platform approval'},
+        ].map((r,i)=>(
+          <div key={i} className="row">
+            <div style={{width:8,height:8,borderRadius:'50%',background:r.status?'#3d8b40':'#E8651A',flexShrink:0}}/>
+            <span style={{fontWeight:600,fontSize:13,flex:1}}>{r.label}</span>
+            <span style={{fontSize:12,color:C.muted}}>{r.note}</span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ── NewsletterPreview component ───────────────────────────────────────────────
+function NewsletterPreview({draft,draftSubj,draftLoading,mcResult,sending,C,Spin,Alert,onBack,onRegenerate,onSend,mc}){
+  const[editMode,setEditMode]=useState(false);
+  const[editedDraft,setEditedDraft]=useState('');
+
+  // Strip the SUBJECT/--- header from display
+  const bodyText = (editMode ? editedDraft : draft).replace(/SUBJECT:.+\n?---\n?/,'').trim();
+
+  // Parse **bold** markdown into segments for rendering
+  function renderBody(text){
+    if(!text) return null;
+    return text.split('\n').map((line,i)=>{
+      if(!line.trim()) return <div key={i} style={{height:12}}/>;
+      // Bold headings: **text**
+      const parts = line.split(/\*\*([^*]+)\*\*/g);
+      const rendered = parts.map((p,j)=>
+        j%2===1
+          ? <strong key={j} style={{color:'#1C2B1D',fontWeight:700}}>{p}</strong>
+          : <span key={j}>{p}</span>
+      );
+      const isHeading = line.startsWith('**') && line.endsWith('**');
+      return(
+        <p key={i} style={{
+          margin: isHeading ? '18px 0 6px' : '0 0 10px',
+          fontSize: isHeading ? 15 : 14,
+          lineHeight: 1.7,
+          color: '#2C2C2C'
+        }}>{rendered}</p>
+      );
+    });
+  }
+
+  function startEdit(){
+    setEditedDraft(bodyText);
+    setEditMode(true);
+  }
+
+  function wordCount(text){ return text.trim().split(/\s+/).filter(Boolean).length; }
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+
+      {/* Loading state */}
+      {draftLoading&&!draft&&(
+        <div className="card" style={{textAlign:'center',padding:'40px 20px'}}>
+          <Spin s={24}/>
+          <div style={{marginTop:14,fontSize:13,color:C.muted}}>Writing your newsletter...</div>
+          <div style={{marginTop:6,fontSize:12,color:C.muted,opacity:0.7}}>Claude is researching and drafting your content</div>
+        </div>
+      )}
+
+      {/* Email preview */}
+      {draft&&(
+        <>
+          {/* Toolbar */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:10}}>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <button onClick={onBack}
+                style={{background:'none',border:`1px solid ${C.border}`,borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:C.muted}}>
+                ← Back
+              </button>
+              <button onClick={onRegenerate} disabled={draftLoading}
+                style={{background:'none',border:`1px solid ${C.border}`,borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:C.muted}}>
+                ↺ Regenerate
+              </button>
+              <button onClick={editMode?()=>setEditMode(false):startEdit}
+                style={{background:editMode?'#EBF5EC':'none',border:`1px solid ${editMode?'#3d8b40':C.border}`,borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:editMode?'#3d8b40':C.muted,fontWeight:editMode?600:400}}>
+                {editMode?'✓ Done editing':'✏ Edit'}
+              </button>
+            </div>
+            <div style={{fontSize:12,color:C.muted}}>
+              {wordCount(bodyText)} words · ~{Math.ceil(wordCount(bodyText)/200)} min read
+            </div>
+          </div>
+
+          {/* Email frame */}
+          <div style={{border:`1px solid ${C.border}`,borderRadius:14,overflow:'hidden',boxShadow:'0 4px 24px #2C3E2D10'}}>
+
+            {/* Email client chrome */}
+            <div style={{background:'#F4F7F4',padding:'10px 16px',borderBottom:`1px solid ${C.border}`,display:'flex',alignItems:'center',gap:8}}>
+              <div style={{display:'flex',gap:5}}>
+                <div style={{width:10,height:10,borderRadius:'50%',background:'#FC5F5A'}}/>
+                <div style={{width:10,height:10,borderRadius:'50%',background:'#FDBC40'}}/>
+                <div style={{width:10,height:10,borderRadius:'50%',background:'#34C749'}}/>
+              </div>
+              <span style={{fontSize:11,color:C.muted,marginLeft:8}}>Email preview</span>
+            </div>
+
+            {/* Email header bar */}
+            <div style={{background:'#2C3E2D',padding:'16px 24px',borderBottom:'3px solid #E8651A'}}>
+              <div style={{display:'flex',alignItems:'center',gap:10}}>
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <circle cx="14" cy="14" r="13" fill="white" stroke="#E8651A" strokeWidth="1.5"/>
+                  <path d="M9 14 L13 18 L19 10" stroke="#3d8b40" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <div>
+                  <div style={{color:'#fff',fontWeight:700,fontSize:12,letterSpacing:'0.05em'}}>EUNOMIA PHARMA SERVICES</div>
+                  <div style={{color:'#a8c5a9',fontSize:10}}>Regulatory Intelligence Newsletter</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Email meta */}
+            <div style={{background:'#FAFAFA',padding:'12px 24px',borderBottom:`1px solid ${C.border}`}}>
+              <div style={{display:'grid',gridTemplateColumns:'60px 1fr',gap:'4px 12px',fontSize:12}}>
+                <span style={{color:C.muted,fontWeight:600}}>From:</span>
+                <span>Eunomia Pharma Services &lt;hello@eunomiapharmaservices.com&gt;</span>
+                <span style={{color:C.muted,fontWeight:600}}>To:</span>
+                <span style={{color:C.muted}}>{mc?.subscribers?.toLocaleString()||'834'} subscribers</span>
+                <span style={{color:C.muted,fontWeight:600}}>Subject:</span>
+                <span style={{fontWeight:600,color:'#1C2B1D'}}>{draftSubj||'Newsletter'}</span>
+              </div>
+            </div>
+
+            {/* Email body */}
+            <div style={{background:'#fff',padding:'32px 40px',maxHeight:520,overflowY:'auto'}}>
+              {editMode?(
+                <textarea
+                  value={editedDraft}
+                  onChange={e=>setEditedDraft(e.target.value)}
+                  style={{width:'100%',minHeight:340,border:`1px solid ${C.border}`,borderRadius:8,padding:'12px',fontSize:14,lineHeight:1.75,fontFamily:'inherit',resize:'vertical',outline:'none',color:'#2C2C2C'}}
+                />
+              ):(
+                <div style={{maxWidth:560,margin:'0 auto'}}>
+                  {renderBody(bodyText)}
+                </div>
+              )}
+            </div>
+
+            {/* Email footer */}
+            <div style={{background:'#F4F7F4',padding:'16px 24px',borderTop:`1px solid ${C.border}`,textAlign:'center'}}>
+              <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+                Eunomia Pharma Services · hello@eunomiapharmaservices.com<br/>
+                <span style={{color:'#3d8b40',cursor:'pointer',textDecoration:'underline'}}>Unsubscribe</span> · <span style={{color:'#3d8b40',cursor:'pointer',textDecoration:'underline'}}>View in browser</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Send result */}
+          {mcResult&&(
+            <Alert type={mcResult.success?'success':'error'}>
+              {mcResult.success
+                ?<>✓ Draft created in Mailchimp! <a href={mcResult.editUrl} target="_blank" rel="noreferrer" style={{color:'#3d8b40',fontWeight:600}}>Open in Mailchimp to schedule →</a></>
+                :`Mailchimp error: ${mcResult.error}`}
+            </Alert>
+          )}
+
+          {/* Send button */}
+          {!mcResult?.success&&(
+            <button onClick={onSend} disabled={sending}
+              style={{background:sending?C.grayL:'#3d8b40',color:sending?C.muted:'#fff',border:'none',borderRadius:10,padding:'14px 28px',fontSize:14,fontWeight:700,cursor:sending?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10,width:'100%',boxShadow:sending?'none':'0 2px 8px #3d8b4040'}}>
+              {sending
+                ?<><Spin s={16}/> Sending to Mailchimp...</>
+                :<>✉ Send to Mailchimp as Draft - {mc?.subscribers?.toLocaleString()||'834'} subscribers</>}
+            </button>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
