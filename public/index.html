@@ -876,42 +876,7 @@ function App(){
 
         {tab==='linkedin' ? <LinkedInTab li={li} usingMock={usingMock.li}/> : null}
 
-        {tab==='salesrobot' ? (
-          <div style={{display:'flex',flexDirection:'column',gap:16}}>
-            {usingMock.sr ? <Alert type="warning">Showing demo data. Add SALES_ROBOT_API_KEY in Vercel env vars.</Alert> : null}
-            {sr&&sr.summary ? (
-              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-                <Stat label="Active sequences" value={sr.summary.activeSequences}/>
-                <Stat label="Messages sent" value={sr.summary.messagesSent} sub="This period"/>
-                <Stat label="Replies" value={sr.summary.replies} color={C.teal}/>
-                <Stat label="Reply rate" value={sr.summary.replyRate+'%'} color={parseFloat(sr.summary.replyRate)>=15?C.green:C.amber}/>
-              </div>
-            ) : null}
-            <div className="card">
-              <SH>Sequences</SH>
-              {sr&&sr.campaigns&&sr.campaigns.length>0 ? (
-                <div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 70px 70px 80px',gap:8,fontSize:11,fontWeight:600,color:C.muted,paddingBottom:8,borderBottom:'1px solid #E2E8E2',textTransform:'uppercase',letterSpacing:'0.05em'}}>
-                    <span>Sequence</span><span style={{textAlign:'center'}}>Sent</span><span style={{textAlign:'center'}}>Replies</span><span style={{textAlign:'right'}}>Rate</span>
-                  </div>
-                  {sr.campaigns.map(function(s,i){
-                    return(
-                      <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 70px 70px 80px',gap:8,alignItems:'center',padding:'10px 0',borderBottom:'1px solid #E2E8E2'}}>
-                        <div>
-                          <div style={{fontWeight:600,fontSize:13}}>{s.name}</div>
-                          <Pill label={s.status} color={s.status==='active'?C.green:C.gray}/>
-                        </div>
-                        <span style={{textAlign:'center'}}>{s.sent}</span>
-                        <span style={{textAlign:'center'}}>{s.replies}</span>
-                        <div style={{textAlign:'right'}}><Pill label={s.rate+'%'} color={parseFloat(s.rate)>=18?C.green:parseFloat(s.rate)>=10?C.amber:C.red}/></div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : <div style={{color:C.muted,fontSize:13}}>No sequences found.</div>}
-            </div>
-          </div>
-        ) : null}
+        {tab==='salesrobot' ? <SalesRobotTab sr={sr} usingMock={usingMock.sr}/> : null}
 
         {tab==='mailchimp' ? <MailchimpTab mc={mc} usingMock={usingMock.mc} onCreateNewsletter={openNewsletter}/> : null}
 
@@ -1009,6 +974,286 @@ function App(){
   );
 }
 
+
+// ── SalesRobotTab ─────────────────────────────────────────────────────────────
+function SalesRobotTab(props) {
+  var sr = props.sr, usingMock = props.usingMock;
+  var [showCreator, setShowCreator] = useState(false);
+  var [jobTitle, setJobTitle] = useState('');
+  var [industry, setIndustry] = useState('Pharmaceutical');
+  var [companySize, setCompanySize] = useState('500-5000');
+  var [topic, setTopic] = useState('');
+  var [generating, setGenerating] = useState(false);
+  var [campaign, setCampaign] = useState(null);
+  var [copied, setCopied] = useState({});
+  var [genError, setGenError] = useState('');
+
+  var jobTitles = [
+    'Medical Affairs Director', 'Chief Compliance Officer', 'Regulatory Affairs VP',
+    'Head of Medical Affairs', 'Compliance Manager', 'Legal Counsel - Healthcare',
+    'Medical Science Liaison Manager', 'VP Medical Affairs', 'Director of Regulatory Affairs',
+    'Chief Medical Officer'
+  ];
+
+  var topics = [
+    'PMCPA social media guidance 2026',
+    'ABPI Code 2024 compliance',
+    'ABAC and anti-bribery framework',
+    'HCP engagement and compliance',
+    'Medical affairs compliance training',
+    'Due diligence and third party risk',
+    'Gifts and hospitality policy',
+    'Conflict of interest management',
+    'MSL compliance training',
+    'Promotional materials approval'
+  ];
+
+  async function generateCampaign() {
+    if (!jobTitle.trim()) { setGenError('Please enter a job title to target.'); return; }
+    setGenerating(true); setCampaign(null); setGenError('');
+
+    var prompt = 'Generate a LinkedIn Sales Robot outreach campaign for Eunomia Pharma Services targeting ' + jobTitle + ' in ' + industry + ' companies (' + companySize + ' employees).' +
+      (topic ? ' The campaign topic is: ' + topic + '.' : '') +
+      ' Eunomia is a UK pharma compliance consultancy specialising in ABPI Code, PMCPA, ABAC, due diligence, compliance training for Sales Reps and MSLs, gifts and hospitality, conflict of interest, and data analytics dashboards.' +
+      ' Generate a campaign with: (1) a campaign name, (2) a target ICP description for Sales Navigator filters, (3) Message 1: connection request note (under 300 characters), (4) Message 2: follow-up value message (Day 5, under 500 characters), (5) Message 3: direct ask (Day 10, under 500 characters).' +
+      ' Messages must sound human, not salesy. Reference a specific compliance pain point. No emojis.' +
+      ' Respond ONLY as JSON: {"campaignName":"...","icp":"...","message1":"...","message2":"...","message3":"...","targetTitle":"...","targetIndustry":"..."}';
+
+    try {
+      var raw = '';
+      await callClaude(
+        [{role:'user',content:prompt}],
+        'You are a B2B LinkedIn outreach expert for pharma compliance. Write messages that sound like they come from a senior compliance consultant, not a salesperson. Be specific and reference real regulatory issues.',
+        function(chunk) { raw = chunk; }
+      );
+      var cleaned = raw.replace(/```json|```/g,'').trim();
+      var data = JSON.parse(cleaned);
+      setCampaign(data);
+    } catch(e) {
+      setGenError('Error generating campaign: ' + e.message);
+    }
+    setGenerating(false);
+  }
+
+  function copyText(key, text) {
+    navigator.clipboard.writeText(text).then(function() {
+      setCopied(function(p) { var n = Object.assign({}, p); n[key] = true; return n; });
+      setTimeout(function() {
+        setCopied(function(p) { var n = Object.assign({}, p); n[key] = false; return n; });
+      }, 2000);
+    });
+  }
+
+  function charColor(text, limit) {
+    var len = text ? text.length : 0;
+    if (len > limit) return C.red;
+    if (len > limit * 0.85) return C.amber;
+    return C.muted;
+  }
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      {usingMock ? <Alert type="warning">Showing your real campaign data from Sales Robot. To connect live API, contact Sales Robot support for your API endpoint URL.</Alert> : null}
+
+      {sr&&sr.summary ? (
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
+          <Stat label="Active sequences" value={sr.summary.activeSequences}/>
+          <Stat label="Messages sent" value={sr.summary.messagesSent} sub="This period"/>
+          <Stat label="Replies" value={sr.summary.replies} color={C.teal}/>
+          <Stat label="Reply rate" value={sr.summary.replyRate+'%'} color={parseFloat(sr.summary.replyRate)>=15?C.green:C.amber}/>
+        </div>
+      ) : null}
+
+      {/* Campaign performance */}
+      <div className="card">
+        <SH>Campaign Performance</SH>
+        {sr&&sr.campaigns&&sr.campaigns.length>0 ? (
+          <div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 90px 70px 80px 90px',gap:8,fontSize:11,fontWeight:600,color:C.muted,paddingBottom:8,borderBottom:'1px solid #E2E8E2',textTransform:'uppercase',letterSpacing:'0.05em'}}>
+              <span>Campaign</span><span style={{textAlign:'center'}}>Accepted</span><span style={{textAlign:'center'}}>Replies</span><span style={{textAlign:'right'}}>Rate</span><span style={{textAlign:'right'}}>Status</span>
+            </div>
+            {sr.campaigns.map(function(s,i) {
+              var rate = parseFloat(s.rate);
+              return (
+                <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 90px 70px 80px 90px',gap:8,alignItems:'center',padding:'12px 0',borderBottom:'1px solid #E2E8E2'}}>
+                  <div style={{fontWeight:600,fontSize:13}}>{s.name}</div>
+                  <span style={{textAlign:'center',fontSize:13}}>{s.sent}</span>
+                  <span style={{textAlign:'center',fontSize:13}}>{s.replies}</span>
+                  <div style={{textAlign:'right'}}>
+                    <Pill label={s.rate+'%'} color={rate>=22?C.green:rate>=15?C.teal:rate>=10?C.amber:C.red}/>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    <Pill label={s.status} color={s.status==='active'?C.green:C.gray}/>
+                  </div>
+                </div>
+              );
+            })}
+            <div style={{marginTop:12,padding:'10px 14px',background:C.blueL,borderRadius:8,fontSize:13}}>
+              <strong>Your average reply rate of {sr.summary.replyRate}% is well above the industry average of 10-15%.</strong> The Legal and Medical Directors campaigns are your strongest performers.
+            </div>
+          </div>
+        ) : <div style={{color:C.muted,fontSize:13}}>No campaigns found.</div>}
+      </div>
+
+      {/* Campaign Creator */}
+      <div className="card" style={{border: showCreator ? '1.5px solid #3d8b40' : '1px solid #E2E8E2'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div>
+            <div style={{fontWeight:700,fontSize:15,marginBottom:4}}>AI Campaign Creator</div>
+            <div style={{fontSize:13,color:C.muted}}>Generate a targeted outreach campaign with 3-step message sequence</div>
+          </div>
+          <button onClick={function(){setShowCreator(function(p){return !p;});setCampaign(null);setGenError('');}}
+            style={{background:showCreator?C.blueL:C.blue,color:showCreator?C.blue:'#fff',border:'1.5px solid '+(showCreator?C.blue:'transparent'),borderRadius:9,padding:'10px 20px',fontSize:13,fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}}>
+            {showCreator ? 'Close' : '+ Create Campaign'}
+          </button>
+        </div>
+
+        {showCreator ? (
+          <div style={{marginTop:20,borderTop:'1px solid #E2E8E2',paddingTop:20}}>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
+              {/* Target job title */}
+              <div>
+                <label style={{fontSize:12,fontWeight:600,color:C.muted,display:'block',marginBottom:6}}>TARGET JOB TITLE *</label>
+                <input list="jobtitles" value={jobTitle} onChange={function(e){setJobTitle(e.target.value);}}
+                  placeholder="e.g. Chief Compliance Officer"
+                  style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:8,padding:'9px 12px',fontSize:13,outline:'none'}}/>
+                <datalist id="jobtitles">
+                  {jobTitles.map(function(t){return <option key={t} value={t}/>;})}</datalist>
+              </div>
+
+              {/* Industry */}
+              <div>
+                <label style={{fontSize:12,fontWeight:600,color:C.muted,display:'block',marginBottom:6}}>INDUSTRY</label>
+                <select value={industry} onChange={function(e){setIndustry(e.target.value);}}
+                  style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:8,padding:'9px 12px',fontSize:13,outline:'none',background:'#fff'}}>
+                  <option>Pharmaceutical</option>
+                  <option>Biotech</option>
+                  <option>Medical Devices</option>
+                  <option>CRO / Clinical Research</option>
+                  <option>Healthcare</option>
+                  <option>Life Sciences</option>
+                </select>
+              </div>
+
+              {/* Company size */}
+              <div>
+                <label style={{fontSize:12,fontWeight:600,color:C.muted,display:'block',marginBottom:6}}>COMPANY SIZE</label>
+                <select value={companySize} onChange={function(e){setCompanySize(e.target.value);}}
+                  style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:8,padding:'9px 12px',fontSize:13,outline:'none',background:'#fff'}}>
+                  <option>50-200</option>
+                  <option>200-500</option>
+                  <option>500-5000</option>
+                  <option>1001-5000</option>
+                  <option>5000+</option>
+                </select>
+              </div>
+
+              {/* Topic hook */}
+              <div>
+                <label style={{fontSize:12,fontWeight:600,color:C.muted,display:'block',marginBottom:6}}>COMPLIANCE TOPIC (optional)</label>
+                <select value={topic} onChange={function(e){setTopic(e.target.value);}}
+                  style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:8,padding:'9px 12px',fontSize:13,outline:'none',background:'#fff'}}>
+                  <option value="">-- Auto-select best topic --</option>
+                  {topics.map(function(t){return <option key={t} value={t}>{t}</option>;})}</select>
+              </div>
+            </div>
+
+            {genError ? <Alert type="error">{genError}</Alert> : null}
+
+            <button onClick={generateCampaign} disabled={generating||!jobTitle.trim()}
+              style={{background:jobTitle.trim()&&!generating?C.blue:C.grayL,color:jobTitle.trim()&&!generating?'#fff':C.muted,border:'none',borderRadius:9,padding:'11px 24px',fontSize:14,fontWeight:700,cursor:jobTitle.trim()&&!generating?'pointer':'default',display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
+              {generating ? <Spin s={16}/> : null}
+              {generating ? 'Generating campaign...' : 'Generate Campaign'}
+            </button>
+
+            {/* Generated campaign output */}
+            {campaign ? (
+              <div style={{display:'flex',flexDirection:'column',gap:14}}>
+                {/* Campaign name + ICP */}
+                <div style={{background:C.blueL,borderRadius:10,padding:'14px 16px'}}>
+                  <div style={{fontSize:11,fontWeight:600,color:C.blue,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>Campaign Name</div>
+                  <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:12}}>{campaign.campaignName}</div>
+                  <div style={{fontSize:11,fontWeight:600,color:C.blue,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>Sales Navigator ICP Filters</div>
+                  <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>{campaign.icp}</div>
+                </div>
+
+                {/* Message 1 */}
+                <div style={{border:'1px solid #E2E8E2',borderRadius:10,overflow:'hidden'}}>
+                  <div style={{background:'#2C3E2D',padding:'8px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <div>
+                      <span style={{color:'#fff',fontWeight:600,fontSize:13}}>Message 1</span>
+                      <span style={{color:'#a8c5a9',fontSize:12,marginLeft:10}}>Connection request (Day 1)</span>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:10}}>
+                      <span style={{fontSize:11,color:charColor(campaign.message1,300)}}>{campaign.message1?campaign.message1.length:0}/300</span>
+                      <button onClick={function(){copyText('msg1',campaign.message1);}}
+                        style={{background:copied.msg1?C.green:'#ffffff30',color:'#fff',border:'none',borderRadius:6,padding:'4px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                        {copied.msg1?'Copied!':'Copy'}
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{padding:'14px 16px',fontSize:13,lineHeight:1.7,color:C.text,whiteSpace:'pre-wrap'}}>{campaign.message1}</div>
+                </div>
+
+                {/* Message 2 */}
+                <div style={{border:'1px solid #E2E8E2',borderRadius:10,overflow:'hidden'}}>
+                  <div style={{background:'#1a5c1d',padding:'8px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <div>
+                      <span style={{color:'#fff',fontWeight:600,fontSize:13}}>Message 2</span>
+                      <span style={{color:'#a8c5a9',fontSize:12,marginLeft:10}}>Follow-up value message (Day 5)</span>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:10}}>
+                      <span style={{fontSize:11,color:charColor(campaign.message2,500)}}>{campaign.message2?campaign.message2.length:0}/500</span>
+                      <button onClick={function(){copyText('msg2',campaign.message2);}}
+                        style={{background:copied.msg2?C.green:'#ffffff30',color:'#fff',border:'none',borderRadius:6,padding:'4px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                        {copied.msg2?'Copied!':'Copy'}
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{padding:'14px 16px',fontSize:13,lineHeight:1.7,color:C.text,whiteSpace:'pre-wrap'}}>{campaign.message2}</div>
+                </div>
+
+                {/* Message 3 */}
+                <div style={{border:'1px solid #E2E8E2',borderRadius:10,overflow:'hidden'}}>
+                  <div style={{background:C.amber,padding:'8px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <div>
+                      <span style={{color:'#fff',fontWeight:600,fontSize:13}}>Message 3</span>
+                      <span style={{color:'#ffe0cc',fontSize:12,marginLeft:10}}>Direct ask (Day 10)</span>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:10}}>
+                      <span style={{fontSize:11,color:charColor(campaign.message3,500)}}>{campaign.message3?campaign.message3.length:0}/500</span>
+                      <button onClick={function(){copyText('msg3',campaign.message3);}}
+                        style={{background:copied.msg3?C.green:'#ffffff30',color:'#fff',border:'none',borderRadius:6,padding:'4px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                        {copied.msg3?'Copied!':'Copy'}
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{padding:'14px 16px',fontSize:13,lineHeight:1.7,color:C.text,whiteSpace:'pre-wrap'}}>{campaign.message3}</div>
+                </div>
+
+                {/* Actions */}
+                <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                  <button onClick={generateCampaign} disabled={generating}
+                    style={{background:'none',border:'1px solid #E2E8E2',borderRadius:8,padding:'8px 16px',fontSize:13,cursor:'pointer',color:C.muted}}>
+                    Regenerate
+                  </button>
+                  <a href="https://app.salesrobot.co/campaigns/new" target="_blank" rel="noreferrer"
+                    style={{background:C.blue,color:'#fff',border:'none',borderRadius:8,padding:'9px 18px',fontSize:13,fontWeight:700,cursor:'pointer',textDecoration:'none',display:'flex',alignItems:'center',gap:6}}>
+                    Open Sales Robot to create campaign
+                  </a>
+                </div>
+
+                <div style={{background:C.grayL,borderRadius:8,padding:'10px 14px',fontSize:12,color:C.muted,lineHeight:1.6}}>
+                  How to use: Copy each message above, then open Sales Robot and create a new campaign. Paste Message 1 as your connection request note, Message 2 as your first follow-up, and Message 3 as your second follow-up. Set delays to Day 5 and Day 10.
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
