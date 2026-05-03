@@ -1830,14 +1830,13 @@ async function findProspects(){
   var batchNum=window.PROSPECT_BATCH||0;
   var prompt=[
     'You are a business development expert for Eunomia Pharma Services, a UK pharma compliance consultancy.',
-    'Identify 25 real pharmaceutical or biotech companies that are strong prospective clients based on this signal:',
+    'Identify 12 real pharmaceutical or biotech companies that are strong prospective clients based on this signal:',
     '"'+sigLabels[sigVal]+'" in this geography: "'+geoVal+'".',
-    'This is batch number '+batchNum+' - provide a DIFFERENT set of companies from previous searches.',
-    'For each company provide: company name, why they are a prospect (specific signal), estimated company size, key compliance decision maker title to target, and a personalised first-line opening for a Sales Robot LinkedIn message.',
-    'Include companies of all sizes - from small biotechs to large pharma. Mix well-known and emerging companies.',
-    'Focus on companies where compliance spend is likely to increase. Include only real verifiable companies.',
-    'Respond ONLY as a JSON array of exactly 25 items. Each item:',
-    '{"company":"...","reason":"...","size":"...","targetTitle":"...","linkedinOpener":"...","website":"..."}'
+    'This is batch '+batchNum+' - provide DIFFERENT companies from previous batches.',
+    'For each provide: company name, reason they need compliance help, size (employees), best title to target, short LinkedIn opener (under 100 chars), website domain.',
+    'Use only real verifiable companies. Mix sizes. Keep linkedinOpener SHORT under 100 characters.',
+    'Respond ONLY as valid compact JSON array of 12 items, no line breaks inside strings, no trailing commas:',
+    '[{"company":"X","reason":"Y","size":"Z","targetTitle":"T","linkedinOpener":"L","website":"W"}]'
   ].join(' ');
   try{
     var raw=await aiCall([{role:'user',content:prompt}],
