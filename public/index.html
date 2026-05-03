@@ -1038,7 +1038,7 @@ async function sendToMailchimp(){
 var REG_STATE = {feeds:null, loading:false, insight:'', insightLoading:false, insightTopic:''};
 var LAST_DOC = ''; var LAST_DOC_META = {};
 function copyLastDoc(){if(LAST_DOC)navigator.clipboard.writeText(LAST_DOC).then(function(){alert('Copied!');});}
-function downloadLastDoc(fn){if(!LAST_DOC)return;var b=new Blob([LAST_DOC],{type:'text/plain'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn||'eunomia-doc.txt';a.click();}
+function downloadLastDoc(fn){if(!LAST_DOC)return;var b=new Blob([LAST_DOC],{type:'text/plain'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn||'eunomia-document.txt';a.click();}
 function saveLastCaseStudy(){if(!LAST_DOC)return;var stored=lsGet('eunomia-casestudies',[]);stored.unshift({title:LAST_DOC_META.title||'Case Study',service:LAST_DOC_META.service||'',content:LAST_DOC,date:new Date().toLocaleDateString('en-GB')});lsSet('eunomia-casestudies',stored);alert('Saved!');renderClients();}
 
 // Safe localStorage wrapper - prevents crashes if localStorage unavailable
@@ -1207,7 +1207,7 @@ function renderClients(){
   html+='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">';
   ['onboarding','testimonial','casestudy','tracker'].forEach(function(s){
     var labels={onboarding:'Onboarding Pack',testimonial:'Testimonial Request',casestudy:'Case Study Generator',tracker:'Client Tracker'};
-    html+='<button class="toggle-btn '+(CLIENT_STATE.activeSection===s?'active':'')+'" onclick="CLIENT_STATE.activeSection=\"'+s+'\";renderClients()">'+labels[s]+'</button>';
+    html+='<button class="toggle-btn '+(CLIENT_STATE.activeSection===s?'active':'')+'" data-sec="'+s+'" onclick="setClientSection(this.dataset.sec)">'+labels[s]+'</button>';
   });
   html+='</div>';
   if(CLIENT_STATE.activeSection==='onboarding')html+=renderOnboarding();
@@ -1265,8 +1265,8 @@ async function genOnboarding(){
     if(out){
       out.innerHTML='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
       out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;">Onboarding Pack - '+esc(client.value)+'</span>';
-      out.innerHTML+='<div style="display:flex;gap:8px;"><button onclick="copyDoc(&quot;ob-doc-text&quot;)" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>';
-      out.innerHTML+='<button onclick="downloadLastDoc(&quot;onboarding.txt&quot;)" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download</button></div></div>';
+      out.innerHTML+='<div style="display:flex;gap:8px;"><button onclick="copyLastDoc()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>';
+      out.innerHTML+='<button onclick="downloadLastDoc()" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download</button></div></div>';
       out.innerHTML+='<div style="padding:20px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#1C2B1D;max-height:500px;overflow-y:auto;">'+esc(text)+'</div></div>';
     }
   }catch(e){if(out)out.innerHTML=alert_('error','Error: '+e.message);}
