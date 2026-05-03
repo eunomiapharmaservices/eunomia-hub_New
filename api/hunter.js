@@ -9,10 +9,10 @@ export default async function handler(req, res) {
   if (!HUNTER_API_KEY) return res.status(500).json({ error: 'HUNTER_API_KEY not configured' })
 
   const base = 'https://api.hunter.io/v2'
-  const { action, domain, email } = req.query
+  const { action, domain, email, offset, limit } = req.query
 
   try {
-    // GET /api/hunter?action=account — account credits and usage
+    // ── GET account stats ─────────────────────────────────────────────────────
     if (action === 'account' || !action) {
       const r = await fetch(`${base}/account?api_key=${HUNTER_API_KEY}`)
       const data = await r.json()
@@ -22,11 +22,59 @@ export default async function handler(req, res) {
         creditsTotal: acc.requests.searches.available,
         verificationUsed: acc.requests.verifications.used,
         verificationTotal: acc.requests.verifications.available,
-        plan: acc.plan_name
+        plan: acc.plan_name,
+        email: acc.email
       })
     }
 
-    // GET /api/hunter?action=domain-search&domain=pfizer.com — find emails at a domain
+    // ── GET all saved leads ───────────────────────────────────────────────────
+    if (action === 'leads') {
+      const lim = limit || 100
+      const off = offset || 0
+      const r = await fetch(`${base}/leads?api_key=${HUNTER_API_KEY}&limit=${lim}&offset=${off}`)
+      const data = await r.json()
+
+      if (data.errors) {
+        return res.status(400).json({ error: data.errors[0]?.details || 'Failed to fetch leads' })
+      }
+
+      const leads = (data.data?.leads || []).map(l => ({
+        id: l.id,
+        name: [l.first_name, l.last_name].filter(Boolean).join(' ') || '—',
+        firstName: l.first_name || '',
+        lastName: l.last_name || '',
+        email: l.email || '',
+        company: l.company || '',
+        position: l.position || '',
+        phone: l.phone_number || '',
+        linkedinUrl: l.linkedin_url || '',
+        source: l.source || '',
+        confidence: l.confidence || null,
+        sendingStatus: l.sending_status || '',
+        createdAt: l.leads_list?.id ? l.leads_list.name : ''
+      }))
+
+      return res.status(200).json({
+        leads,
+        total: data.data?.meta?.total || leads.length,
+        offset: parseInt(off),
+        limit: parseInt(lim)
+      })
+    }
+
+    // ── GET leads lists ───────────────────────────────────────────────────────
+    if (action === 'leads-lists') {
+      const r = await fetch(`${base}/leads_lists?api_key=${HUNTER_API_KEY}`)
+      const data = await r.json()
+      const lists = (data.data?.leads_lists || []).map(l => ({
+        id: l.id,
+        name: l.name,
+        leadCount: l.leads_count
+      }))
+      return res.status(200).json({ lists })
+    }
+
+    // ── GET domain search ─────────────────────────────────────────────────────
     if (action === 'domain-search' && domain) {
       const r = await fetch(`${base}/domain-search?domain=${domain}&api_key=${HUNTER_API_KEY}&limit=10`)
       const data = await r.json()
@@ -40,43 +88,20 @@ export default async function handler(req, res) {
       return res.status(200).json({ domain, emails, total: data.data?.meta?.total || 0 })
     }
 
-    // GET /api/hunter?action=verify&email=name@company.com — verify a single email
+    // ── GET verify single email ───────────────────────────────────────────────
     if (action === 'verify' && email) {
       const r = await fetch(`${base}/email-verifier?email=${encodeURIComponent(email)}&api_key=${HUNTER_API_KEY}`)
       const data = await r.json()
       return res.status(200).json({
         email,
-        status: data.data?.status,        // valid / risky / invalid / unknown
+        status: data.data?.status,
         score: data.data?.score,
-        mxRecords: data.data?.mx_records,
         result: data.data?.result
       })
     }
 
-    // POST /api/hunter?action=bulk-find — find emails for a list of {firstName, lastName, domain}
-    if (action === 'bulk-find' && req.method === 'POST') {
-      const { leads } = req.body // array of { firstName, lastName, domain }
-      if (!leads || !Array.isArray(leads)) return res.status(400).json({ error: 'leads array required' })
-
-      const results = await Promise.all(
-        leads.slice(0, 20).map(async ({ firstName, lastName, domain }) => {
-          const url = `${base}/email-finder?domain=${domain}&first_name=${encodeURIComponent(firstName)}&last_name=${encodeURIComponent(lastName)}&api_key=${HUNTER_API_KEY}`
-          const r = await fetch(url)
-          const d = await r.json()
-          return {
-            name: `${firstName} ${lastName}`,
-            domain,
-            email: d.data?.email || null,
-            confidence: d.data?.score || 0,
-            status: d.data?.email ? 'found' : 'not_found'
-          }
-        })
-      )
-
-      return res.status(200).json({ results, found: results.filter(r => r.email).length, total: results.length })
-    }
-
     return res.status(400).json({ error: `Unknown action: ${action}` })
+
   } catch (err) {
     console.error('Hunter error:', err)
     return res.status(500).json({ error: err.message })
