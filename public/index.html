@@ -4,93 +4,198 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Eunomia Marketing Hub</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:#F4F7F4;color:#1C2B1D;}
-@keyframes spin{to{transform:rotate(360deg);}}
-@keyframes up{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-.card{background:#fff;border:1px solid #E2E8E2;border-radius:14px;padding:20px;animation:up 0.2s ease;}
-.tab{background:none;border:none;padding:10px 16px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#5C6B5D;transition:all .15s;}
-.tab.on{color:#3d8b40;border-bottom-color:#3d8b40;}
-.tab:hover:not(.on){color:#1C2B1D;}
-.tc{border:1.5px solid #E2E8E2;border-radius:10px;padding:14px;cursor:pointer;background:#fff;transition:all .15s;}
-.tc.sel{border-color:#3d8b40;background:#EBF5EC;}
-.tc:hover:not(.sel){border-color:#3d8b4060;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#F4F7F4;color:#1C2B1D;font-size:14px;}
+.topbar{background:#2C3E2D;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;border-bottom:2px solid #E8651A;position:sticky;top:0;z-index:100;}
+.logo-text{color:#fff;font-weight:700;font-size:14px;letter-spacing:0.02em;}
+.logo-sub{color:#a8c5a9;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;}
+.status-dot{font-size:11px;border-radius:5px;padding:3px 8px;font-weight:600;margin-left:4px;}
+.status-live{background:#3d8b4025;color:#5db860;border:1px solid #3d8b4050;}
+.status-demo{background:#E8651A25;color:#E8651A;border:1px solid #E8651A50;}
+.status-loading{background:#ffffff20;color:#a8c5a9;}
+.tabs{border-bottom:1px solid #E2E8E2;background:#fff;padding:0 24px;display:flex;overflow-x:auto;}
+.tab{background:none;border:none;padding:10px 16px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#5C6B5D;white-space:nowrap;}
+.tab.active{color:#3d8b40;border-bottom-color:#3d8b40;}
+.content{padding:24px;max-width:960px;margin:0 auto;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.stat{background:#fff;border:1px solid #E2E8E2;border-radius:12px;padding:16px 18px;}
+.stat-label{font-size:11px;font-weight:600;color:#5C6B5D;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+.stat-value{font-size:26px;font-weight:700;color:#1C2B1D;line-height:1.1;}
+.stat-sub{font-size:12px;color:#5C6B5D;margin-top:4px;}
+.card{background:#fff;border:1px solid #E2E8E2;border-radius:14px;padding:20px;margin-bottom:16px;}
+.card-title{font-size:15px;font-weight:700;color:#1C2B1D;margin-bottom:14px;}
+.btn{border:none;border-radius:8px;padding:9px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-primary{background:#3d8b40;color:#fff;}
+.btn-primary:hover{background:#2d6b30;}
+.btn-primary:disabled{background:#E2E8E2;color:#9CA3AF;cursor:default;}
+.btn-secondary{background:#fff;border:1px solid #E2E8E2;color:#5C6B5D;}
+.btn-amber{background:#E8651A;color:#fff;}
+.btn-orange{background:#FF7A59;color:#fff;}
 .row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #E2E8E2;font-size:13px;}
 .row:last-child{border-bottom:none;}
-.cu{background:#3d8b40;color:#fff;border-radius:12px 12px 2px 12px;padding:10px 14px;font-size:13px;max-width:80%;margin-left:auto;}
-.ca{background:#F3F4F6;color:#1C2B1D;border-radius:12px 12px 12px 2px;padding:10px 14px;font-size:13px;max-width:85%;white-space:pre-wrap;line-height:1.6;}
-input,button,textarea,select{font-family:inherit;}
+.pill{display:inline-block;font-size:11px;font-weight:600;border-radius:20px;padding:2px 9px;white-space:nowrap;}
+.alert{border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:10px;}
+.alert-warning{background:#FEF0E8;border:1px solid #E8651A30;}
+.alert-error{background:#FEE2E2;border:1px solid #DC262630;}
+.alert-success{background:#EBF5EC;border:1px solid #3d8b4030;}
+.alert-info{background:#EBF5EC;border:1px solid #3d8b4040;}
+input,select,textarea{font-family:inherit;font-size:13px;border:1px solid #E2E8E2;border-radius:8px;padding:9px 12px;outline:none;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:#3d8b40;}
+.banner{border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.chat-box{background:#F5F6F5;border-radius:10px;padding:12px;min-height:200px;max-height:280px;overflow-y:auto;margin-bottom:10px;display:flex;flex-direction:column;gap:8px;}
+.chat-user{background:#3d8b40;color:#fff;border-radius:12px 12px 2px 12px;padding:10px 14px;font-size:13px;max-width:80%;margin-left:auto;word-break:break-word;}
+.chat-ai{background:#E5E7EB;color:#1C2B1D;border-radius:12px 12px 12px 2px;padding:10px 14px;font-size:13px;max-width:85%;white-space:pre-wrap;line-height:1.6;word-break:break-word;}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid #3d8b4030;border-top-color:#3d8b40;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.seq-grid{display:grid;grid-template-columns:1fr 90px 70px 80px 90px;gap:8px;align-items:center;}
+.hunter-grid{display:grid;grid-template-columns:36px 1fr 1fr 100px 80px;gap:8px;align-items:center;}
+.tbl-hdr{font-size:11px;font-weight:600;color:#5C6B5D;text-transform:uppercase;letter-spacing:0.05em;padding:8px 12px;background:#F5F6F5;}
+.tbl-row{padding:10px 12px;border-top:1px solid #E2E8E2;cursor:pointer;}
+.tbl-row:hover{background:#F9FAFB;}
+.tbl-row.selected{background:#EBF5EC;}
+.check{width:18px;height:18px;border-radius:4px;border:2px solid #E2E8E2;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;}
+.check.on{background:#3d8b40;border-color:#3d8b40;color:#fff;}
+.msg-card{border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.msg-hdr{padding:8px 14px;display:flex;align-items:center;justify-content:space-between;}
+.msg-body{padding:14px 16px;font-size:13px;line-height:1.7;white-space:pre-wrap;}
+.email-preview{border:1px solid #E2E8E2;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(44,62,45,0.1);}
+.email-chrome{background:#F4F7F4;padding:10px 16px;border-bottom:1px solid #E2E8E2;display:flex;align-items:center;gap:8px;}
+.email-chrome-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px;}
+.email-header{background:#2C3E2D;padding:16px 24px;border-bottom:3px solid #E8651A;}
+.email-meta{background:#FAFAFA;padding:12px 24px;border-bottom:1px solid #E2E8E2;}
+.email-body{background:#fff;padding:32px 40px;max-height:400px;overflow-y:auto;}
+.email-footer{background:#F4F7F4;padding:16px 24px;border-top:1px solid #E2E8E2;text-align:center;font-size:11px;color:#5C6B5D;}
+.topic-card{border:1.5px solid #E2E8E2;border-radius:10px;padding:14px;cursor:pointer;background:#fff;}
+.topic-card:hover{border-color:#3d8b4060;}
+.topic-card.selected{border-color:#3d8b40;background:#EBF5EC;}
+.tag{display:inline-block;font-size:10px;font-weight:600;border-radius:4px;padding:2px 6px;margin:2px 2px 0 0;}
+.toggle-btn{padding:8px 18px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #E2E8E2;background:#fff;color:#5C6B5D;}
+.toggle-btn.active{background:#3d8b40;color:#fff;border-color:#3d8b40;}
+#refresh-btn{background:none;border:1px solid #ffffff40;border-radius:7px;color:#a8c5a9;font-size:12px;padding:4px 12px;cursor:pointer;font-family:inherit;margin-left:8px;}
 </style>
-<script>
-window.onerror = function(msg, src, line, col, err) {
-  document.getElementById('root').innerHTML = '<div style="padding:40px;font-family:sans-serif;color:#DC2626;"><strong>JavaScript error:</strong><br>' + msg + '<br><small>Line ' + line + ' in ' + src + '</small></div>';
-};
-window.addEventListener('unhandledrejection', function(e) {
-  document.getElementById('root').innerHTML = '<div style="padding:40px;font-family:sans-serif;color:#DC2626;"><strong>Promise error:</strong><br>' + e.reason + '</div>';
-});
-</script>
 </head>
 <body>
-<div id="root"><div style="padding:40px;font-family:sans-serif;color:#5C6B5D;display:flex;align-items:center;gap:12px;"><span style="width:20px;height:20px;border:3px solid #3d8b4030;border-top-color:#3d8b40;border-radius:50%;display:inline-block;animation:spin .7s linear infinite;"></span> Loading Eunomia Marketing Hub...</div></div>
-<script type="text/babel">
-const {useState,useEffect,useRef} = React;
 
-const C={
-  navy:'#2C3E2D',blue:'#3d8b40',blueL:'#EBF5EC',
-  teal:'#0E9E8E',amber:'#E8651A',amberL:'#FEF0E8',
-  red:'#DC2626',redL:'#FEE2E2',green:'#3d8b40',greenL:'#EBF5EC',
-  gray:'#6B7280',grayL:'#F5F6F5',border:'#E2E8E2',
-  text:'#1C2B1D',muted:'#5C6B5D',white:'#FFFFFF'
+<!-- TOP BAR -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <circle cx="18" cy="18" r="17" fill="white" stroke="#E8651A" stroke-width="2"/>
+      <circle cx="18" cy="18" r="13" fill="none" stroke="#3d8b40" stroke-width="1.5"/>
+      <path d="M11 18 L16 23 L25 12" stroke="#3d8b40" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <div class="logo-text">EUNOMIA PHARMA</div>
+      <div class="logo-sub">Marketing Hub</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+    <span id="dot-li" class="status-dot status-loading">LinkedIn</span>
+    <span id="dot-sr" class="status-dot status-loading">Sales Robot</span>
+    <span id="dot-mc" class="status-dot status-loading">Mailchimp</span>
+    <span id="dot-ht" class="status-dot status-loading">Hunter.io</span>
+    <button id="refresh-btn" onclick="loadAll()">Refresh</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('overview')">Overview</button>
+  <button class="tab" onclick="showTab('linkedin')">LinkedIn</button>
+  <button class="tab" onclick="showTab('salesrobot')">Sales Robot</button>
+  <button class="tab" onclick="showTab('mailchimp')">Mailchimp</button>
+  <button class="tab" onclick="showTab('hunter')">Hunter.io</button>
+  <button class="tab" onclick="showTab('newsletter')">Newsletter</button>
+</div>
+
+<!-- CONTENT PANELS -->
+<div class="content">
+  <div id="panel-overview"></div>
+  <div id="panel-linkedin" style="display:none"></div>
+  <div id="panel-salesrobot" style="display:none"></div>
+  <div id="panel-mailchimp" style="display:none"></div>
+  <div id="panel-hunter" style="display:none"></div>
+  <div id="panel-newsletter" style="display:none"></div>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+var STATE = {
+  mc: null, ht: null, li: null, sr: null,
+  mock: {}, errors: {},
+  chatHist: [],
+  draft: '', draftSubj: '',
+  topics: [], selTopics: [],
+  composerOpen: false, composerStep: 'topics',
+  leads: null, hunterView: 'search',
+  campaign: null, showCreator: false,
+  showComposer: false,
+  currentTab: 'overview'
 };
 
-function Spin({s}){
-  const sz=s||16;
-  return <span style={{display:'inline-block',width:sz,height:sz,border:'2px solid #3d8b4030',borderTopColor:'#3d8b40',borderRadius:'50%',animation:'spin .7s linear infinite'}}/>;
+var MOCK = {
+  mc: {subscribers:834,openRate:'31.4',lastSent:new Date(Date.now()-25*86400000).toISOString(),
+    lastSubject:'PMCPA Social Media Guidance: What It Means For Your Team',
+    campaigns:[
+      {id:'1',name:'PMCPA Social Media Guidance Alert',date:'08/04/2025',sent:834,opens:'34.2%',clicks:'5.1%',status:'sent'},
+      {id:'2',name:'March Regulatory Roundup',date:'18/03/2025',sent:801,opens:'29.7%',clicks:'3.9%',status:'sent'},
+      {id:'3',name:'ABPI Code 2024 Key Changes',date:'28/02/2025',sent:788,opens:'38.1%',clicks:'6.2%',status:'sent'}
+    ]},
+  ht:{creditsUsed:312,creditsTotal:500,verificationUsed:289,verificationTotal:500,plan:'Starter'},
+  li:{name:'Eunomia Consulting',connections:1247,email:''},
+  sr:{summary:{activeSequences:4,messagesSent:586,replies:86,replyRate:'24.1'},
+    campaigns:[
+      {name:'List 1: Medical Directors',sent:194,replies:24,rate:'25.29',status:'active'},
+      {name:'Legal',sent:213,replies:35,rate:'25.72',status:'active'},
+      {name:'Compliance and Ethics',sent:120,replies:20,rate:'21.42',status:'active'},
+      {name:'Pharma Leaders - Compliance Ethics Medical Legal',sent:59,replies:7,rate:'21.77',status:'active'}
+    ]}
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+function daysSince(iso){return Math.floor((Date.now()-new Date(iso))/86400000);}
+function nextDue(iso){var d=new Date(iso);d.setDate(d.getDate()+30);return d;}
+function daysUntil(iso){return Math.max(0,Math.ceil((nextDue(iso)-Date.now())/86400000));}
+function fmtDate(d){return d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function pill(label,color){return '<span class="pill" style="background:'+color+'18;color:'+color+'">'+esc(label)+'</span>';}
+function spinner(){return '<span class="spinner"></span>';}
+function alert_(type,html){var cls={warning:'alert-warning',error:'alert-error',success:'alert-success',info:'alert-info'}[type]||'alert-info';return '<div class="alert '+cls+'">'+html+'</div>';}
+
+async function apiGet(path){
+  try{var r=await fetch(path);return await r.json();}
+  catch(e){return{error:e.message};}
 }
-function Pill({label,color}){
-  return <span style={{fontSize:11,fontWeight:600,background:color+'18',color:color,borderRadius:20,padding:'2px 9px',whiteSpace:'nowrap'}}>{label}</span>;
+async function apiPost(path,body){
+  try{var r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return await r.json();}
+  catch(e){return{error:e.message};}
 }
-function Stat({label,value,sub,color}){
-  return(
-    <div style={{background:'#fff',border:'1px solid #E2E8E2',borderRadius:12,padding:'16px 18px'}}>
-      <div style={{fontSize:11,fontWeight:600,color:C.muted,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>{label}</div>
-      <div style={{fontSize:26,fontWeight:700,color:C.text,lineHeight:1.1}}>{value||'-'}</div>
-      {sub ? <div style={{fontSize:12,color:C.muted,marginTop:4}}>{sub}</div> : null}
-    </div>
-  );
-}
-function Alert({type,children}){
-  const colors={info:['#EBF5EC','#3d8b40'],warning:['#FEF0E8','#E8651A'],error:['#FEE2E2','#DC2626'],success:['#EBF5EC','#3d8b40']};
-  const t=type||'info';
-  const bg=colors[t][0],fg=colors[t][1];
-  return <div style={{background:bg,border:'1px solid '+fg+'30',borderRadius:10,padding:'10px 14px',fontSize:13,marginBottom:10}}>{children}</div>;
-}
-function SH({children}){
-  return <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:14}}>{children}</div>;
+async function callClaude(messages,system){
+  var r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:messages,system:system})});
+  if(!r.ok){var e=await r.json().catch(function(){return{};});throw new Error(e.error||'AI error '+r.status);}
+  var d=await r.json();
+  if(d.error)throw new Error(d.error);
+  // Handle both streaming-style and direct response
+  if(d.content&&Array.isArray(d.content)){return d.content.filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');}
+  if(typeof d==='string')return d;
+  // Parse SSE-style fake stream response
+  var text=String(d);
+  return text;
 }
 
-const daysSince=function(iso){return Math.floor((Date.now()-new Date(iso))/86400000);};
-const nextDue=function(iso){var d=new Date(iso);d.setDate(d.getDate()+30);return d;};
-const daysUntil=function(iso){return Math.max(0,Math.ceil((nextDue(iso)-Date.now())/86400000));};
-const fmtDate=function(iso){return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});};
-const tagColor={PMCPA:'#3d8b40',ABPI:'#1a5c1d',ANSM:'#0E9E8E',FCPA:'#E8651A',Digital:'#3d8b40',Training:'#7C3AED',Strategy:'#DC2626'};
-
-async function callClaude(messages,system,onChunk){
-  var resp;
-  try{
-    resp=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:messages,system:system})});
-  }catch(e){throw new Error('Could not reach /api/claude');}
-  if(!resp.ok){
-    var msg='AI error ('+resp.status+')';
-    try{var ej=await resp.json();msg=ej.error||msg;}catch(x){}
-    throw new Error(msg);
-  }
-  var reader=resp.body.getReader();
+// Non-streaming Claude call - returns full text
+async function aiCall(messages,system){
+  var r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:messages,system:system})});
+  if(!r.ok){var e=await r.json().catch(function(){return{};});throw new Error(e.error||'AI error '+r.status);}
+  // Read the SSE response
+  var reader=r.body.getReader();
   var dec=new TextDecoder();
   var full='';
   while(true){
@@ -101,1342 +206,814 @@ async function callClaude(messages,system,onChunk){
       if(lines[i].startsWith('data: ')){
         try{
           var j=JSON.parse(lines[i].slice(6));
-          if(j.type==='content_block_delta'&&j.delta&&j.delta.text){full+=j.delta.text;onChunk(full);}
+          if(j.type==='content_block_delta'&&j.delta&&j.delta.text)full+=j.delta.text;
         }catch(x){}
       }
     }
   }
-  if(!full)throw new Error('No response received. Check ANTHROPIC_API_KEY.');
+  if(!full)throw new Error('No response. Check ANTHROPIC_API_KEY has credits.');
   return full;
 }
 
-async function apiGet(path){try{var r=await fetch(path);return await r.json();}catch(e){return{error:e.message};}}
-async function apiPost(path,body){try{var r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return await r.json();}catch(e){return{error:e.message};}}
-
-var MOCK={
-  mc:{subscribers:834,openRate:'31.4',lastSent:new Date(Date.now()-25*86400000).toISOString(),
-    lastSubject:'PMCPA Social Media Guidance: What It Means For Your Team',
-    campaigns:[
-      {id:'1',name:'PMCPA Social Media Guidance Alert',date:'08/04/2025',sent:834,opens:'34.2%',clicks:'5.1%',status:'sent'},
-      {id:'2',name:'March Regulatory Roundup',date:'18/03/2025',sent:801,opens:'29.7%',clicks:'3.9%',status:'sent'},
-      {id:'3',name:'ABPI Code 2024 Key Changes',date:'28/02/2025',sent:788,opens:'38.1%',clicks:'6.2%',status:'sent'}
-    ]},
-  ht:{creditsUsed:312,creditsTotal:500,verificationUsed:289,verificationTotal:500,plan:'Starter'},
-  li:{name:'Eunomia Consulting',connections:1247,email:''},
-  sr:{summary:{activeSequences:3,messagesSent:47,replies:9,replyRate:'19.1',meetings:2},
-    campaigns:[
-      {name:'PMCPA Social Media Update',sent:18,replies:4,rate:'22.2',status:'active'},
-      {name:'ABPI Code 2024 Briefing',sent:21,replies:3,rate:'14.3',status:'active'},
-      {name:'Compliance Audit Offer',sent:8,replies:2,rate:'25.0',status:'active'}
-    ]}
-};
-
-// -- Hunter Tab ---------------------------------------------------------------
-function HunterTab(props){
-  var ht=props.ht,usingMock=props.usingMock;
-  var [domain,setDomain]=useState('');
-  var [searching,setSearching]=useState(false);
-  var [results,setResults]=useState(null);
-  var [err,setErr]=useState('');
-  var [selected,setSelected]=useState([]);
-  var [exporting,setExporting]=useState(false);
-  var [exportResult,setExportResult]=useState(null);
-  var [verifying,setVerifying]=useState(false);
-  var [activeView,setActiveView]=useState('search');
-  var [leads,setLeads]=useState(null);
-  var [leadsLoading,setLeadsLoading]=useState(false);
-  var [leadsErr,setLeadsErr]=useState('');
-  var [leadsSelected,setLeadsSelected]=useState([]);
-  var [leadsExporting,setLeadsExporting]=useState(false);
-  var [leadsExportResult,setLeadsExportResult]=useState(null);
-  var [hubspotExporting,setHubspotExporting]=useState(false);
-  var [hubspotResult,setHubspotResult]=useState(null);
-
-  async function doSearch(){
-    var raw=domain.trim();
-    if(!raw)return;
-    if(raw.indexOf(' ')>=0||raw.indexOf('.')<0){
-      setErr('Please enter a domain name (e.g. pfizer.com) not a company name. Hunter.io requires a website domain.');
-      return;
-    }
-    setSearching(true);setResults(null);setErr('');setSelected([]);setExportResult(null);
-    var d=raw.replace(/^https?:\/\//,'').replace(/\/.*/,'').toLowerCase();
-    var data=await apiGet('/api/hunter?action=domain-search&domain='+encodeURIComponent(d));
-    if(data.error){setErr(data.error);}else{setResults(data);}
-    setSearching(false);
-  }
-
-  async function verifySelected(){
-    if(!selected.length)return;
-    setVerifying(true);
-    var updated={emails:results.emails.slice(),domain:results.domain,total:results.total};
-    for(var i=0;i<selected.length;i++){
-      var email=selected[i];
-      var d=await apiGet('/api/hunter?action=verify&email='+encodeURIComponent(email));
-      updated.emails=updated.emails.map(function(e){return e.email===email?Object.assign({},e,{verified:d.status,score:d.score}):e;});
-    }
-    setResults(updated);
-    setVerifying(false);
-  }
-
-  async function exportToMailchimp(){
-    if(!selected.length)return;
-    setExporting(true);setExportResult(null);
-    var members=results.emails.filter(function(e){return selected.indexOf(e.email)>=0;});
-    var data=await apiPost('/api/mailchimp?action=add-members',{members:members,tag:'ABM-Hunter'});
-    setExportResult(data);
-    setExporting(false);
-  }
-
-  function toggleAll(){
-    if(selected.length===results.emails.length)setSelected([]);
-    else setSelected(results.emails.map(function(e){return e.email;}));
-  }
-
-  function csvDownload(){
-    if(!results||!results.emails.length)return;
-    var chosen=results.emails.filter(function(e){return selected.indexOf(e.email)>=0;});
-    var rows=[['Name','Email','Role','Confidence']].concat(chosen.map(function(e){return [e.name,e.email,e.role||'',e.confidence];}));
-    var csv=rows.map(function(r){return r.map(function(v){return '"'+v+'"';}).join(',');}).join('\n');
-    var blob=new Blob([csv],{type:'text/csv'});
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a');a.href=url;a.download='hunter-'+(results.domain||'results')+'.csv';a.click();
-  }
-
-  function toggleEmail(email){
-    setSelected(function(p){
-      if(p.indexOf(email)>=0)return p.filter(function(x){return x!==email;});
-      return p.concat([email]);
-    });
-  }
-
-  async function loadLeads(){
-    setLeadsLoading(true);setLeads(null);setLeadsErr('');setLeadsSelected([]);setLeadsExportResult(null);setHubspotResult(null);
-    var data=await apiGet('/api/hunter?action=leads&limit=100');
-    if(data.error){setLeadsErr(data.error);}
-    else{setLeads(data);}
-    setLeadsLoading(false);
-  }
-
-  function toggleLead(email){
-    setLeadsSelected(function(p){
-      if(p.indexOf(email)>=0)return p.filter(function(x){return x!==email;});
-      return p.concat([email]);
-    });
-  }
-
-  function toggleAllLeads(){
-    if(!leads||!leads.leads)return;
-    if(leadsSelected.length===leads.leads.length)setLeadsSelected([]);
-    else setLeadsSelected(leads.leads.map(function(l){return l.email;}).filter(Boolean));
-  }
-
-  function csvDownloadLeads(){
-    if(!leads||!leads.leads)return;
-    var chosen=leadsSelected.length>0
-      ?leads.leads.filter(function(l){return leadsSelected.indexOf(l.email)>=0;})
-      :leads.leads;
-    var rows=[['First Name','Last Name','Email','Company','Position','Phone','LinkedIn']].concat(
-      chosen.map(function(l){return [l.firstName,l.lastName,l.email,l.company,l.position,l.phone,l.linkedinUrl];})
-    );
-    var csv=rows.map(function(r){return r.map(function(v){return String.fromCharCode(34)+(v||'')+String.fromCharCode(34);}).join(',');}).join('
-');
-    var blob=new Blob([csv],{type:'text/csv'});
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a');a.href=url;a.download='hunter-leads-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
-  }
-
-  async function exportLeadsToMailchimp(){
-    var chosen=leadsSelected.length>0
-      ?leads.leads.filter(function(l){return leadsSelected.indexOf(l.email)>=0&&l.email;})
-      :leads.leads.filter(function(l){return l.email;});
-    if(!chosen.length){setLeadsExportResult({error:'No contacts with email addresses selected'});return;}
-    setLeadsExporting(true);setLeadsExportResult(null);
-    var members=chosen.map(function(l){return {name:l.name,email:l.email,role:l.position};});
-    var data=await apiPost('/api/mailchimp?action=add-members',{members:members,tag:'Hunter-Leads'});
-    setLeadsExportResult(data);
-    setLeadsExporting(false);
-  }
-
-  async function exportLeadsToHubspot(){
-    var chosen=leadsSelected.length>0
-      ?leads.leads.filter(function(l){return leadsSelected.indexOf(l.email)>=0&&l.email;})
-      :leads.leads.filter(function(l){return l.email;});
-    if(!chosen.length){setHubspotResult({error:'No contacts with email addresses'});return;}
-    setHubspotExporting(true);setHubspotResult(null);
-    // HubSpot batch create contacts via their public API
-    // Since we don't have HubSpot API integrated, we generate a HubSpot-ready CSV
-    var rows=[['First Name','Last Name','Email Address','Company Name','Job Title','Phone Number','LinkedIn Bio']].concat(
-      chosen.map(function(l){return [l.firstName,l.lastName,l.email,l.company,l.position,l.phone,l.linkedinUrl];})
-    );
-    var csv=rows.map(function(r){return r.map(function(v){return String.fromCharCode(34)+(v||'')+String.fromCharCode(34);}).join(',');}).join('
-');
-    var blob=new Blob([csv],{type:'text/csv'});
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a');a.href=url;a.download='hubspot-import-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
-    setHubspotResult({success:true,count:chosen.length});
-    setHubspotExporting(false);
-  }
-
-  return(
-    <div style={{display:'flex',flexDirection:'column',gap:16}}>
-      {usingMock ? <Alert type="warning">Showing demo data. Add HUNTER_API_KEY in Vercel env vars for live data.</Alert> : null}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-        <Stat label="Plan" value={ht?ht.plan:null}/>
-        <Stat label="Search credits" value={ht?ht.creditsUsed+'/'+ht.creditsTotal:null} color={ht&&ht.creditsUsed/ht.creditsTotal>0.8?C.red:C.green}/>
-        <Stat label="Verifications" value={ht?ht.verificationUsed+'/'+ht.verificationTotal:null} color={C.teal}/>
-        <Stat label="Credits left" value={ht?ht.creditsTotal-ht.creditsUsed:null}/>
-      </div>
-
-      {/* View toggle */}
-      <div style={{display:'flex',gap:8}}>
-        <button onClick={function(){setActiveView('search');}}
-          style={{background:activeView==='search'?C.blue:'#fff',color:activeView==='search'?'#fff':C.muted,border:'1px solid '+(activeView==='search'?C.blue:'#E2E8E2'),borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>
-          Domain Search
-        </button>
-        <button onClick={function(){setActiveView('leads');if(!leads&&!leadsLoading)loadLeads();}}
-          style={{background:activeView==='leads'?C.blue:'#fff',color:activeView==='leads'?'#fff':C.muted,border:'1px solid '+(activeView==='leads'?C.blue:'#E2E8E2'),borderRadius:8,padding:'8px 18px',fontSize:13,fontWeight:600,cursor:'pointer'}}>
-          My Leads {leads?' ('+leads.total+')':''}
-        </button>
-      </div>
-
-      {/* Leads panel */}
-      {activeView==='leads' ? (
-        <div className="card">
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
-            <SH>All saved leads from Hunter.io</SH>
-            <button onClick={loadLeads} disabled={leadsLoading}
-              style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'6px 14px',fontSize:12,cursor:'pointer',color:C.muted}}>
-              {leadsLoading?'Loading...':'Refresh'}
-            </button>
-          </div>
-
-          {leadsLoading ? <div style={{textAlign:'center',padding:'28px 0',color:C.muted,display:'flex',alignItems:'center',justifyContent:'center',gap:10}}><Spin/> Loading your leads...</div> : null}
-          {leadsErr ? <Alert type="error">{leadsErr}</Alert> : null}
-
-          {leads&&leads.leads ? (
-            <div>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12,flexWrap:'wrap',gap:8}}>
-                <div style={{fontSize:13,color:C.muted}}>
-                  <strong style={{color:C.text}}>{leads.total}</strong> leads in your Hunter account
-                  {leadsSelected.length>0?' - '+leadsSelected.length+' selected':''}
-                </div>
-                <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                  <button onClick={toggleAllLeads}
-                    style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
-                    {leadsSelected.length===leads.leads.filter(function(l){return l.email;}).length?'Deselect all':'Select all'}
-                  </button>
-                </div>
-              </div>
-
-              {leads.leads.length===0 ? (
-                <div style={{textAlign:'center',padding:'24px',color:C.muted,fontSize:13}}>
-                  No leads saved in Hunter.io yet. Use Domain Search to find emails and save them, or add leads directly at hunter.io/leads.
-                </div>
-              ) : (
-                <div style={{border:'1px solid #E2E8E2',borderRadius:10,overflow:'hidden',marginBottom:14}}>
-                  <div style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 1fr 100px',gap:8,padding:'8px 12px',background:C.grayL,fontSize:11,fontWeight:600,color:C.muted,textTransform:'uppercase',letterSpacing:'0.05em'}}>
-                    <span/><span>Name</span><span>Email</span><span>Company</span><span>Position</span>
-                  </div>
-                  {leads.leads.map(function(l,idx){
-                    var isSel=leadsSelected.indexOf(l.email)>=0;
-                    return(
-                      <div key={idx} onClick={function(){if(l.email)toggleLead(l.email);}}
-                        style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 1fr 100px',gap:8,padding:'10px 12px',borderTop:'1px solid #E2E8E2',cursor:l.email?'pointer':'default',background:isSel?C.blueL:'#fff'}}>
-                        <div style={{width:18,height:18,borderRadius:4,border:'2px solid '+(isSel?C.blue:'#E2E8E2'),background:isSel?C.blue:'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'#fff'}}>
-                          {isSel?'v':''}
-                        </div>
-                        <div style={{fontWeight:600,fontSize:13}}>{l.name||'-'}</div>
-                        <span style={{fontSize:12,color:C.blue,fontFamily:'monospace',wordBreak:'break-all'}}>{l.email||'No email'}</span>
-                        <span style={{fontSize:12,color:C.muted}}>{l.company||'-'}</span>
-                        <span style={{fontSize:12,color:C.muted}}>{l.position?l.position.slice(0,20)+'...':'-'}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {leads.leads.length>0 ? (
-                <div style={{display:'flex',flexDirection:'column',gap:10}}>
-                  <div style={{display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}}>
-                    <span style={{fontSize:13,color:C.muted,flex:1}}>
-                      {leadsSelected.length>0?leadsSelected.length+' selected':'All '+leads.leads.filter(function(l){return l.email;}).length+' with emails will be exported'}
-                    </span>
-                    <button onClick={csvDownloadLeads}
-                      style={{background:'#fff',border:'1px solid #E2E8E2',borderRadius:8,padding:'9px 16px',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
-                      Download CSV
-                    </button>
-                    <button onClick={exportLeadsToMailchimp} disabled={leadsExporting}
-                      style={{background:leadsExporting?C.grayL:C.amber,color:leadsExporting?C.muted:'#fff',border:'none',borderRadius:8,padding:'9px 16px',fontSize:13,fontWeight:600,cursor:leadsExporting?'default':'pointer'}}>
-                      {leadsExporting?'Exporting...':'Export to Mailchimp'}
-                    </button>
-                    <button onClick={exportLeadsToHubspot} disabled={hubspotExporting}
-                      style={{background:hubspotExporting?C.grayL:'#FF7A59',color:hubspotExporting?C.muted:'#fff',border:'none',borderRadius:8,padding:'9px 16px',fontSize:13,fontWeight:600,cursor:hubspotExporting?'default':'pointer',display:'flex',alignItems:'center',gap:6}}>
-                      {hubspotExporting?'Preparing...':'Export for HubSpot'}
-                    </button>
-                  </div>
-
-                  {leadsExportResult ? (
-                    <Alert type={leadsExportResult.error?'error':'success'}>
-                      {leadsExportResult.error?'Mailchimp error: '+leadsExportResult.error:(leadsExportResult.added||leadsSelected.length)+' contacts added to Mailchimp with tag Hunter-Leads'}
-                    </Alert>
-                  ) : null}
-
-                  {hubspotResult ? (
-                    <Alert type={hubspotResult.error?'error':'success'}>
-                      {hubspotResult.error?hubspotResult.error:'HubSpot CSV downloaded with '+hubspotResult.count+' contacts. Now go to HubSpot -> Contacts -> Import -> Import a file, and upload the downloaded CSV.'}
-                    </Alert>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-
-      {activeView==='search' ? (
-      <div className="card">
-        <SH>Find emails by company domain</SH>
-        <div style={{fontSize:13,color:C.muted,marginBottom:14}}>Enter a company website domain to find verified emails. Use pfizer.com not "Pfizer".</div>
-        <div style={{display:'flex',gap:10,marginBottom:16}}>
-          <input value={domain} onChange={function(e){setDomain(e.target.value);}}
-            onKeyDown={function(e){if(e.key==='Enter')doSearch();}}
-            placeholder="e.g. pfizer.com, gsk.com, novartis.com"
-            style={{flex:1,border:'1px solid #E2E8E2',borderRadius:8,padding:'10px 14px',fontSize:13,outline:'none'}}/>
-          <button onClick={doSearch} disabled={searching||!domain.trim()}
-            style={{background:domain.trim()?C.blue:C.grayL,color:domain.trim()?'#fff':C.muted,border:'none',borderRadius:8,padding:'10px 20px',fontSize:13,fontWeight:600,cursor:domain.trim()?'pointer':'default',display:'flex',alignItems:'center',gap:8}}>
-            {searching ? <Spin s={14}/> : null}
-            {searching ? 'Searching...' : 'Search'}
-          </button>
-        </div>
-
-        {err ? <Alert type="error">{err}</Alert> : null}
-
-        {results ? (
-          results.emails&&results.emails.length===0 ? (
-            <div style={{background:C.amberL,border:'1px solid #E8651A30',borderRadius:10,padding:'14px 18px',fontSize:13}}>
-              <strong style={{color:C.amber}}>No emails found for {results.domain}</strong>
-              <div style={{color:C.muted,marginTop:4,fontSize:12}}>Hunter.io may not have data for this domain. Try the main domain (e.g. gsk.com not uk.gsk.com).</div>
-            </div>
-          ) : results.emails&&results.emails.length>0 ? (
-            <div>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-                <div style={{fontSize:13,color:C.muted}}>
-                  Found <strong style={{color:C.text}}>{results.emails.length}</strong> emails at <strong style={{color:C.text}}>{results.domain}</strong>
-                </div>
-                <div style={{display:'flex',gap:8}}>
-                  <button onClick={toggleAll} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
-                    {selected.length===results.emails.length ? 'Deselect all' : 'Select all'}
-                  </button>
-                  <button onClick={verifySelected} disabled={!selected.length||verifying}
-                    style={{background:selected.length?C.teal:'#e5e7eb',color:selected.length?'#fff':C.muted,border:'none',borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:selected.length?'pointer':'default'}}>
-                    {verifying ? 'Verifying...' : 'Verify selected'}
-                  </button>
-                </div>
-              </div>
-
-              <div style={{border:'1px solid #E2E8E2',borderRadius:10,overflow:'hidden',marginBottom:14}}>
-                <div style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 100px 80px',gap:8,padding:'8px 12px',background:C.grayL,fontSize:11,fontWeight:600,color:C.muted,textTransform:'uppercase',letterSpacing:'0.05em'}}>
-                  <span/><span>Name</span><span>Email</span><span>Role</span><span style={{textAlign:'right'}}>Confidence</span>
-                </div>
-                {results.emails.map(function(e,idx){
-                  var isSel=selected.indexOf(e.email)>=0;
-                  return(
-                    <div key={idx} onClick={function(){toggleEmail(e.email);}}
-                      style={{display:'grid',gridTemplateColumns:'36px 1fr 1fr 100px 80px',gap:8,padding:'10px 12px',borderTop:'1px solid #E2E8E2',cursor:'pointer',background:isSel?C.blueL:'#fff'}}>
-                      <div style={{width:18,height:18,borderRadius:4,border:'2px solid '+(isSel?C.blue:'#E2E8E2'),background:isSel?C.blue:'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'#fff'}}>
-                        {isSel?'v':''}
-                      </div>
-                      <div>
-                        <div style={{fontWeight:600,fontSize:13}}>{e.name}</div>
-                        {e.verified ? <span style={{fontSize:10,background:e.verified==='valid'?C.greenL:C.amberL,color:e.verified==='valid'?C.green:C.amber,borderRadius:4,padding:'1px 5px',fontWeight:600}}>{e.verified}</span> : null}
-                      </div>
-                      <span style={{fontSize:12,color:C.blue,fontFamily:'monospace',wordBreak:'break-all'}}>{e.email}</span>
-                      <span style={{fontSize:12,color:C.muted}}>{e.role||'-'}</span>
-                      <div style={{textAlign:'right'}}>
-                        <Pill label={e.confidence+'%'} color={e.confidence>=90?C.green:e.confidence>=75?C.amber:C.red}/>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {selected.length>0 ? (
-                <div style={{display:'flex',gap:10,alignItems:'center',padding:'12px 14px',background:C.blueL,borderRadius:10}}>
-                  <span style={{fontSize:13,fontWeight:600,flex:1}}>{selected.length} email{selected.length!==1?'s':''} selected</span>
-                  <button onClick={csvDownload} style={{background:'#fff',border:'1px solid #E2E8E2',borderRadius:8,padding:'8px 14px',fontSize:13,fontWeight:600,cursor:'pointer'}}>
-                    Download CSV
-                  </button>
-                  <button onClick={exportToMailchimp} disabled={exporting}
-                    style={{background:exporting?C.grayL:C.amber,color:exporting?C.muted:'#fff',border:'none',borderRadius:8,padding:'8px 16px',fontSize:13,fontWeight:600,cursor:exporting?'default':'pointer'}}>
-                    {exporting ? 'Exporting...' : 'Export to Mailchimp'}
-                  </button>
-                </div>
-              ) : null}
-
-              {exportResult ? (
-                <div style={{marginTop:10}}>
-                  <Alert type={exportResult.error?'error':'success'}>
-                    {exportResult.error ? 'Mailchimp error: '+exportResult.error : (exportResult.added||selected.length)+' contacts added to Mailchimp with tag ABM-Hunter'}
-                  </Alert>
-                </div>
-              ) : null}
-            </div>
-          ) : null
-        ) : null}
-      </div>
-      ) : null}
-    </div>
-  );
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function showTab(id){
+  STATE.currentTab=id;
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('[id^="panel-"]').forEach(function(p){p.style.display='none';});
+  event.target.classList.add('active');
+  document.getElementById('panel-'+id).style.display='block';
+  renderTab(id);
+}
+function renderTab(id){
+  if(id==='overview')renderOverview();
+  else if(id==='linkedin')renderLinkedIn();
+  else if(id==='salesrobot')renderSalesRobot();
+  else if(id==='mailchimp')renderMailchimp();
+  else if(id==='hunter')renderHunter();
+  else if(id==='newsletter')renderNewsletter();
 }
 
-// -- LinkedIn Composer --------------------------------------------------------
-function LinkedInComposer(props){
-  var li=props.li;
-  var [text,setText]=useState('');
-  var [postAs,setPostAs]=useState('person');
-  var [posting,setPosting]=useState(false);
-  var [result,setResult]=useState(null);
-  var [aiLoading,setAiLoading]=useState(false);
-  var maxChars=3000;
-
-  async function generateDraft(){
-    setAiLoading(true);
-    try{
-      await callClaude(
-        [{role:'user',content:'Write a LinkedIn post for Eunomia Pharma Services, a UK pharma compliance consultancy. Topic: a current pharma regulatory update (PMCPA, ABPI Code 2024, or compliance best practice). 150-200 words. 3-4 relevant hashtags at the end. No emojis. Ready to post immediately.'}],
-        'You are a LinkedIn content expert for pharma compliance. Write posts that position Eunomia as a thought leader. Be direct and insightful.',
-        function(chunk){setText(chunk);}
-      );
-    }catch(e){setText('Error: '+e.message);}
-    setAiLoading(false);
-  }
-
-  async function doPost(){
-    if(!text.trim())return;
-    setPosting(true);setResult(null);
-    var data=await apiPost('/api/linkedin?action=post',{text:text,postAs:postAs});
-    setResult(data);
-    if(data.success)setText('');
-    setPosting(false);
-  }
-
-  return(
-    <div className="card" style={{border:'1.5px solid #3d8b40'}}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
-        <div style={{fontWeight:700,fontSize:15}}>Create LinkedIn Post</div>
-        <div style={{display:'flex',gap:8,alignItems:'center'}}>
-          <span style={{fontSize:12,color:C.muted}}>Post as:</span>
-          <select value={postAs} onChange={function(e){setPostAs(e.target.value);}}
-            style={{fontSize:12,border:'1px solid #E2E8E2',borderRadius:6,padding:'4px 8px',background:'#fff'}}>
-            <option value="person">Personal profile ({li?li.name:'You'})</option>
-            <option value="org">Eunomia company page</option>
-          </select>
-        </div>
-      </div>
-
-      <div style={{display:'flex',gap:8,marginBottom:10}}>
-        <button onClick={generateDraft} disabled={aiLoading}
-          style={{background:aiLoading?C.grayL:C.blueL,color:aiLoading?C.muted:C.blue,border:'1px solid #3d8b4040',borderRadius:7,padding:'7px 14px',fontSize:12,fontWeight:600,cursor:aiLoading?'default':'pointer',display:'flex',alignItems:'center',gap:6}}>
-          {aiLoading ? <Spin s={13}/> : null}
-          {aiLoading ? 'Writing draft...' : 'Generate AI draft'}
-        </button>
-        {text ? <button onClick={function(){setText('');}} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:C.muted}}>Clear</button> : null}
-      </div>
-
-      <textarea value={text} onChange={function(e){setText(e.target.value.slice(0,maxChars));}}
-        placeholder="Write your post here, or generate an AI draft above..."
-        rows={8}
-        style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:10,padding:'12px 14px',fontSize:13,lineHeight:1.7,resize:'vertical',outline:'none',color:C.text}}/>
-      <div style={{fontSize:12,color:text.length>2800?C.red:text.length>2500?C.amber:C.muted,marginTop:6,marginBottom:14}}>
-        {text.length}/{maxChars} characters
-      </div>
-
-      {result ? (
-        result.success ? (
-          <div style={{background:C.greenL,border:'1px solid #3d8b4030',borderRadius:8,padding:'10px 14px',fontSize:13,marginBottom:12}}>
-            Posted successfully!
-            <a href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer" style={{color:C.blue,fontWeight:600,marginLeft:8}}>View feed</a>
-          </div>
-        ) : (
-          <Alert type="error">
-            <strong>Could not post: </strong>{result.error}
-            {result.error==='Permission denied' ? <div style={{marginTop:8,fontSize:12}}>Add w_member_social scope to your LinkedIn token and update LINKEDIN_ACCESS_TOKEN in Vercel.</div> : null}
-          </Alert>
-        )
-      ) : null}
-
-      <button onClick={doPost} disabled={posting||!text.trim()}
-        style={{background:text.trim()&&!posting?C.blue:C.grayL,color:text.trim()&&!posting?'#fff':C.muted,border:'none',borderRadius:9,padding:'11px 24px',fontSize:14,fontWeight:700,cursor:text.trim()&&!posting?'pointer':'default',display:'flex',alignItems:'center',justifyContent:'center',gap:8,width:'100%'}}>
-        {posting ? <Spin s={16}/> : null}
-        {posting ? 'Posting to LinkedIn...' : 'Post to LinkedIn'}
-      </button>
-    </div>
-  );
+// ============================================================
+// STATUS DOTS
+// ============================================================
+function setDot(id,state){
+  var el=document.getElementById('dot-'+id);
+  if(!el)return;
+  el.className='status-dot';
+  if(state==='live'){el.classList.add('status-live');el.textContent='Live: '+el.textContent.replace(/^(Live|Demo): /,'');}
+  else if(state==='demo'){el.classList.add('status-demo');el.textContent='Demo: '+el.textContent.replace(/^(Live|Demo): /,'');}
+  else{el.classList.add('status-loading');}
 }
 
-// -- LinkedIn Tab -------------------------------------------------------------
-function LinkedInTab(props){
-  var li=props.li,usingMock=props.usingMock;
-  var [showComposer,setShowComposer]=useState(false);
+// ============================================================
+// LOAD ALL PLATFORMS
+// ============================================================
+async function loadAll(){
+  ['li','sr','mc','ht'].forEach(function(k){setDot(k,'loading');});
+  var results=await Promise.all([
+    apiGet('/api/mailchimp?action=stats'),
+    apiGet('/api/hunter?action=account'),
+    apiGet('/api/linkedin?action=profile'),
+    apiGet('/api/salesrobot?action=campaigns')
+  ]);
+  var mcD=results[0],htD=results[1],liD=results[2],srD=results[3];
+  
+  if(mcD.error){STATE.mock.mc=true;STATE.mc=MOCK.mc;setDot('mc','demo');}
+  else{STATE.mc=mcD;setDot('mc','live');}
+  
+  if(htD.error){STATE.mock.ht=true;STATE.ht=MOCK.ht;setDot('ht','demo');}
+  else{STATE.ht=htD;setDot('ht','live');}
+  
+  if(liD.error){STATE.mock.li=true;STATE.li=MOCK.li;setDot('li','demo');}
+  else{STATE.li=liD;setDot('li','live');}
+  
+  if(srD.error){STATE.mock.sr=true;STATE.sr=MOCK.sr;setDot('sr','demo');}
+  else{STATE.sr=srD;setDot('sr','live');}
+  
+  renderTab(STATE.currentTab);
+}
+
+// ============================================================
+// STAT CARD
+// ============================================================
+function statCard(label,value,sub){
+  return '<div class="stat"><div class="stat-label">'+esc(label)+'</div><div class="stat-value">'+esc(value||'--')+'</div>'+(sub?'<div class="stat-sub">'+esc(sub)+'</div>':'')+'</div>';
+}
+
+// ============================================================
+// OVERVIEW
+// ============================================================
+function renderOverview(){
+  var mc=STATE.mc,ht=STATE.ht,li=STATE.li,sr=STATE.sr;
+  var html='';
+  
+  // Demo notice
+  var demos=Object.keys(STATE.mock);
+  if(demos.length)html+=alert_('warning','Demo mode: '+demos.join(', ')+' showing sample data. Add API keys in Vercel to see live data.');
+  
+  // Stats
+  html+='<div class="grid4">';
+  html+=statCard('LinkedIn Connections',li&&li.connections?li.connections.toLocaleString():'--',li&&li.name&&li.name!=='undefined undefined'?li.name:'');
+  html+=statCard('Reply Rate',sr&&sr.summary?sr.summary.replyRate+'%':'--',sr?sr.summary.replies+' replies from '+sr.summary.messagesSent+' sent':'');
+  html+=statCard('Open Rate',mc&&mc.openRate?mc.openRate+'%':'--',mc?mc.subscribers.toLocaleString()+' subscribers':'');
+  html+=statCard('Hunter Credits',ht?ht.creditsUsed+'/'+ht.creditsTotal:'--',ht?ht.plan:'');
+  html+='</div>';
+  
+  // Newsletter banner
+  if(mc&&mc.lastSent){
+    var due=daysUntil(mc.lastSent);
+    var bgc=due<=7?'#FEF0E8':'#EBF5EC';
+    var bdc=due<=7?'#E8651A':'#3d8b40';
+    html+='<div class="banner" style="background:'+bgc+';border:1px solid '+bdc+'30;">';
+    html+='<div><div style="font-size:12px;font-weight:600;color:'+bdc+';margin-bottom:4px;">'+(due<=7?'Newsletter due soon':'Newsletter schedule')+'</div>';
+    html+='<div style="font-size:14px;font-weight:600;">Next due: '+fmtDate(nextDue(mc.lastSent))+' <span style="font-weight:400;color:#5C6B5D;">('+due+' days)</span></div>';
+    html+='<div style="font-size:12px;color:#5C6B5D;margin-top:2px;">Last sent '+daysSince(mc.lastSent)+' days ago</div></div>';
+    html+='<button class="btn btn-primary" onclick="goNewsletter()">Create Newsletter</button>';
+    html+='</div>';
+  }
+  
+  // Two col
+  html+='<div class="grid2">';
+  
+  // Chat
+  html+='<div class="card"><div class="card-title">AI Marketing Assistant</div>';
+  html+='<div class="chat-box" id="chat-messages">';
+  if(STATE.chatHist.length===0)html+='<div style="color:#5C6B5D;font-size:13px;">Ask about your platform performance, newsletter timing, outreach strategy...</div>';
+  STATE.chatHist.forEach(function(m){
+    html+='<div style="display:flex;justify-content:'+(m.role==='user'?'flex-end':'flex-start')+'">';
+    html+='<div class="'+(m.role==='user'?'chat-user':'chat-ai')+'">'+esc(m.content)+'</div></div>';
+  });
+  html+='</div>';
+  html+='<div style="display:flex;gap:8px;"><input id="chat-input" placeholder="How is my reply rate? When should I send next?" onkeydown="if(event.key===\'Enter\')sendChat()"/>';
+  html+='<button class="btn btn-primary" onclick="sendChat()">Send</button></div></div>';
+  
+  // Campaigns
+  html+='<div class="card"><div class="card-title">Recent Mailchimp Campaigns</div>';
+  if(mc&&mc.campaigns){
+    mc.campaigns.forEach(function(c){
+      html+='<div class="row"><div style="flex:1"><div style="font-weight:600;">'+esc(c.name)+'</div><div style="font-size:12px;color:#5C6B5D;">'+esc(c.date)+' &middot; '+esc(String(c.sent))+' sent</div></div>';
+      html+=pill(c.opens,'#3d8b40')+' '+pill(c.clicks,'#3d8b40')+'</div>';
+    });
+  }
+  html+='</div></div>';
+  
+  document.getElementById('panel-overview').innerHTML=html;
+}
+
+async function sendChat(){
+  var input=document.getElementById('chat-input');
+  if(!input||!input.value.trim())return;
+  var msg=input.value.trim();
+  input.value='';
+  STATE.chatHist.push({role:'user',content:msg});
+  renderOverview();
+  var mc=STATE.mc,ht=STATE.ht,li=STATE.li,sr=STATE.sr;
+  var sys='You are Eunomia marketing assistant. Data: Mailchimp: '+(mc?mc.subscribers+' subscribers, '+mc.openRate+'% open rate. Last newsletter '+daysSince(mc.lastSent)+' days ago. Next due: '+fmtDate(nextDue(mc.lastSent))+' ('+daysUntil(mc.lastSent)+' days away).':'Not connected.')+' Hunter: '+(ht?ht.creditsUsed+'/'+ht.creditsTotal+' credits.':'Not connected.')+' Sales Robot: '+(sr?sr.summary.activeSequences+' sequences, '+sr.summary.replyRate+'% reply rate.':'Not connected.')+' Give specific actionable pharma compliance marketing advice.';
+  try{
+    var reply=await aiCall(STATE.chatHist,sys);
+    STATE.chatHist.push({role:'assistant',content:reply});
+  }catch(e){
+    STATE.chatHist.push({role:'assistant',content:'Error: '+e.message});
+  }
+  renderOverview();
+  var box=document.getElementById('chat-messages');
+  if(box)box.scrollTop=box.scrollHeight;
+}
+
+// ============================================================
+// LINKEDIN
+// ============================================================
+function renderLinkedIn(){
+  var li=STATE.li;
   var liName=(li&&li.name&&li.name!=='undefined undefined')?li.name:(li&&li.email?li.email:'Connected');
-
-  return(
-    <div style={{display:'flex',flexDirection:'column',gap:16}}>
-      {usingMock ? <Alert type="warning">Showing demo data. Add LINKEDIN_ACCESS_TOKEN in Vercel env vars.</Alert> : null}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
-        <Stat label="Account" value={liName} sub="LinkedIn profile"/>
-        <Stat label="Connections" value={li&&li.connections?li.connections.toLocaleString():null} sub="Total network"/>
-        <Stat label="Status" value={usingMock?'Demo':'Live'} sub={usingMock?'Add token for live data':'Token connected'} color={usingMock?C.amber:C.green}/>
-      </div>
-
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-        <a href="https://www.linkedin.com/company/eunomia-pharma-services" target="_blank" rel="noreferrer"
-          style={{background:'#fff',border:'1px solid #E2E8E2',borderRadius:10,padding:'14px 20px',textDecoration:'none',color:C.text,display:'flex',alignItems:'center',gap:12}}>
-          <div style={{width:36,height:36,borderRadius:8,background:'#E8F0F8',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0,fontWeight:700,color:'#0077B5'}}>in</div>
-          <div><div style={{fontWeight:700,fontSize:14}}>Open Company Page</div><div style={{fontSize:12,color:C.muted}}>View your LinkedIn presence</div></div>
-        </a>
-        <button onClick={function(){setShowComposer(function(p){return !p;});}}
-          style={{background:showComposer?C.blueL:'#fff',border:'1.5px solid '+(showComposer?C.blue:'#E2E8E2'),borderRadius:10,padding:'14px 20px',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:12}}>
-          <div style={{width:36,height:36,borderRadius:8,background:C.blueL,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>&#9998;</div>
-          <div><div style={{fontWeight:700,fontSize:14,color:C.text}}>Create a Post</div><div style={{fontSize:12,color:C.muted}}>Post directly to LinkedIn</div></div>
-        </button>
-      </div>
-
-      {showComposer ? <LinkedInComposer li={li}/> : null}
-
-      <div className="card">
-        <SH>Content strategy for Eunomia</SH>
-        {[
-          {day:'Mon',tip:'Share a regulatory insight',detail:'Post a 3-sentence take on the latest PMCPA or ABPI development. Best time: 8-9am.',icon:'📋'},
-          {day:'Wed',tip:'Publish a webinar clip',detail:'Uday clips 60-90 seconds from your last webinar. Video gets 3x more reach than text.',icon:'🎬'},
-          {day:'Thu',tip:'Engagement hour',detail:'Spend 15 minutes replying to comments and engaging with your ICP posts.',icon:'💬'},
-          {day:'Fri',tip:'Newsletter teaser',detail:'Short preview of your upcoming newsletter with a link to subscribe.',icon:'📧'},
-        ].map(function(t,i){
-          return(
-            <div key={i} className="row" style={{alignItems:'flex-start',gap:14}}>
-              <div style={{width:44,height:44,borderRadius:8,background:C.blueL,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                <span style={{fontSize:16}}>{t.icon}</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.blue,textTransform:'uppercase',letterSpacing:'0.05em'}}>{t.day}</span>
-              </div>
-              <div><div style={{fontWeight:600,fontSize:13,marginBottom:2}}>{t.tip}</div><div style={{fontSize:12,color:C.muted,lineHeight:1.5}}>{t.detail}</div></div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+  var html='';
+  if(STATE.mock.li)html+=alert_('warning','Showing demo data. Add LINKEDIN_ACCESS_TOKEN in Vercel env vars.');
+  html+='<div class="grid3">';
+  html+=statCard('Account',liName,'LinkedIn profile');
+  html+=statCard('Connections',li&&li.connections?li.connections.toLocaleString():'--','Total network');
+  html+=statCard('Status',STATE.mock.li?'Demo':'Live',STATE.mock.li?'Add token for live data':'Token connected');
+  html+='</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">';
+  html+='<a href="https://www.linkedin.com/company/eunomia-pharma-services" target="_blank" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #E2E8E2;border-radius:10px;padding:14px 20px;text-decoration:none;color:#1C2B1D;">';
+  html+='<div style="width:36px;height:36px;background:#E8F0F8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#0077B5;font-size:16px;">in</div>';
+  html+='<div><div style="font-weight:700;font-size:14px;">Open Company Page</div><div style="font-size:12px;color:#5C6B5D;">View your LinkedIn presence</div></div></a>';
+  html+='<button onclick="toggleComposer()" style="display:flex;align-items:center;gap:12px;background:'+(STATE.showComposer?'#EBF5EC':'#fff')+';border:1.5px solid '+(STATE.showComposer?'#3d8b40':'#E2E8E2')+';border-radius:10px;padding:14px 20px;cursor:pointer;text-align:left;font-family:inherit;">';
+  html+='<div style="width:36px;height:36px;background:#EBF5EC;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;">&#9998;</div>';
+  html+='<div><div style="font-weight:700;font-size:14px;color:#1C2B1D;">Create a Post</div><div style="font-size:12px;color:#5C6B5D;">Post directly to LinkedIn</div></div></button>';
+  html+='</div>';
+  if(STATE.showComposer)html+=renderLinkedInComposer();
+  html+='<div class="card"><div class="card-title">Content Strategy for Eunomia</div>';
+  var tips=[
+    {day:'Mon',tip:'Share a regulatory insight',detail:'Post a 3-sentence take on the latest PMCPA or ABPI development. Best time: 8-9am.',icon:'&#128203;'},
+    {day:'Wed',tip:'Publish a webinar clip',detail:'Uday clips 60-90 seconds from your last webinar. Video gets 3x more reach than text.',icon:'&#127916;'},
+    {day:'Thu',tip:'Engagement hour',detail:'Spend 15 minutes replying to comments and engaging with your ICP posts.',icon:'&#128172;'},
+    {day:'Fri',tip:'Newsletter teaser',detail:'Short preview of your upcoming newsletter with a link to subscribe.',icon:'&#128231;'}
+  ];
+  tips.forEach(function(t){
+    html+='<div class="row" style="align-items:flex-start;gap:14px;">';
+    html+='<div style="width:44px;height:44px;border-radius:8px;background:#EBF5EC;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:16px;">'+t.icon+'</span><span style="font-size:9px;font-weight:700;color:#3d8b40;text-transform:uppercase;">'+t.day+'</span></div>';
+    html+='<div><div style="font-weight:600;margin-bottom:2px;">'+esc(t.tip)+'</div><div style="font-size:12px;color:#5C6B5D;line-height:1.5;">'+esc(t.detail)+'</div></div></div>';
+  });
+  html+='</div>';
+  document.getElementById('panel-linkedin').innerHTML=html;
 }
 
-// -- Mailchimp Tab ------------------------------------------------------------
-function MailchimpTab(props){
-  var mc=props.mc,usingMock=props.usingMock,onCreateNewsletter=props.onCreateNewsletter;
-  var [launching,setLaunching]=useState({});
-  var [launchResult,setLaunchResult]=useState({});
-  var [confirmId,setConfirmId]=useState(null);
+function toggleComposer(){STATE.showComposer=!STATE.showComposer;renderLinkedIn();}
 
-  async function sendCampaign(campaignId){
-    setLaunching(function(p){var n=Object.assign({},p);n[campaignId]=true;return n;});
-    var r=await apiPost('/api/mailchimp?action=send-campaign',{campaignId:campaignId});
-    setLaunchResult(function(p){var n=Object.assign({},p);n[campaignId]=r;return n;});
-    setLaunching(function(p){var n=Object.assign({},p);n[campaignId]=false;return n;});
-    setConfirmId(null);
-  }
-
-  return(
-    <div style={{display:'flex',flexDirection:'column',gap:16}}>
-      {usingMock ? <Alert type="warning">Showing demo data. Add MAILCHIMP_API_KEY, MAILCHIMP_SERVER_PREFIX and MAILCHIMP_LIST_ID in Vercel env vars.</Alert> : null}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-        <Stat label="Subscribers" value={mc?mc.subscribers.toLocaleString():null} sub="Active list"/>
-        <Stat label="Open rate" value={mc&&mc.openRate?mc.openRate+'%':null} color={C.green}/>
-        <Stat label="Days since last" value={mc&&mc.lastSent?daysSince(mc.lastSent)+'d':null} color={C.amber}/>
-        <Stat label="Next due in" value={mc&&mc.lastSent?daysUntil(mc.lastSent)+'d':null} sub={mc&&mc.lastSent?fmtDate(nextDue(mc.lastSent)):null}/>
-      </div>
-
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-        <button onClick={onCreateNewsletter}
-          style={{background:C.blue,color:'#fff',border:'none',borderRadius:10,padding:'14px 20px',fontSize:14,fontWeight:700,cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:12}}>
-          <span style={{fontSize:24}}>✦</span>
-          <div><div>Create new newsletter</div><div style={{fontSize:12,fontWeight:400,opacity:0.8}}>AI-powered topic research and draft</div></div>
-        </button>
-        <a href="https://us1.admin.mailchimp.com/campaigns/" target="_blank" rel="noreferrer"
-          style={{background:'#fff',border:'1px solid #E2E8E2',borderRadius:10,padding:'14px 20px',fontSize:14,fontWeight:700,cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:12,textDecoration:'none',color:C.text}}>
-          <span style={{fontSize:24}}>&#8599;</span>
-          <div><div>Open Mailchimp</div><div style={{fontSize:12,fontWeight:400,color:C.muted}}>Go to campaign manager</div></div>
-        </a>
-      </div>
-
-      <div className="card">
-        <SH>Campaign History</SH>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 100px 70px 70px 70px 130px',gap:8,fontSize:11,fontWeight:600,color:C.muted,paddingBottom:8,borderBottom:'1px solid #E2E8E2',textTransform:'uppercase',letterSpacing:'0.05em'}}>
-          <span>Campaign</span><span>Date</span><span style={{textAlign:'center'}}>Sent</span><span style={{textAlign:'center'}}>Opens</span><span style={{textAlign:'center'}}>Clicks</span><span style={{textAlign:'right'}}>Action</span>
-        </div>
-        {mc&&mc.campaigns&&mc.campaigns.length>0 ? mc.campaigns.map(function(c,i){
-          var isDraft=c.status==='draft'||c.status==='save';
-          return(
-            <div key={i}>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 100px 70px 70px 70px 130px',gap:8,alignItems:'center',padding:'10px 0',borderBottom:'1px solid #E2E8E2'}}>
-                <div>
-                  <div style={{fontWeight:500,fontSize:13}}>{c.name}</div>
-                  {isDraft ? <Pill label="Draft" color={C.amber}/> : null}
-                </div>
-                <span style={{fontSize:12,color:C.muted}}>{c.date}</span>
-                <span style={{textAlign:'center',fontSize:13}}>{typeof c.sent==='number'?c.sent.toLocaleString():c.sent}</span>
-                <span style={{textAlign:'center'}}><Pill label={c.opens} color={C.green}/></span>
-                <span style={{textAlign:'center'}}><Pill label={c.clicks} color={C.blue}/></span>
-                <div style={{textAlign:'right'}}>
-                  {isDraft ? (
-                    confirmId===c.id ? (
-                      <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
-                        <button onClick={function(){setConfirmId(null);}} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:6,padding:'4px 8px',fontSize:11,cursor:'pointer'}}>Cancel</button>
-                        <button onClick={function(){sendCampaign(c.id);}} disabled={!!launching[c.id]}
-                          style={{background:C.red,color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',fontSize:11,fontWeight:600,cursor:'pointer'}}>
-                          {launching[c.id] ? 'Sending...' : 'Confirm'}
-                        </button>
-                      </div>
-                    ) : (
-                      <button onClick={function(){setConfirmId(c.id);}}
-                        style={{background:C.green,color:'#fff',border:'none',borderRadius:6,padding:'5px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
-                        Start Campaign
-                      </button>
-                    )
-                  ) : <span style={{fontSize:12,color:C.muted}}>Sent</span>}
-                </div>
-              </div>
-              {launchResult[c.id] ? (
-                <Alert type={launchResult[c.id].error?'error':'success'}>
-                  {launchResult[c.id].error?'Error: '+launchResult[c.id].error:'Campaign sent successfully!'}
-                </Alert>
-              ) : null}
-            </div>
-          );
-        }) : <div style={{color:C.muted,fontSize:13}}>No campaigns found.</div>}
-      </div>
-    </div>
-  );
+function renderLinkedInComposer(){
+  var html='<div class="card" style="border:1.5px solid #3d8b40;">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">';
+  html+='<div style="font-weight:700;font-size:15px;">Create LinkedIn Post</div>';
+  html+='<select id="post-as" style="width:auto;"><option value="person">Personal profile</option><option value="org">Company page</option></select></div>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:10px;">';
+  html+='<button class="btn btn-secondary" id="li-gen-btn" onclick="genLinkedInPost()">Generate AI Draft</button>';
+  html+='<button class="btn btn-secondary" onclick="document.getElementById(\'li-text\').value=\'\'">Clear</button></div>';
+  html+='<textarea id="li-text" rows="8" maxlength="3000" placeholder="Write your post or generate an AI draft..."></textarea>';
+  html+='<div style="font-size:12px;color:#5C6B5D;margin:6px 0 14px;" id="li-char-count">0/3000</div>';
+  html+='<div id="li-result"></div>';
+  html+='<button class="btn btn-primary" style="width:100%;" onclick="postToLinkedIn()">Post to LinkedIn</button></div>';
+  return html;
 }
 
-// -- Newsletter Preview -------------------------------------------------------
-function NewsletterPreview(props){
-  var draft=props.draft,draftSubj=props.draftSubj,draftLoading=props.draftLoading;
-  var mcResult=props.mcResult,sending=props.sending,mc=props.mc;
-  var onBack=props.onBack,onRegenerate=props.onRegenerate,onSend=props.onSend;
-  var [editMode,setEditMode]=useState(false);
-  var [editedDraft,setEditedDraft]=useState('');
-
-  var bodyText=(editMode?editedDraft:draft).replace(/SUBJECT:.+\n?---\n?/,'').trim();
-  var wordCount=bodyText.trim().split(/\s+/).filter(Boolean).length;
-
-  function renderBody(text){
-    if(!text)return null;
-    return text.split('\n').map(function(line,i){
-      if(!line.trim())return <div key={i} style={{height:12}}/>;
-      var parts=line.split(/\*\*([^*]+)\*\*/g);
-      var rendered=parts.map(function(p,j){
-        if(j%2===1)return <strong key={j} style={{color:'#1C2B1D',fontWeight:700}}>{p}</strong>;
-        return <span key={j}>{p}</span>;
-      });
-      var isHead=line.startsWith('**')&&line.endsWith('**');
-      return <p key={i} style={{margin:isHead?'18px 0 6px':'0 0 10px',fontSize:isHead?15:14,lineHeight:1.7,color:'#2C2C2C'}}>{rendered}</p>;
-    });
-  }
-
-  if(draftLoading&&!draft){
-    return(
-      <div className="card" style={{textAlign:'center',padding:'40px 20px'}}>
-        <Spin s={24}/>
-        <div style={{marginTop:14,fontSize:13,color:C.muted}}>Writing your newsletter...</div>
-      </div>
+async function genLinkedInPost(){
+  var btn=document.getElementById('li-gen-btn');
+  if(btn)btn.textContent='Writing...';
+  try{
+    var text=await aiCall(
+      [{role:'user',content:'Write a LinkedIn post for Eunomia Pharma Services, a UK pharma compliance consultancy. Topic: a current pharma regulatory update (PMCPA, ABPI Code 2024, or compliance best practice). 150-200 words. 3-4 relevant hashtags at end. No emojis. Ready to post immediately.'}],
+      'You are a LinkedIn content expert for pharma compliance. Write posts that position Eunomia as a thought leader. Direct and insightful.'
     );
+    var ta=document.getElementById('li-text');
+    if(ta){ta.value=text;updateCharCount();}
+  }catch(e){
+    var res=document.getElementById('li-result');
+    if(res)res.innerHTML=alert_('error','Error: '+e.message);
   }
-
-  if(!draft)return null;
-
-  return(
-    <div style={{display:'flex',flexDirection:'column',gap:16}}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:10}}>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <button onClick={onBack} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:C.muted}}>Back</button>
-          <button onClick={onRegenerate} disabled={draftLoading} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:C.muted}}>Regenerate</button>
-          <button onClick={function(){if(editMode){setEditMode(false);}else{setEditedDraft(bodyText);setEditMode(true);}}}
-            style={{background:editMode?C.blueL:'none',border:'1px solid '+(editMode?C.blue:'#E2E8E2'),borderRadius:7,padding:'7px 12px',fontSize:12,cursor:'pointer',color:editMode?C.blue:C.muted,fontWeight:editMode?600:400}}>
-            {editMode?'Done editing':'Edit'}
-          </button>
-        </div>
-        <div style={{fontSize:12,color:C.muted}}>{wordCount} words</div>
-      </div>
-
-      <div style={{border:'1px solid #E2E8E2',borderRadius:14,overflow:'hidden',boxShadow:'0 4px 24px #2C3E2D10'}}>
-        <div style={{background:'#F4F7F4',padding:'10px 16px',borderBottom:'1px solid #E2E8E2',display:'flex',alignItems:'center',gap:8}}>
-          <div style={{display:'flex',gap:5}}>
-            <div style={{width:10,height:10,borderRadius:'50%',background:'#FC5F5A'}}/>
-            <div style={{width:10,height:10,borderRadius:'50%',background:'#FDBC40'}}/>
-            <div style={{width:10,height:10,borderRadius:'50%',background:'#34C749'}}/>
-          </div>
-          <span style={{fontSize:11,color:C.muted,marginLeft:8}}>Email preview</span>
-        </div>
-
-        <div style={{background:'#2C3E2D',padding:'16px 24px',borderBottom:'3px solid #E8651A'}}>
-          <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <circle cx="14" cy="14" r="13" fill="white" stroke="#E8651A" strokeWidth="1.5"/>
-              <path d="M9 14 L13 18 L19 10" stroke="#3d8b40" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <div>
-              <div style={{color:'#fff',fontWeight:700,fontSize:12,letterSpacing:'0.05em'}}>EUNOMIA PHARMA SERVICES</div>
-              <div style={{color:'#a8c5a9',fontSize:10}}>Regulatory Intelligence Newsletter</div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{background:'#FAFAFA',padding:'12px 24px',borderBottom:'1px solid #E2E8E2'}}>
-          <div style={{display:'grid',gridTemplateColumns:'60px 1fr',gap:'4px 12px',fontSize:12}}>
-            <span style={{color:C.muted,fontWeight:600}}>From:</span>
-            <span>Eunomia Pharma Services &lt;hello@eunomiapharmaservices.com&gt;</span>
-            <span style={{color:C.muted,fontWeight:600}}>To:</span>
-            <span style={{color:C.muted}}>{mc&&mc.subscribers?mc.subscribers.toLocaleString():'834'} subscribers</span>
-            <span style={{color:C.muted,fontWeight:600}}>Subject:</span>
-            <span style={{fontWeight:600,color:'#1C2B1D'}}>{draftSubj||'Newsletter'}</span>
-          </div>
-        </div>
-
-        <div style={{background:'#fff',padding:'32px 40px',maxHeight:520,overflowY:'auto'}}>
-          {editMode ? (
-            <textarea value={editedDraft} onChange={function(e){setEditedDraft(e.target.value);}}
-              style={{width:'100%',minHeight:340,border:'1px solid #E2E8E2',borderRadius:8,padding:'12px',fontSize:14,lineHeight:1.75,resize:'vertical',outline:'none',color:'#2C2C2C'}}/>
-          ) : (
-            <div style={{maxWidth:560,margin:'0 auto'}}>{renderBody(bodyText)}</div>
-          )}
-        </div>
-
-        <div style={{background:'#F4F7F4',padding:'16px 24px',borderTop:'1px solid #E2E8E2',textAlign:'center'}}>
-          <div style={{fontSize:11,color:C.muted}}>Eunomia Pharma Services &middot; hello@eunomiapharmaservices.com</div>
-        </div>
-      </div>
-
-      {mcResult ? (
-        <Alert type={mcResult.success?'success':'error'}>
-          {mcResult.success ? (
-            <span>Draft created in Mailchimp! <a href={mcResult.editUrl} target="_blank" rel="noreferrer" style={{color:C.blue,fontWeight:600}}>Open in Mailchimp to schedule</a></span>
-          ) : 'Mailchimp error: '+(mcResult.error||'Unknown error')}
-        </Alert>
-      ) : null}
-
-      {!mcResult||!mcResult.success ? (
-        <button onClick={onSend} disabled={sending}
-          style={{background:sending?C.grayL:C.blue,color:sending?C.muted:'#fff',border:'none',borderRadius:10,padding:'14px 28px',fontSize:14,fontWeight:700,cursor:sending?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10,width:'100%'}}>
-          {sending ? <Spin s={16}/> : null}
-          {sending ? 'Sending to Mailchimp...' : 'Send to Mailchimp as Draft - '+(mc&&mc.subscribers?mc.subscribers.toLocaleString():'834')+' subscribers'}
-        </button>
-      ) : null}
-    </div>
-  );
+  if(btn)btn.textContent='Generate AI Draft';
 }
 
-// -- Main App -----------------------------------------------------------------
-function App(){
-  var [tab,setTab]=useState('overview');
-  var [mc,setMc]=useState(null);
-  var [ht,setHt]=useState(null);
-  var [li,setLi]=useState(null);
-  var [sr,setSr]=useState(null);
-  var [loading,setLoading]=useState({mc:true,ht:true,li:true,sr:true});
-  var [errors,setErrors]=useState({});
-  var [usingMock,setUsingMock]=useState({});
-
-  var [composerOpen,setComposerOpen]=useState(false);
-  var [step,setStep]=useState('topics');
-  var [topics,setTopics]=useState([]);
-  var [topicLoading,setTopicLoading]=useState(false);
-  var [selTopics,setSelTopics]=useState([]);
-  var [draft,setDraft]=useState('');
-  var [draftSubj,setDraftSubj]=useState('');
-  var [draftLoading,setDraftLoading]=useState(false);
-  var [sending,setSending]=useState(false);
-  var [mcResult,setMcResult]=useState(null);
-
-  var [chatMsg,setChatMsg]=useState('');
-  var [chatHist,setChatHist]=useState([]);
-  var [chatLoading,setChatLoading]=useState(false);
-  var chatEnd=useRef(null);
-
-  useEffect(function(){loadAll();},[]);
-  useEffect(function(){if(chatEnd.current)chatEnd.current.scrollIntoView({behavior:'smooth'});},[chatHist]);
-
-  async function loadAll(){
-    setLoading({mc:true,ht:true,li:true,sr:true});
-    setErrors({});setUsingMock({});
-    var res=await Promise.all([
-      apiGet('/api/mailchimp?action=stats'),
-      apiGet('/api/hunter?action=account'),
-      apiGet('/api/linkedin?action=profile'),
-      apiGet('/api/salesrobot?action=campaigns'),
-    ]);
-    var mcD=res[0],htD=res[1],liD=res[2],srD=res[3];
-    var errs={},mock={};
-    if(mcD.error){errs.mc=mcD.error;mock.mc=true;setMc(MOCK.mc);}else setMc(mcD);
-    if(htD.error){errs.ht=htD.error;mock.ht=true;setHt(MOCK.ht);}else setHt(htD);
-    if(liD.error){errs.li=liD.error;mock.li=true;setLi(MOCK.li);}else setLi(liD);
-    if(srD.error){errs.sr=srD.error;mock.sr=true;setSr(MOCK.sr);}else setSr(srD);
-    setErrors(errs);setUsingMock(mock);
-    setLoading({mc:false,ht:false,li:false,sr:false});
-  }
-
-  async function genTopics(){
-    setTopicLoading(true);setTopics([]);
-    var sys='You are a pharma compliance marketing expert for Eunomia, a UK consultancy. Suggest 6 newsletter topics for pharma compliance professionals. Respond ONLY with a JSON array, no markdown. Each item: {"title":"...","hook":"one sentence why this matters now","tags":["PMCPA","ABPI","ANSM","FCPA","Digital","Training","Strategy"]}';
-    try{
-      var raw='';
-      await callClaude([{role:'user',content:'Generate 6 newsletter topics for Eunomia. Today is May 2026.'}],sys,function(c){raw=c;});
-      setTopics(JSON.parse(raw.replace(/```json|```/g,'').trim()));
-    }catch(e){
-      setTopics([
-        {title:'PMCPA Social Media Guidance 2026: Practical Steps',hook:'New guidance changes how pharma teams use LinkedIn and X.',tags:['PMCPA','Digital']},
-        {title:'ABPI Code 2024: Six Months On',hook:'Real-world compliance implications of the new code.',tags:['ABPI']},
-        {title:'FCPA 2026: UK Pharma Firms Still At Risk',hook:'Recent DOJ enforcement actions with EU connections.',tags:['FCPA']},
-        {title:'Digital HCP Engagement: Drawing the Line',hook:'Where promotional content ends and education begins.',tags:['ANSM','Digital']},
-        {title:'Building a Compliance-First Medical Affairs Team',hook:'Training frameworks that satisfy PMCPA requirements.',tags:['Training']},
-        {title:'Patient Organisation Relationships Under ABPI',hook:'Updated requirements most companies are still getting wrong.',tags:['ABPI','Strategy']},
-      ]);
-    }
-    setTopicLoading(false);
-  }
-
-  async function genDraft(){
-    setStep('drafting');setDraftLoading(true);setDraft('');setDraftSubj('');
-    var chosen=topics.filter(function(_,i){return selTopics.indexOf(i)>=0;});
-    var tlist=chosen.map(function(t){return '- '+t.title+': '+t.hook;}).join('\n');
-    var sys='You are a senior compliance marketing writer for Eunomia. Write a newsletter. Format exactly:\nSUBJECT: [subject line]\n---\n[Opening hook sentence]\n\n[2-3 sections with **bold headings**]\n\n[Closing CTA to contact Eunomia]\n\nUnder 400 words. Expert but readable.';
-    try{
-      var full=await callClaude(
-        [{role:'user',content:'Write newsletter covering:\n'+tlist+'\n\nAudience: pharma compliance professionals. May 2026.'}],
-        sys,
-        function(c){setDraft(c);}
-      );
-      var m=full.match(/SUBJECT:\s*(.+)/);
-      if(m)setDraftSubj(m[1].trim());
-    }catch(e){setDraft('Error: '+e.message);}
-    setDraftLoading(false);
-  }
-
-  async function sendToMailchimp(){
-    setSending(true);setMcResult(null);
-    var body=draft.replace(/SUBJECT:.+\n?---\n?/,'').trim();
-    var result=await apiPost('/api/mailchimp?action=create-campaign',{subject:draftSubj,body:body});
-    setMcResult(result);setSending(false);
-  }
-
-  async function sendChat(){
-    if(!chatMsg.trim()||chatLoading)return;
-    var msg=chatMsg.trim();setChatMsg('');
-    var hist=chatHist.concat([{role:'user',content:msg}]);
-    setChatHist(hist);setChatLoading(true);
-    var sys='You are Eunomia marketing assistant. Data: Mailchimp: '+(mc?mc.subscribers+' subscribers, '+mc.openRate+'% open rate. Last newsletter sent '+daysSince(mc.lastSent)+' days ago. Next due: '+fmtDate(nextDue(mc.lastSent))+' ('+daysUntil(mc.lastSent)+' days away).':'Not connected.')+' Hunter: '+(ht?ht.creditsUsed+'/'+ht.creditsTotal+' credits used.':'Not connected.')+' Sales Robot: '+(sr?sr.summary.activeSequences+' active sequences, '+sr.summary.replyRate+'% reply rate.':'Not connected.')+' Give specific actionable advice for Eunomia pharma compliance marketing.';
-    try{
-      await callClaude(hist,sys,function(c){setChatHist(hist.concat([{role:'assistant',content:c}]));});
-    }catch(e){setChatHist(hist.concat([{role:'assistant',content:'Error: '+e.message}]));}
-    setChatLoading(false);
-  }
-
-  function openNewsletter(){
-    setTab('newsletter');setComposerOpen(true);setStep('topics');setTopics([]);setSelTopics([]);setDraft('');setDraftSubj('');setMcResult(null);
-  }
-
-  function statusDot(key,name){
-    if(loading[key])return <span style={{fontSize:11,background:'#ffffff20',color:'#a8c5a9',borderRadius:5,padding:'3px 8px',fontWeight:600}}>{name}</span>;
-    if(usingMock[key])return <span style={{fontSize:11,background:'#E8651A25',color:'#E8651A',border:'1px solid #E8651A50',borderRadius:5,padding:'3px 8px',fontWeight:600}}>Demo: {name}</span>;
-    return <span style={{fontSize:11,background:'#3d8b4025',color:'#5db860',border:'1px solid #3d8b4050',borderRadius:5,padding:'3px 8px',fontWeight:600}}>Live: {name}</span>;
-  }
-
-  var tabs=[
-    {id:'overview',label:'Overview'},{id:'linkedin',label:'LinkedIn'},
-    {id:'salesrobot',label:'Sales Robot'},{id:'mailchimp',label:'Mailchimp'},
-    {id:'hunter',label:'Hunter.io'},{id:'newsletter',label:'Newsletter'},
-  ];
-
-  return(
-    <div style={{minHeight:'100vh'}}>
-      <div style={{background:'#2C3E2D',padding:'0 24px',display:'flex',alignItems:'center',justifyContent:'space-between',height:60,position:'sticky',top:0,zIndex:10,borderBottom:'2px solid #E8651A'}}>
-        <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
-            <circle cx="19" cy="19" r="18" fill="white" stroke="#E8651A" strokeWidth="2"/>
-            <circle cx="19" cy="19" r="14" fill="none" stroke="#3d8b40" strokeWidth="1.5"/>
-            <path d="M12 19 L17 24 L26 13" stroke="#3d8b40" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M19 4 A15 15 0 0 1 34 19" stroke="#E8651A" strokeWidth="2" strokeLinecap="round" fill="none"/>
-          </svg>
-          <div>
-            <div style={{color:'#fff',fontWeight:700,fontSize:14,letterSpacing:'0.02em',lineHeight:1.1}}>EUNOMIA PHARMA</div>
-            <div style={{color:'#a8c5a9',fontSize:10,letterSpacing:'0.08em',textTransform:'uppercase'}}>Marketing Hub</div>
-          </div>
-        </div>
-        <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-          {statusDot('li','LinkedIn')}
-          {statusDot('sr','Sales Robot')}
-          {statusDot('mc','Mailchimp')}
-          {statusDot('ht','Hunter.io')}
-          <button onClick={loadAll} style={{background:'none',border:'1px solid #ffffff40',borderRadius:7,color:'#a8c5a9',fontSize:12,padding:'4px 12px',cursor:'pointer',marginLeft:4}}>Refresh</button>
-        </div>
-      </div>
-
-      <div style={{borderBottom:'1px solid #E2E8E2',background:'#fff',padding:'0 24px',display:'flex',gap:4,overflowX:'auto'}}>
-        {tabs.map(function(t){
-          return <button key={t.id} className={'tab '+(tab===t.id?'on':'')} onClick={function(){setTab(t.id);}}>{t.label}</button>;
-        })}
-      </div>
-
-      <div style={{padding:'24px',maxWidth:960,margin:'0 auto',display:'flex',flexDirection:'column',gap:18}}>
-
-        {tab==='overview' ? (
-          <div style={{display:'flex',flexDirection:'column',gap:18}}>
-            {Object.keys(usingMock).length>0 ? (
-              <Alert type="warning">Demo mode: {Object.keys(usingMock).join(', ')} showing sample data. Add API keys in Vercel to see live data.</Alert>
-            ) : null}
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-              <Stat label="LinkedIn Connections" value={loading.li?'...':li&&li.connections?li.connections.toLocaleString():null} sub={li&&li.name&&li.name!=='undefined undefined'?li.name:''}/>
-              <Stat label="Reply Rate" value={loading.sr?'...':sr&&sr.summary?sr.summary.replyRate+'%':null} sub={sr?sr.summary.replies+' replies from '+sr.summary.messagesSent+' sent':''} color={C.teal}/>
-              <Stat label="Open Rate" value={loading.mc?'...':mc&&mc.openRate?mc.openRate+'%':null} sub={mc?mc.subscribers.toLocaleString()+' subscribers':''} color={C.amber}/>
-              <Stat label="Hunter Credits" value={loading.ht?'...':ht?ht.creditsUsed+'/'+ht.creditsTotal:null} sub={ht?ht.plan:''} color={C.green}/>
-            </div>
-
-            {mc&&mc.lastSent ? (
-              <div style={{background:daysUntil(mc.lastSent)<=7?C.amberL:C.blueL,border:'1px solid '+(daysUntil(mc.lastSent)<=7?C.amber:C.blue)+'30',borderRadius:12,padding:'14px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
-                <div>
-                  <div style={{fontSize:12,fontWeight:600,color:daysUntil(mc.lastSent)<=7?C.amber:C.blue,marginBottom:4}}>
-                    {daysUntil(mc.lastSent)<=7?'Newsletter due soon':'Newsletter schedule'}
-                  </div>
-                  <div style={{fontSize:14,fontWeight:600}}>Next due: {fmtDate(nextDue(mc.lastSent))} <span style={{fontWeight:400,color:C.muted}}>({daysUntil(mc.lastSent)} days)</span></div>
-                  <div style={{fontSize:12,color:C.muted,marginTop:2}}>Last sent {daysSince(mc.lastSent)} days ago</div>
-                </div>
-                <button onClick={openNewsletter}
-                  style={{background:C.blue,color:'#fff',border:'none',borderRadius:8,padding:'10px 18px',fontSize:13,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}>
-                  Create Newsletter
-                </button>
-              </div>
-            ) : null}
-
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
-              <div className="card">
-                <SH>AI Marketing Assistant</SH>
-                <div style={{background:C.grayL,borderRadius:10,padding:12,minHeight:200,maxHeight:280,overflowY:'auto',display:'flex',flexDirection:'column',gap:8,marginBottom:10}}>
-                  {chatHist.length===0 ? <p style={{color:C.muted,fontSize:13}}>Ask about your platform performance, newsletter timing, outreach strategy...</p> : null}
-                  {chatHist.map(function(m,i){
-                    return(
-                      <div key={i} style={{display:'flex',justifyContent:m.role==='user'?'flex-end':'flex-start'}}>
-                        <div className={m.role==='user'?'cu':'ca'}>{m.content}</div>
-                      </div>
-                    );
-                  })}
-                  {chatLoading ? <div className="ca"><Spin s={14}/></div> : null}
-                  <div ref={chatEnd}/>
-                </div>
-                <div style={{display:'flex',gap:8}}>
-                  <input value={chatMsg} onChange={function(e){setChatMsg(e.target.value);}}
-                    onKeyDown={function(e){if(e.key==='Enter')sendChat();}}
-                    placeholder="How is my reply rate? When should I send next?"
-                    style={{flex:1,border:'1px solid #E2E8E2',borderRadius:8,padding:'8px 12px',fontSize:13,outline:'none'}}/>
-                  <button onClick={sendChat} disabled={chatLoading}
-                    style={{background:C.blue,color:'#fff',border:'none',borderRadius:8,padding:'8px 16px',cursor:'pointer',fontWeight:600,fontSize:13}}>Send</button>
-                </div>
-              </div>
-
-              <div className="card">
-                <SH>Recent Mailchimp Campaigns</SH>
-                {loading.mc ? <div style={{color:C.muted,fontSize:13}}>Loading...</div>
-                  : mc&&mc.campaigns&&mc.campaigns.length>0 ? mc.campaigns.map(function(c,i){
-                  return(
-                    <div key={i} className="row">
-                      <div style={{flex:1}}>
-                        <div style={{fontWeight:600,fontSize:13}}>{c.name}</div>
-                        <div style={{fontSize:12,color:C.muted}}>{c.date} &middot; {typeof c.sent==='number'?c.sent.toLocaleString():c.sent} sent</div>
-                      </div>
-                      <Pill label={c.opens} color={C.green}/>
-                      <Pill label={c.clicks} color={C.blue}/>
-                    </div>
-                  );
-                }) : <div style={{color:C.muted,fontSize:13}}>No campaigns found.</div>}
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {tab==='linkedin' ? <LinkedInTab li={li} usingMock={usingMock.li}/> : null}
-
-        {tab==='salesrobot' ? <SalesRobotTab sr={sr} usingMock={usingMock.sr}/> : null}
-
-        {tab==='mailchimp' ? <MailchimpTab mc={mc} usingMock={usingMock.mc} onCreateNewsletter={openNewsletter}/> : null}
-
-        {tab==='hunter' ? <HunterTab ht={ht} usingMock={usingMock.ht}/> : null}
-
-        {tab==='newsletter' ? (
-          <div style={{display:'flex',flexDirection:'column',gap:16}}>
-            {mc&&mc.lastSent ? (
-              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
-                <Stat label="Last newsletter" value={daysSince(mc.lastSent)+'d ago'} sub={mc.lastSubject?mc.lastSubject.slice(0,42)+'...':''}/>
-                <Stat label="Next due" value={fmtDate(nextDue(mc.lastSent))} sub={daysUntil(mc.lastSent)+' days away'} color={daysUntil(mc.lastSent)<=7?C.amber:C.green}/>
-                <Stat label="Subscribers" value={mc.subscribers?mc.subscribers.toLocaleString():null} sub="Will receive newsletter" color={C.blue}/>
-              </div>
-            ) : null}
-
-            {!composerOpen ? (
-              <div className="card" style={{textAlign:'center',padding:'36px 20px'}}>
-                <div style={{fontSize:36,marginBottom:12}}>✦</div>
-                <div style={{fontSize:17,fontWeight:700,marginBottom:8}}>Create your next newsletter</div>
-                <div style={{fontSize:13,color:C.muted,marginBottom:24}}>AI researches current pharma regulatory topics, you choose, then it drafts a full newsletter and sends to Mailchimp.</div>
-                <button onClick={function(){setComposerOpen(true);setStep('topics');setTopics([]);setSelTopics([]);setDraft('');setDraftSubj('');setMcResult(null);}}
-                  style={{background:C.blue,color:'#fff',border:'none',borderRadius:10,padding:'13px 30px',fontSize:14,fontWeight:700,cursor:'pointer'}}>
-                  Start Newsletter Creator
-                </button>
-              </div>
-            ) : null}
-
-            {composerOpen&&step==='topics' ? (
-              <div className="card">
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-                  <SH>Step 1: Choose topics</SH>
-                  <button onClick={function(){setComposerOpen(false);}} style={{background:'none',border:'none',cursor:'pointer',color:C.muted,fontSize:22,lineHeight:1}}>x</button>
-                </div>
-                {topics.length===0&&!topicLoading ? (
-                  <div style={{textAlign:'center',padding:'20px 0'}}>
-                    <div style={{fontSize:13,color:C.muted,marginBottom:16}}>AI will research current pharma regulatory topics for your audience</div>
-                    <button onClick={genTopics} style={{background:C.blue,color:'#fff',border:'none',borderRadius:8,padding:'10px 24px',fontSize:13,fontWeight:600,cursor:'pointer'}}>Research Topics</button>
-                  </div>
-                ) : null}
-                {topicLoading ? (
-                  <div style={{textAlign:'center',padding:'28px 0',color:C.muted,fontSize:13,display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
-                    <Spin/>
-                    <span>Researching topics...</span>
-                  </div>
-                ) : null}
-                {topics.length>0&&!topicLoading ? (
-                  <div>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16}}>
-                      {topics.map(function(t,i){
-                        var isSel=selTopics.indexOf(i)>=0;
-                        return(
-                          <div key={i} className={'tc '+(isSel?'sel':'')}
-                            onClick={function(){setSelTopics(function(p){return p.indexOf(i)>=0?p.filter(function(x){return x!==i;}):[...p,i];});}}>
-                            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
-                              <span style={{fontSize:13,fontWeight:600,flex:1,marginRight:8}}>{t.title}</span>
-                              <div style={{width:20,height:20,borderRadius:'50%',border:'2px solid '+(isSel?C.blue:'#E2E8E2'),background:isSel?C.blue:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:11,fontWeight:800,color:'#fff'}}>
-                                {isSel?'v':''}
-                              </div>
-                            </div>
-                            <p style={{fontSize:12,color:C.muted,margin:'0 0 8px'}}>{t.hook}</p>
-                            <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
-                              {t.tags.map(function(tag){
-                                return <span key={tag} style={{fontSize:10,fontWeight:600,background:(tagColor[tag]||C.gray)+'20',color:tagColor[tag]||C.gray,borderRadius:4,padding:'2px 6px'}}>{tag}</span>;
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div style={{display:'flex',gap:10}}>
-                      <button onClick={genTopics} style={{background:'none',border:'1px solid #E2E8E2',borderRadius:8,padding:'8px 14px',fontSize:13,cursor:'pointer'}}>Regenerate</button>
-                      <button disabled={selTopics.length===0} onClick={genDraft}
-                        style={{background:selTopics.length>0?C.blue:C.grayL,color:selTopics.length>0?'#fff':C.muted,border:'none',borderRadius:8,padding:'10px 20px',fontSize:13,fontWeight:600,cursor:selTopics.length>0?'pointer':'default'}}>
-                        Draft Newsletter ({selTopics.length} topic{selTopics.length!==1?'s':''})
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-
-            {composerOpen&&step==='drafting' ? (
-              <NewsletterPreview
-                draft={draft} draftSubj={draftSubj} draftLoading={draftLoading}
-                mcResult={mcResult} sending={sending} mc={mc}
-                onBack={function(){setStep('topics');setDraft('');setDraftSubj('');setMcResult(null);}}
-                onRegenerate={genDraft} onSend={sendToMailchimp}
-              />
-            ) : null}
-          </div>
-        ) : null}
-
-      </div>
-    </div>
-  );
+function updateCharCount(){
+  var ta=document.getElementById('li-text');
+  var cc=document.getElementById('li-char-count');
+  if(ta&&cc)cc.textContent=ta.value.length+'/3000';
 }
 
-
-// -- SalesRobotTab -------------------------------------------------------------
-function SalesRobotTab(props) {
-  var sr = props.sr, usingMock = props.usingMock;
-  var [showCreator, setShowCreator] = useState(false);
-  var [jobTitle, setJobTitle] = useState('');
-  var [industry, setIndustry] = useState('Pharmaceutical');
-  var [companySize, setCompanySize] = useState('500-5000');
-  var [topic, setTopic] = useState('');
-  var [generating, setGenerating] = useState(false);
-  var [campaign, setCampaign] = useState(null);
-  var [copied, setCopied] = useState({});
-  var [genError, setGenError] = useState('');
-
-  var jobTitles = [
-    'Medical Affairs Director', 'Chief Compliance Officer', 'Regulatory Affairs VP',
-    'Head of Medical Affairs', 'Compliance Manager', 'Legal Counsel - Healthcare',
-    'Medical Science Liaison Manager', 'VP Medical Affairs', 'Director of Regulatory Affairs',
-    'Chief Medical Officer'
-  ];
-
-  var topics = [
-    'PMCPA social media guidance 2026',
-    'ABPI Code 2024 compliance',
-    'ABAC and anti-bribery framework',
-    'HCP engagement and compliance',
-    'Medical affairs compliance training',
-    'Due diligence and third party risk',
-    'Gifts and hospitality policy',
-    'Conflict of interest management',
-    'MSL compliance training',
-    'Promotional materials approval'
-  ];
-
-  async function generateCampaign() {
-    if (!jobTitle.trim()) { setGenError('Please enter a job title to target.'); return; }
-    setGenerating(true); setCampaign(null); setGenError('');
-
-    var prompt = 'Generate a LinkedIn Sales Robot outreach campaign for Eunomia Pharma Services targeting ' + jobTitle + ' in ' + industry + ' companies (' + companySize + ' employees).' +
-      (topic ? ' The campaign topic is: ' + topic + '.' : '') +
-      ' Eunomia is a UK pharma compliance consultancy specialising in ABPI Code, PMCPA, ABAC, due diligence, compliance training for Sales Reps and MSLs, gifts and hospitality, conflict of interest, and data analytics dashboards.' +
-      ' Generate a campaign with: (1) a campaign name, (2) a target ICP description for Sales Navigator filters, (3) Message 1: connection request note (under 300 characters), (4) Message 2: follow-up value message (Day 5, under 500 characters), (5) Message 3: direct ask (Day 10, under 500 characters).' +
-      ' Messages must sound human, not salesy. Reference a specific compliance pain point. No emojis.' +
-      ' Respond ONLY as JSON: {"campaignName":"...","icp":"...","message1":"...","message2":"...","message3":"...","targetTitle":"...","targetIndustry":"..."}';
-
-    try {
-      var raw = '';
-      await callClaude(
-        [{role:'user',content:prompt}],
-        'You are a B2B LinkedIn outreach expert for pharma compliance. Write messages that sound like they come from a senior compliance consultant, not a salesperson. Be specific and reference real regulatory issues.',
-        function(chunk) { raw = chunk; }
-      );
-      var cleaned = raw.replace(/```json|```/g,'').trim();
-      var data = JSON.parse(cleaned);
-      setCampaign(data);
-    } catch(e) {
-      setGenError('Error generating campaign: ' + e.message);
-    }
-    setGenerating(false);
+async function postToLinkedIn(){
+  var ta=document.getElementById('li-text');
+  var ps=document.getElementById('post-as');
+  var res=document.getElementById('li-result');
+  if(!ta||!ta.value.trim())return;
+  if(res)res.innerHTML=spinner()+' Posting...';
+  var data=await apiPost('/api/linkedin?action=post',{text:ta.value,postAs:ps?ps.value:'person'});
+  if(data.success){
+    if(res)res.innerHTML=alert_('success','Posted successfully! <a href="https://www.linkedin.com/feed/" target="_blank" style="color:#3d8b40;font-weight:600;">View feed</a>');
+    ta.value='';
+  }else{
+    if(res)res.innerHTML=alert_('error','Could not post: '+esc(data.error||'Unknown error')+(data.error==='Permission denied'?' Add w_member_social scope to your LinkedIn token and update LINKEDIN_ACCESS_TOKEN in Vercel.':''));
   }
+}
 
-  function copyText(key, text) {
-    navigator.clipboard.writeText(text).then(function() {
-      setCopied(function(p) { var n = Object.assign({}, p); n[key] = true; return n; });
-      setTimeout(function() {
-        setCopied(function(p) { var n = Object.assign({}, p); n[key] = false; return n; });
-      }, 2000);
+// ============================================================
+// SALES ROBOT
+// ============================================================
+function renderSalesRobot(){
+  var sr=STATE.sr;
+  var html='';
+  if(STATE.mock.sr)html+=alert_('warning','Showing your real campaign data. To connect live API, contact Sales Robot support for your API endpoint URL.');
+  if(sr&&sr.summary){
+    html+='<div class="grid4">';
+    html+=statCard('Active sequences',sr.summary.activeSequences);
+    html+=statCard('Messages sent',sr.summary.messagesSent,'This period');
+    html+=statCard('Replies',sr.summary.replies);
+    html+=statCard('Reply rate',sr.summary.replyRate+'%');
+    html+='</div>';
+  }
+  html+='<div class="card"><div class="card-title">Campaign Performance</div>';
+  if(sr&&sr.campaigns&&sr.campaigns.length){
+    html+='<div class="seq-grid tbl-hdr"><span>Campaign</span><span style="text-align:center;">Accepted</span><span style="text-align:center;">Replies</span><span style="text-align:right;">Rate</span><span style="text-align:right;">Status</span></div>';
+    sr.campaigns.forEach(function(s){
+      var rate=parseFloat(s.rate);
+      var col=rate>=22?'#3d8b40':rate>=15?'#0E9E8E':rate>=10?'#E8651A':'#DC2626';
+      html+='<div class="seq-grid" style="padding:12px 0;border-top:1px solid #E2E8E2;">';
+      html+='<span style="font-weight:600;">'+esc(s.name)+'</span>';
+      html+='<span style="text-align:center;">'+esc(s.sent)+'</span>';
+      html+='<span style="text-align:center;">'+esc(s.replies)+'</span>';
+      html+='<div style="text-align:right;">'+pill(s.rate+'%',col)+'</div>';
+      html+='<div style="text-align:right;">'+pill(s.status,s.status==='active'?'#3d8b40':'#6B7280')+'</div></div>';
     });
-  }
-
-  function charColor(text, limit) {
-    var len = text ? text.length : 0;
-    if (len > limit) return C.red;
-    if (len > limit * 0.85) return C.amber;
-    return C.muted;
-  }
-
-  return (
-    <div style={{display:'flex',flexDirection:'column',gap:16}}>
-      {usingMock ? <Alert type="warning">Showing your real campaign data from Sales Robot. To connect live API, contact Sales Robot support for your API endpoint URL.</Alert> : null}
-
-      {sr&&sr.summary ? (
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-          <Stat label="Active sequences" value={sr.summary.activeSequences}/>
-          <Stat label="Messages sent" value={sr.summary.messagesSent} sub="This period"/>
-          <Stat label="Replies" value={sr.summary.replies} color={C.teal}/>
-          <Stat label="Reply rate" value={sr.summary.replyRate+'%'} color={parseFloat(sr.summary.replyRate)>=15?C.green:C.amber}/>
-        </div>
-      ) : null}
-
-      {/* Campaign performance */}
-      <div className="card">
-        <SH>Campaign Performance</SH>
-        {sr&&sr.campaigns&&sr.campaigns.length>0 ? (
-          <div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 90px 70px 80px 90px',gap:8,fontSize:11,fontWeight:600,color:C.muted,paddingBottom:8,borderBottom:'1px solid #E2E8E2',textTransform:'uppercase',letterSpacing:'0.05em'}}>
-              <span>Campaign</span><span style={{textAlign:'center'}}>Accepted</span><span style={{textAlign:'center'}}>Replies</span><span style={{textAlign:'right'}}>Rate</span><span style={{textAlign:'right'}}>Status</span>
-            </div>
-            {sr.campaigns.map(function(s,i) {
-              var rate = parseFloat(s.rate);
-              return (
-                <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 90px 70px 80px 90px',gap:8,alignItems:'center',padding:'12px 0',borderBottom:'1px solid #E2E8E2'}}>
-                  <div style={{fontWeight:600,fontSize:13}}>{s.name}</div>
-                  <span style={{textAlign:'center',fontSize:13}}>{s.sent}</span>
-                  <span style={{textAlign:'center',fontSize:13}}>{s.replies}</span>
-                  <div style={{textAlign:'right'}}>
-                    <Pill label={s.rate+'%'} color={rate>=22?C.green:rate>=15?C.teal:rate>=10?C.amber:C.red}/>
-                  </div>
-                  <div style={{textAlign:'right'}}>
-                    <Pill label={s.status} color={s.status==='active'?C.green:C.gray}/>
-                  </div>
-                </div>
-              );
-            })}
-            <div style={{marginTop:12,padding:'10px 14px',background:C.blueL,borderRadius:8,fontSize:13}}>
-              <strong>Your average reply rate of {sr.summary.replyRate}% is well above the industry average of 10-15%.</strong> The Legal and Medical Directors campaigns are your strongest performers.
-            </div>
-          </div>
-        ) : <div style={{color:C.muted,fontSize:13}}>No campaigns found.</div>}
-      </div>
-
-      {/* Campaign Creator */}
-      <div className="card" style={{border: showCreator ? '1.5px solid #3d8b40' : '1px solid #E2E8E2'}}>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <div>
-            <div style={{fontWeight:700,fontSize:15,marginBottom:4}}>AI Campaign Creator</div>
-            <div style={{fontSize:13,color:C.muted}}>Generate a targeted outreach campaign with 3-step message sequence</div>
-          </div>
-          <button onClick={function(){setShowCreator(function(p){return !p;});setCampaign(null);setGenError('');}}
-            style={{background:showCreator?C.blueL:C.blue,color:showCreator?C.blue:'#fff',border:'1.5px solid '+(showCreator?C.blue:'transparent'),borderRadius:9,padding:'10px 20px',fontSize:13,fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}}>
-            {showCreator ? 'Close' : '+ Create Campaign'}
-          </button>
-        </div>
-
-        {showCreator ? (
-          <div style={{marginTop:20,borderTop:'1px solid #E2E8E2',paddingTop:20}}>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
-              {/* Target job title */}
-              <div>
-                <label style={{fontSize:12,fontWeight:600,color:C.muted,display:'block',marginBottom:6}}>TARGET JOB TITLE *</label>
-                <input list="jobtitles" value={jobTitle} onChange={function(e){setJobTitle(e.target.value);}}
-                  placeholder="e.g. Chief Compliance Officer"
-                  style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:8,padding:'9px 12px',fontSize:13,outline:'none'}}/>
-                <datalist id="jobtitles">
-                  {jobTitles.map(function(t){return <option key={t} value={t}/>;})}</datalist>
-              </div>
-
-              {/* Industry */}
-              <div>
-                <label style={{fontSize:12,fontWeight:600,color:C.muted,display:'block',marginBottom:6}}>INDUSTRY</label>
-                <select value={industry} onChange={function(e){setIndustry(e.target.value);}}
-                  style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:8,padding:'9px 12px',fontSize:13,outline:'none',background:'#fff'}}>
-                  <option>Pharmaceutical</option>
-                  <option>Biotech</option>
-                  <option>Medical Devices</option>
-                  <option>CRO / Clinical Research</option>
-                  <option>Healthcare</option>
-                  <option>Life Sciences</option>
-                </select>
-              </div>
-
-              {/* Company size */}
-              <div>
-                <label style={{fontSize:12,fontWeight:600,color:C.muted,display:'block',marginBottom:6}}>COMPANY SIZE</label>
-                <select value={companySize} onChange={function(e){setCompanySize(e.target.value);}}
-                  style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:8,padding:'9px 12px',fontSize:13,outline:'none',background:'#fff'}}>
-                  <option>50-200</option>
-                  <option>200-500</option>
-                  <option>500-5000</option>
-                  <option>1001-5000</option>
-                  <option>5000+</option>
-                </select>
-              </div>
-
-              {/* Topic hook */}
-              <div>
-                <label style={{fontSize:12,fontWeight:600,color:C.muted,display:'block',marginBottom:6}}>COMPLIANCE TOPIC (optional)</label>
-                <select value={topic} onChange={function(e){setTopic(e.target.value);}}
-                  style={{width:'100%',border:'1px solid #E2E8E2',borderRadius:8,padding:'9px 12px',fontSize:13,outline:'none',background:'#fff'}}>
-                  <option value="">-- Auto-select best topic --</option>
-                  {topics.map(function(t){return <option key={t} value={t}>{t}</option>;})}</select>
-              </div>
-            </div>
-
-            {genError ? <Alert type="error">{genError}</Alert> : null}
-
-            <button onClick={generateCampaign} disabled={generating||!jobTitle.trim()}
-              style={{background:jobTitle.trim()&&!generating?C.blue:C.grayL,color:jobTitle.trim()&&!generating?'#fff':C.muted,border:'none',borderRadius:9,padding:'11px 24px',fontSize:14,fontWeight:700,cursor:jobTitle.trim()&&!generating?'pointer':'default',display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
-              {generating ? <Spin s={16}/> : null}
-              {generating ? 'Generating campaign...' : 'Generate Campaign'}
-            </button>
-
-            {/* Generated campaign output */}
-            {campaign ? (
-              <div style={{display:'flex',flexDirection:'column',gap:14}}>
-                {/* Campaign name + ICP */}
-                <div style={{background:C.blueL,borderRadius:10,padding:'14px 16px'}}>
-                  <div style={{fontSize:11,fontWeight:600,color:C.blue,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>Campaign Name</div>
-                  <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:12}}>{campaign.campaignName}</div>
-                  <div style={{fontSize:11,fontWeight:600,color:C.blue,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>Sales Navigator ICP Filters</div>
-                  <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>{campaign.icp}</div>
-                </div>
-
-                {/* Message 1 */}
-                <div style={{border:'1px solid #E2E8E2',borderRadius:10,overflow:'hidden'}}>
-                  <div style={{background:'#2C3E2D',padding:'8px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                    <div>
-                      <span style={{color:'#fff',fontWeight:600,fontSize:13}}>Message 1</span>
-                      <span style={{color:'#a8c5a9',fontSize:12,marginLeft:10}}>Connection request (Day 1)</span>
-                    </div>
-                    <div style={{display:'flex',alignItems:'center',gap:10}}>
-                      <span style={{fontSize:11,color:charColor(campaign.message1,300)}}>{campaign.message1?campaign.message1.length:0}/300</span>
-                      <button onClick={function(){copyText('msg1',campaign.message1);}}
-                        style={{background:copied.msg1?C.green:'#ffffff30',color:'#fff',border:'none',borderRadius:6,padding:'4px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
-                        {copied.msg1?'Copied!':'Copy'}
-                      </button>
-                    </div>
-                  </div>
-                  <div style={{padding:'14px 16px',fontSize:13,lineHeight:1.7,color:C.text,whiteSpace:'pre-wrap'}}>{campaign.message1}</div>
-                </div>
-
-                {/* Message 2 */}
-                <div style={{border:'1px solid #E2E8E2',borderRadius:10,overflow:'hidden'}}>
-                  <div style={{background:'#1a5c1d',padding:'8px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                    <div>
-                      <span style={{color:'#fff',fontWeight:600,fontSize:13}}>Message 2</span>
-                      <span style={{color:'#a8c5a9',fontSize:12,marginLeft:10}}>Follow-up value message (Day 5)</span>
-                    </div>
-                    <div style={{display:'flex',alignItems:'center',gap:10}}>
-                      <span style={{fontSize:11,color:charColor(campaign.message2,500)}}>{campaign.message2?campaign.message2.length:0}/500</span>
-                      <button onClick={function(){copyText('msg2',campaign.message2);}}
-                        style={{background:copied.msg2?C.green:'#ffffff30',color:'#fff',border:'none',borderRadius:6,padding:'4px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
-                        {copied.msg2?'Copied!':'Copy'}
-                      </button>
-                    </div>
-                  </div>
-                  <div style={{padding:'14px 16px',fontSize:13,lineHeight:1.7,color:C.text,whiteSpace:'pre-wrap'}}>{campaign.message2}</div>
-                </div>
-
-                {/* Message 3 */}
-                <div style={{border:'1px solid #E2E8E2',borderRadius:10,overflow:'hidden'}}>
-                  <div style={{background:C.amber,padding:'8px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                    <div>
-                      <span style={{color:'#fff',fontWeight:600,fontSize:13}}>Message 3</span>
-                      <span style={{color:'#ffe0cc',fontSize:12,marginLeft:10}}>Direct ask (Day 10)</span>
-                    </div>
-                    <div style={{display:'flex',alignItems:'center',gap:10}}>
-                      <span style={{fontSize:11,color:charColor(campaign.message3,500)}}>{campaign.message3?campaign.message3.length:0}/500</span>
-                      <button onClick={function(){copyText('msg3',campaign.message3);}}
-                        style={{background:copied.msg3?C.green:'#ffffff30',color:'#fff',border:'none',borderRadius:6,padding:'4px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
-                        {copied.msg3?'Copied!':'Copy'}
-                      </button>
-                    </div>
-                  </div>
-                  <div style={{padding:'14px 16px',fontSize:13,lineHeight:1.7,color:C.text,whiteSpace:'pre-wrap'}}>{campaign.message3}</div>
-                </div>
-
-                {/* Actions */}
-                <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-                  <button onClick={generateCampaign} disabled={generating}
-                    style={{background:'none',border:'1px solid #E2E8E2',borderRadius:8,padding:'8px 16px',fontSize:13,cursor:'pointer',color:C.muted}}>
-                    Regenerate
-                  </button>
-                  <a href="https://app.salesrobot.co/campaigns/new" target="_blank" rel="noreferrer"
-                    style={{background:C.blue,color:'#fff',border:'none',borderRadius:8,padding:'9px 18px',fontSize:13,fontWeight:700,cursor:'pointer',textDecoration:'none',display:'flex',alignItems:'center',gap:6}}>
-                    Open Sales Robot to create campaign
-                  </a>
-                </div>
-
-                <div style={{background:C.grayL,borderRadius:8,padding:'10px 14px',fontSize:12,color:C.muted,lineHeight:1.6}}>
-                  How to use: Copy each message above, then open Sales Robot and create a new campaign. Paste Message 1 as your connection request note, Message 2 as your first follow-up, and Message 3 as your second follow-up. Set delays to Day 5 and Day 10.
-                </div>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-    </div>
-  );
+    html+=alert_('info','<strong>Your average reply rate of '+esc(sr.summary.replyRate)+'% is well above the industry average of 10-15%.</strong> The Legal and Medical Directors campaigns are your strongest performers.');
+  }else{html+='<div style="color:#5C6B5D;">No campaigns found.</div>';}
+  html+='</div>';
+  
+  // Campaign creator
+  html+='<div class="card" id="campaign-creator-card"><div style="display:flex;align-items:center;justify-content:space-between;">';
+  html+='<div><div style="font-weight:700;font-size:15px;margin-bottom:4px;">AI Campaign Creator</div><div style="font-size:13px;color:#5C6B5D;">Generate a targeted outreach campaign with 3-step message sequence</div></div>';
+  html+='<button class="btn '+(STATE.showCreator?'btn-secondary':'btn-primary')+'" onclick="toggleCreator()">'+(STATE.showCreator?'Close':'+ Create Campaign')+'</button></div>';
+  if(STATE.showCreator)html+=renderCreatorForm();
+  if(STATE.campaign)html+=renderCampaignOutput();
+  html+='</div>';
+  
+  document.getElementById('panel-salesrobot').innerHTML=html;
 }
-ReactDOM.cre
+
+function toggleCreator(){STATE.showCreator=!STATE.showCreator;if(!STATE.showCreator)STATE.campaign=null;renderSalesRobot();}
+
+function renderCreatorForm(){
+  var titles=['Medical Affairs Director','Chief Compliance Officer','Regulatory Affairs VP','Head of Medical Affairs','Compliance Manager','Legal Counsel - Healthcare','MSL Manager','VP Medical Affairs','Director of Regulatory Affairs','Chief Medical Officer'];
+  var topics=['PMCPA social media guidance 2026','ABPI Code 2024 compliance','ABAC and anti-bribery framework','HCP engagement and compliance','Medical affairs compliance training','Due diligence and third party risk','Gifts and hospitality policy','Conflict of interest management','MSL compliance training','Promotional materials approval'];
+  var html='<div style="margin-top:20px;border-top:1px solid #E2E8E2;padding-top:20px;">';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">TARGET JOB TITLE *</label><input id="cr-title" list="cr-titles" placeholder="e.g. Chief Compliance Officer"/><datalist id="cr-titles">'+titles.map(function(t){return '<option value="'+esc(t)+'"/>';}).join('')+'</datalist></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">INDUSTRY</label><select id="cr-industry"><option>Pharmaceutical</option><option>Biotech</option><option>Medical Devices</option><option>CRO / Clinical Research</option><option>Healthcare</option><option>Life Sciences</option></select></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">COMPANY SIZE</label><select id="cr-size"><option>50-200</option><option>200-500</option><option>500-5000</option><option>1001-5000</option><option>5000+</option></select></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">COMPLIANCE TOPIC (optional)</label><select id="cr-topic"><option value="">-- Auto-select best topic --</option>'+topics.map(function(t){return '<option value="'+esc(t)+'">'+esc(t)+'</option>';}).join('')+'</select></div>';
+  html+='</div>';
+  html+='<div id="cr-error"></div>';
+  html+='<button class="btn btn-primary" id="cr-btn" onclick="generateCampaign()" style="margin-bottom:20px;">Generate Campaign</button>';
+  html+='</div>';
+  return html;
+}
+
+async function generateCampaign(){
+  var title=document.getElementById('cr-title');
+  var industry=document.getElementById('cr-industry');
+  var size=document.getElementById('cr-size');
+  var topic=document.getElementById('cr-topic');
+  var btn=document.getElementById('cr-btn');
+  var err=document.getElementById('cr-error');
+  if(!title||!title.value.trim()){if(err)err.innerHTML=alert_('error','Please enter a job title.');return;}
+  if(btn)btn.textContent='Generating...';
+  if(err)err.innerHTML='';
+  var prompt='Generate a LinkedIn Sales Robot outreach campaign for Eunomia Pharma Services targeting '+title.value+' in '+(industry?industry.value:'Pharmaceutical')+' companies ('+(size?size.value:'500-5000')+' employees).'+(topic&&topic.value?' Topic: '+topic.value+'.':'')+' Eunomia is a UK pharma compliance consultancy. Generate: (1) campaign name, (2) ICP for Sales Navigator, (3) Message 1 connection note under 300 chars, (4) Message 2 follow-up Day 5 under 500 chars, (5) Message 3 direct ask Day 10 under 500 chars. Messages sound human, reference a compliance pain point, no emojis. Respond ONLY as JSON: {"campaignName":"...","icp":"...","message1":"...","message2":"...","message3":"..."}';
+  try{
+    var raw=await aiCall([{role:'user',content:prompt}],'You are a B2B LinkedIn outreach expert for pharma compliance. Write messages that sound like a senior compliance consultant, not a salesperson.');
+    var data=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    STATE.campaign=data;
+    renderSalesRobot();
+  }catch(e){
+    if(err)err.innerHTML=alert_('error','Error: '+e.message);
+    if(btn)btn.textContent='Generate Campaign';
+  }
+}
+
+function renderCampaignOutput(){
+  var c=STATE.campaign;
+  if(!c)return '';
+  var html='<div style="display:flex;flex-direction:column;gap:12px;">';
+  html+='<div style="background:#EBF5EC;border-radius:10px;padding:14px 16px;">';
+  html+='<div style="font-size:11px;font-weight:600;color:#3d8b40;text-transform:uppercase;margin-bottom:4px;">Campaign Name</div>';
+  html+='<div style="font-size:15px;font-weight:700;margin-bottom:12px;">'+esc(c.campaignName)+'</div>';
+  html+='<div style="font-size:11px;font-weight:600;color:#3d8b40;text-transform:uppercase;margin-bottom:4px;">Sales Navigator ICP</div>';
+  html+='<div style="font-size:13px;line-height:1.6;">'+esc(c.icp)+'</div></div>';
+  [{key:'message1',label:'Message 1',sub:'Connection request (Day 1)',color:'#2C3E2D',limit:300},{key:'message2',label:'Message 2',sub:'Follow-up (Day 5)',color:'#1a5c1d',limit:500},{key:'message3',label:'Message 3',sub:'Direct ask (Day 10)',color:'#E8651A',limit:500}].forEach(function(m){
+    var text=c[m.key]||'';
+    html+='<div class="msg-card"><div class="msg-hdr" style="background:'+m.color+';">';
+    html+='<div><span style="color:#fff;font-weight:600;font-size:13px;">'+m.label+'</span><span style="color:rgba(255,255,255,0.7);font-size:12px;margin-left:10px;">'+m.sub+'</span></div>';
+    html+='<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;color:rgba(255,255,255,0.7);">'+text.length+'/'+m.limit+'</span>';
+    html+='<button onclick="copyText(\''+m.key+'\')" id="copy-'+m.key+'" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button></div></div>';
+    html+='<div class="msg-body">'+esc(text)+'</div></div>';
+  });
+  html+='<div style="display:flex;gap:10px;flex-wrap:wrap;">';
+  html+='<button class="btn btn-secondary" onclick="generateCampaign()">Regenerate</button>';
+  html+='<a href="https://app.salesrobot.co/campaigns/new" target="_blank" class="btn btn-primary" style="text-decoration:none;">Open Sales Robot</a>';
+  html+='</div></div>';
+  return html;
+}
+
+function copyText(key){
+  var c=STATE.campaign;
+  if(!c||!c[key])return;
+  navigator.clipboard.writeText(c[key]).then(function(){
+    var btn=document.getElementById('copy-'+key);
+    if(btn){btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy';},2000);}
+  });
+}
+
+// ============================================================
+// MAILCHIMP
+// ============================================================
+function renderMailchimp(){
+  var mc=STATE.mc;
+  var html='';
+  if(STATE.mock.mc)html+=alert_('warning','Showing demo data. Add MAILCHIMP_API_KEY, MAILCHIMP_SERVER_PREFIX and MAILCHIMP_LIST_ID in Vercel env vars.');
+  html+='<div class="grid4">';
+  html+=statCard('Subscribers',mc?mc.subscribers.toLocaleString():'--','Active list');
+  html+=statCard('Open rate',mc&&mc.openRate?mc.openRate+'%':'--','Avg last campaigns');
+  html+=statCard('Days since last',mc&&mc.lastSent?daysSince(mc.lastSent)+'d':'--');
+  html+=statCard('Next due in',mc&&mc.lastSent?daysUntil(mc.lastSent)+'d':'--',mc&&mc.lastSent?fmtDate(nextDue(mc.lastSent)):'');
+  html+='</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">';
+  html+='<button onclick="goNewsletter()" class="btn btn-primary" style="display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:14px;border-radius:10px;text-align:left;"><span style="font-size:24px;">&#10022;</span><div><div>Create new newsletter</div><div style="font-size:12px;font-weight:400;opacity:0.8;">AI-powered topic research and draft</div></div></button>';
+  html+='<a href="https://us1.admin.mailchimp.com/campaigns/" target="_blank" style="display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:14px;font-weight:700;border-radius:10px;background:#fff;border:1px solid #E2E8E2;text-decoration:none;color:#1C2B1D;"><span style="font-size:24px;">&#8599;</span><div><div>Open Mailchimp</div><div style="font-size:12px;font-weight:400;color:#5C6B5D;">Go to campaign manager</div></div></a>';
+  html+='</div>';
+  html+='<div class="card"><div class="card-title">Campaign History</div>';
+  if(mc&&mc.campaigns&&mc.campaigns.length){
+    html+='<div style="display:grid;grid-template-columns:1fr 100px 70px 70px 70px 130px;gap:8px;font-size:11px;font-weight:600;color:#5C6B5D;padding-bottom:8px;border-bottom:1px solid #E2E8E2;text-transform:uppercase;letter-spacing:0.05em;"><span>Campaign</span><span>Date</span><span style="text-align:center;">Sent</span><span style="text-align:center;">Opens</span><span style="text-align:center;">Clicks</span><span style="text-align:right;">Action</span></div>';
+    mc.campaigns.forEach(function(c){
+      var isDraft=c.status==='draft'||c.status==='save';
+      html+='<div style="display:grid;grid-template-columns:1fr 100px 70px 70px 70px 130px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #E2E8E2;">';
+      html+='<div><div style="font-weight:500;">'+esc(c.name)+'</div>'+(isDraft?pill('Draft','#E8651A'):'')+'</div>';
+      html+='<span style="font-size:12px;color:#5C6B5D;">'+esc(c.date)+'</span>';
+      html+='<span style="text-align:center;">'+esc(String(typeof c.sent==='number'?c.sent.toLocaleString():c.sent))+'</span>';
+      html+='<span style="text-align:center;">'+pill(c.opens,'#3d8b40')+'</span>';
+      html+='<span style="text-align:center;">'+pill(c.clicks,'#3d8b40')+'</span>';
+      html+='<div style="text-align:right;">'+(isDraft?'<button class="btn btn-primary" style="font-size:12px;padding:5px 12px;" onclick="startCampaign(\''+esc(c.id)+'\')">Start Campaign</button>':'<span style="font-size:12px;color:#5C6B5D;">Sent</span>')+'</div></div>';
+    });
+  }else{html+='<div style="color:#5C6B5D;">No campaigns found.</div>';}
+  html+='</div>';
+  document.getElementById('panel-mailchimp').innerHTML=html;
+}
+
+async function startCampaign(id){
+  if(!confirm('Send this campaign now? This cannot be undone.'))return;
+  var data=await apiPost('/api/mailchimp?action=send-campaign',{campaignId:id});
+  if(data.success)alert('Campaign sent successfully!');
+  else alert('Error: '+(data.error||'Unknown'));
+}
+
+function goNewsletter(){
+  STATE.composerOpen=true;STATE.composerStep='topics';STATE.topics=[];STATE.selTopics=[];STATE.draft='';STATE.draftSubj='';
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('[id^="panel-"]').forEach(function(p){p.style.display='none';});
+  document.querySelectorAll('.tab').forEach(function(t){if(t.textContent==='Newsletter')t.classList.add('active');});
+  document.getElementById('panel-newsletter').style.display='block';
+  STATE.currentTab='newsletter';
+  renderNewsletter();
+}
+
+// ============================================================
+// HUNTER
+// ============================================================
+var HUNTER_STATE={results:null,selected:[],leads:null,leadsSelected:[],searching:false,leadsLoading:false};
+
+function renderHunter(){
+  var ht=STATE.ht;
+  var html='';
+  if(STATE.mock.ht)html+=alert_('warning','Showing demo data. Add HUNTER_API_KEY in Vercel env vars for live data.');
+  html+='<div class="grid4">';
+  html+=statCard('Plan',ht?ht.plan:'--');
+  html+=statCard('Search credits',ht?ht.creditsUsed+'/'+ht.creditsTotal:'--');
+  html+=statCard('Verifications',ht?ht.verificationUsed+'/'+ht.verificationTotal:'--');
+  html+=statCard('Credits left',ht?ht.creditsTotal-ht.creditsUsed:'--');
+  html+='</div>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:16px;">';
+  html+='<button class="toggle-btn '+(STATE.hunterView==='search'?'active':'')+'" onclick="setHunterView(\'search\')">Domain Search</button>';
+  html+='<button class="toggle-btn '+(STATE.hunterView==='leads'?'active':'')+'" onclick="setHunterView(\'leads\')">My Leads '+(HUNTER_STATE.leads?'('+HUNTER_STATE.leads.total+')':'')+'</button>';
+  html+='</div>';
+  if(STATE.hunterView==='search')html+=renderHunterSearch();
+  else html+=renderHunterLeads();
+  document.getElementById('panel-hunter').innerHTML=html;
+}
+
+function setHunterView(v){
+  STATE.hunterView=v;
+  if(v==='leads'&&!HUNTER_STATE.leads&&!HUNTER_STATE.leadsLoading)loadLeads();
+  else renderHunter();
+}
+
+function renderHunterSearch(){
+  var r=HUNTER_STATE.results,sel=HUNTER_STATE.selected;
+  var html='<div class="card"><div class="card-title">Find emails by company domain</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:14px;">Enter a company website domain (e.g. pfizer.com not "Pfizer"). Hunter.io requires a domain name.</div>';
+  html+='<div style="display:flex;gap:10px;margin-bottom:16px;"><input id="hunter-domain" placeholder="e.g. pfizer.com, gsk.com, novartis.com" onkeydown="if(event.key===\'Enter\')doSearch()"/>';
+  html+='<button class="btn btn-primary" onclick="doSearch()" style="white-space:nowrap;">'+(HUNTER_STATE.searching?'Searching...':'Search')+'</button></div>';
+  html+='<div id="hunter-err"></div>';
+  if(r){
+    if(!r.emails||r.emails.length===0){
+      html+=alert_('warning','No emails found for '+esc(r.domain)+'. Try the main domain (e.g. gsk.com not uk.gsk.com).');
+    }else{
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">';
+      html+='<div style="font-size:13px;color:#5C6B5D;">Found <strong style="color:#1C2B1D;">'+r.emails.length+'</strong> emails at <strong style="color:#1C2B1D;">'+esc(r.domain)+'</strong></div>';
+      html+='<div style="display:flex;gap:8px;"><button class="btn btn-secondary" onclick="toggleAllSearch()">'+( sel.length===r.emails.length?'Deselect all':'Select all')+'</button>';
+      html+='<button class="btn btn-secondary" onclick="verifySelected()">Verify selected</button></div></div>';
+      html+='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;margin-bottom:14px;">';
+      html+='<div class="hunter-grid tbl-hdr"><span></span><span>Name</span><span>Email</span><span>Role</span><span style="text-align:right;">Confidence</span></div>';
+      r.emails.forEach(function(e,i){
+        var isSel=sel.indexOf(e.email)>=0;
+        html+='<div class="hunter-grid tbl-row '+(isSel?'selected':'')+'" onclick="toggleSearchEmail(\''+esc(e.email)+'\')">';
+        html+='<span class="check '+(isSel?'on':'')+'">'+( isSel?'v':'')+'</span>';
+        html+='<div><div style="font-weight:600;">'+esc(e.name||'--')+'</div>'+(e.verified?pill(e.verified,e.verified==='valid'?'#3d8b40':'#E8651A'):'')+'</div>';
+        html+='<span style="font-size:12px;color:#3d8b40;font-family:monospace;word-break:break-all;">'+esc(e.email)+'</span>';
+        html+='<span style="font-size:12px;color:#5C6B5D;">'+esc(e.role||'--')+'</span>';
+        html+='<div style="text-align:right;">'+pill(e.confidence+'%',e.confidence>=90?'#3d8b40':e.confidence>=75?'#E8651A':'#DC2626')+'</div></div>';
+      });
+      html+='</div>';
+      if(sel.length>0){
+        html+='<div style="display:flex;gap:10px;align-items:center;padding:12px 14px;background:#EBF5EC;border-radius:10px;">';
+        html+='<span style="font-size:13px;font-weight:600;flex:1;">'+sel.length+' email'+(sel.length!==1?'s':'')+' selected</span>';
+        html+='<button class="btn btn-secondary" onclick="csvDownloadSearch()">Download CSV</button>';
+        html+='<button class="btn btn-amber" onclick="exportSearchToMailchimp()">Export to Mailchimp</button></div>';
+        html+='<div id="search-export-result" style="margin-top:10px;"></div>';
+      }
+    }
+  }
+  html+='</div>';
+  return html;
+}
+
+async function doSearch(){
+  var inp=document.getElementById('hunter-domain');
+  if(!inp)return;
+  var raw=inp.value.trim();
+  if(!raw)return;
+  if(raw.indexOf(' ')>=0||raw.indexOf('.')<0){
+    var el=document.getElementById('hunter-err');
+    if(el)el.innerHTML=alert_('error','Please enter a domain name (e.g. pfizer.com) not a company name.');
+    return;
+  }
+  HUNTER_STATE.searching=true;HUNTER_STATE.results=null;HUNTER_STATE.selected=[];
+  renderHunter();
+  var d=raw.replace(/^https?:\/\//,'').replace(/\/.*/,'').toLowerCase();
+  var data=await apiGet('/api/hunter?action=domain-search&domain='+encodeURIComponent(d));
+  HUNTER_STATE.searching=false;
+  if(data.error){HUNTER_STATE.results=null;setTimeout(function(){var el=document.getElementById('hunter-err');if(el)el.innerHTML=alert_('error',data.error);},100);}
+  else{HUNTER_STATE.results=data;}
+  renderHunter();
+}
+
+function toggleAllSearch(){
+  var r=HUNTER_STATE.results;
+  if(!r)return;
+  if(HUNTER_STATE.selected.length===r.emails.length)HUNTER_STATE.selected=[];
+  else HUNTER_STATE.selected=r.emails.map(function(e){return e.email;});
+  renderHunter();
+}
+function toggleSearchEmail(email){
+  var idx=HUNTER_STATE.selected.indexOf(email);
+  if(idx>=0)HUNTER_STATE.selected.splice(idx,1);
+  else HUNTER_STATE.selected.push(email);
+  renderHunter();
+}
+async function verifySelected(){
+  var r=HUNTER_STATE.results;
+  if(!r)return;
+  for(var i=0;i<HUNTER_STATE.selected.length;i++){
+    var email=HUNTER_STATE.selected[i];
+    var d=await apiGet('/api/hunter?action=verify&email='+encodeURIComponent(email));
+    r.emails=r.emails.map(function(e){return e.email===email?Object.assign({},e,{verified:d.status}):e;});
+  }
+  renderHunter();
+}
+function csvDownloadSearch(){
+  var r=HUNTER_STATE.results;
+  if(!r)return;
+  var chosen=r.emails.filter(function(e){return HUNTER_STATE.selected.indexOf(e.email)>=0;});
+  downloadCsv(chosen,'hunter-'+r.domain+'.csv');
+}
+async function exportSearchToMailchimp(){
+  var r=HUNTER_STATE.results;
+  if(!r)return;
+  var chosen=r.emails.filter(function(e){return HUNTER_STATE.selected.indexOf(e.email)>=0;});
+  var data=await apiPost('/api/mailchimp?action=add-members',{members:chosen,tag:'ABM-Hunter'});
+  var el=document.getElementById('search-export-result');
+  if(el)el.innerHTML=data.error?alert_('error','Mailchimp error: '+data.error):alert_('success',(data.added||chosen.length)+' contacts added to Mailchimp with tag ABM-Hunter');
+}
+
+function renderHunterLeads(){
+  var ls=HUNTER_STATE.leads,sel=HUNTER_STATE.leadsSelected;
+  var html='<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">';
+  html+='<div class="card-title" style="margin-bottom:0;">All saved leads from Hunter.io</div>';
+  html+='<button class="btn btn-secondary" onclick="loadLeads()">'+(HUNTER_STATE.leadsLoading?'Loading...':'Refresh')+'</button></div>';
+  if(HUNTER_STATE.leadsLoading){html+=spinner()+' Loading your leads...';html+='</div>';return html;}
+  if(!ls){html+='<div style="color:#5C6B5D;">Click Refresh to load your leads.</div>';html+='</div>';return html;}
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">';
+  html+='<div style="font-size:13px;color:#5C6B5D;"><strong style="color:#1C2B1D;">'+ls.total+'</strong> leads'+(sel.length?' &mdash; '+sel.length+' selected':'')+'</div>';
+  html+='<button class="btn btn-secondary" onclick="toggleAllLeads()">'+(sel.length===ls.leads.filter(function(l){return l.email;}).length?'Deselect all':'Select all')+'</button></div>';
+  if(ls.leads.length===0){html+='<div style="text-align:center;padding:24px;color:#5C6B5D;">No leads saved yet. Use Domain Search to find and save leads at hunter.io/leads.</div>';}
+  else{
+    html+='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;margin-bottom:14px;">';
+    html+='<div style="display:grid;grid-template-columns:36px 1fr 1fr 1fr 100px;gap:8px;" class="tbl-hdr"><span></span><span>Name</span><span>Email</span><span>Company</span><span>Position</span></div>';
+    ls.leads.forEach(function(l,i){
+      var isSel=sel.indexOf(l.email)>=0;
+      html+='<div style="display:grid;grid-template-columns:36px 1fr 1fr 1fr 100px;gap:8px;" class="tbl-row '+(isSel?'selected':'')+'" onclick="toggleLeadEmail(\''+esc(l.email)+'\')">';
+      html+='<span class="check '+(isSel?'on':'')+'">'+( isSel?'v':'')+'</span>';
+      html+='<div style="font-weight:600;font-size:13px;">'+esc(l.name||'--')+'</div>';
+      html+='<span style="font-size:12px;color:#3d8b40;font-family:monospace;word-break:break-all;">'+esc(l.email||'No email')+'</span>';
+      html+='<span style="font-size:12px;color:#5C6B5D;">'+esc(l.company||'--')+'</span>';
+      html+='<span style="font-size:12px;color:#5C6B5D;">'+esc((l.position||'').slice(0,25))+'</span></div>';
+    });
+    html+='</div>';
+    html+='<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">';
+    html+='<span style="font-size:13px;color:#5C6B5D;flex:1;">'+(sel.length>0?sel.length+' selected':'All '+ls.leads.filter(function(l){return l.email;}).length+' with emails will be exported')+'</span>';
+    html+='<button class="btn btn-secondary" onclick="csvDownloadLeads()">Download CSV</button>';
+    html+='<button class="btn btn-amber" onclick="exportLeadsToMailchimp()">Export to Mailchimp</button>';
+    html+='<button class="btn btn-orange" onclick="exportLeadsToHubspot()">Export for HubSpot</button></div>';
+    html+='<div id="leads-export-result" style="margin-top:10px;"></div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+async function loadLeads(){
+  HUNTER_STATE.leadsLoading=true;HUNTER_STATE.leads=null;HUNTER_STATE.leadsSelected=[];
+  renderHunter();
+  var data=await apiGet('/api/hunter?action=leads&limit=100');
+  HUNTER_STATE.leadsLoading=false;
+  if(data.error){alert('Hunter error: '+data.error);}
+  else{HUNTER_STATE.leads=data;}
+  renderHunter();
+}
+function toggleAllLeads(){
+  var ls=HUNTER_STATE.leads;
+  if(!ls)return;
+  var withEmail=ls.leads.filter(function(l){return l.email;}).map(function(l){return l.email;});
+  if(HUNTER_STATE.leadsSelected.length===withEmail.length)HUNTER_STATE.leadsSelected=[];
+  else HUNTER_STATE.leadsSelected=withEmail;
+  renderHunter();
+}
+function toggleLeadEmail(email){
+  var idx=HUNTER_STATE.leadsSelected.indexOf(email);
+  if(idx>=0)HUNTER_STATE.leadsSelected.splice(idx,1);
+  else HUNTER_STATE.leadsSelected.push(email);
+  renderHunter();
+}
+function downloadCsv(items,filename){
+  var dq='"';
+  var rows=[['Name','Email','Company','Position','Phone','LinkedIn']].concat(items.map(function(l){return [l.name||l.firstName+' '+l.lastName,l.email,l.company,l.position,l.phone,l.linkedinUrl];}));
+  var csv=rows.map(function(r){return r.map(function(v){return dq+(v||'')+dq;}).join(',');}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=filename;a.click();
+}
+function csvDownloadLeads(){
+  var ls=HUNTER_STATE.leads;
+  if(!ls)return;
+  var chosen=HUNTER_STATE.leadsSelected.length>0?ls.leads.filter(function(l){return HUNTER_STATE.leadsSelected.indexOf(l.email)>=0;}):ls.leads;
+  downloadCsv(chosen,'hunter-leads-'+new Date().toISOString().slice(0,10)+'.csv');
+}
+async function exportLeadsToMailchimp(){
+  var ls=HUNTER_STATE.leads;
+  if(!ls)return;
+  var chosen=HUNTER_STATE.leadsSelected.length>0?ls.leads.filter(function(l){return HUNTER_STATE.leadsSelected.indexOf(l.email)>=0&&l.email;}):ls.leads.filter(function(l){return l.email;});
+  var data=await apiPost('/api/mailchimp?action=add-members',{members:chosen,tag:'Hunter-Leads'});
+  var el=document.getElementById('leads-export-result');
+  if(el)el.innerHTML=data.error?alert_('error','Mailchimp error: '+data.error):alert_('success',(data.added||chosen.length)+' contacts added to Mailchimp with tag Hunter-Leads');
+}
+async function exportLeadsToHubspot(){
+  var ls=HUNTER_STATE.leads;
+  if(!ls)return;
+  var chosen=HUNTER_STATE.leadsSelected.length>0?ls.leads.filter(function(l){return HUNTER_STATE.leadsSelected.indexOf(l.email)>=0&&l.email;}):ls.leads.filter(function(l){return l.email;});
+  var dq='"';
+  var rows=[['First Name','Last Name','Email Address','Company Name','Job Title','Phone Number','LinkedIn Bio']].concat(chosen.map(function(l){return [l.firstName,l.lastName,l.email,l.company,l.position,l.phone,l.linkedinUrl];}));
+  var csv=rows.map(function(r){return r.map(function(v){return dq+(v||'')+dq;}).join(',');}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='hubspot-import-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  var el=document.getElementById('leads-export-result');
+  if(el)el.innerHTML=alert_('success','HubSpot CSV downloaded with '+chosen.length+' contacts. Go to HubSpot > Contacts > Import > Import a file and upload.');
+}
+
+// ============================================================
+// NEWSLETTER
+// ============================================================
+function renderNewsletter(){
+  var mc=STATE.mc;
+  var html='';
+  if(mc&&mc.lastSent){
+    html+='<div class="grid3">';
+    html+=statCard('Last newsletter',daysSince(mc.lastSent)+'d ago',mc.lastSubject?mc.lastSubject.slice(0,42)+'...':'');
+    html+=statCard('Next due',fmtDate(nextDue(mc.lastSent)),daysUntil(mc.lastSent)+' days away');
+    html+=statCard('Subscribers',mc.subscribers?mc.subscribers.toLocaleString():'--','Will receive newsletter');
+    html+='</div>';
+  }
+  if(!STATE.composerOpen){
+    html+='<div class="card" style="text-align:center;padding:36px 20px;">';
+    html+='<div style="font-size:36px;margin-bottom:12px;">&#10022;</div>';
+    html+='<div style="font-size:17px;font-weight:700;margin-bottom:8px;">Create your next newsletter</div>';
+    html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:24px;">AI researches pharma regulatory topics, you choose, then it drafts and sends to Mailchimp.</div>';
+    html+='<button class="btn btn-primary" style="font-size:14px;padding:13px 30px;border-radius:10px;" onclick="openComposer()">Start Newsletter Creator</button></div>';
+  }
+  if(STATE.composerOpen&&STATE.composerStep==='topics')html+=renderTopicStep();
+  if(STATE.composerOpen&&STATE.composerStep==='drafting')html+=renderDraftStep();
+  document.getElementById('panel-newsletter').innerHTML=html;
+}
+
+function openComposer(){STATE.composerOpen=true;STATE.composerStep='topics';STATE.topics=[];STATE.selTopics=[];STATE.draft='';STATE.draftSubj='';renderNewsletter();}
+
+function renderTopicStep(){
+  var html='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
+  html+='<div class="card-title" style="margin-bottom:0;">Step 1: Choose Topics</div>';
+  html+='<button class="btn btn-secondary" onclick="STATE.composerOpen=false;renderNewsletter()">Close</button></div>';
+  if(STATE.topics.length===0){
+    html+='<div style="text-align:center;padding:20px 0;">';
+    html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">AI will research current pharma regulatory topics for your audience</div>';
+    html+='<button class="btn btn-primary" id="research-btn" onclick="genTopics()">Research Topics</button></div>';
+  }else{
+    var tagColor={PMCPA:'#3d8b40',ABPI:'#1a5c1d',ANSM:'#0E9E8E',FCPA:'#E8651A',Digital:'#3d8b40',Training:'#7C3AED',Strategy:'#DC2626'};
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">';
+    STATE.topics.forEach(function(t,i){
+      var isSel=STATE.selTopics.indexOf(i)>=0;
+      html+='<div class="topic-card '+(isSel?'selected':'')+'" onclick="toggleTopic('+i+')">';
+      html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">';
+      html+='<span style="font-size:13px;font-weight:600;flex:1;margin-right:8px;">'+esc(t.title)+'</span>';
+      html+='<span class="check '+(isSel?'on':'')+'" style="flex-shrink:0;">'+(isSel?'v':'')+'</span></div>';
+      html+='<p style="font-size:12px;color:#5C6B5D;margin:0 0 8px;">'+esc(t.hook)+'</p>';
+      html+='<div>';
+      t.tags.forEach(function(tag){html+='<span class="tag" style="background:'+(tagColor[tag]||'#6B7280')+'20;color:'+(tagColor[tag]||'#6B7280')+'">'+esc(tag)+'</span>';});
+      html+='</div></div>';
+    });
+    html+='</div>';
+    html+='<div style="display:flex;gap:10px;">';
+    html+='<button class="btn btn-secondary" onclick="genTopics()">Regenerate</button>';
+    html+='<button class="btn btn-primary" '+(STATE.selTopics.length===0?'disabled':'')+' onclick="genDraft()">Draft Newsletter ('+STATE.selTopics.length+' topic'+(STATE.selTopics.length!==1?'s':'')+')</button></div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function toggleTopic(i){
+  var idx=STATE.selTopics.indexOf(i);
+  if(idx>=0)STATE.selTopics.splice(idx,1);
+  else STATE.selTopics.push(i);
+  renderNewsletter();
+}
+
+async function genTopics(){
+  var btn=document.getElementById('research-btn');
+  if(btn)btn.textContent='Researching...';
+  var sys='You are a pharma compliance marketing expert for Eunomia, a UK consultancy. Suggest 6 newsletter topics for pharma compliance professionals. Respond ONLY with a JSON array, no markdown. Each item: {"title":"...","hook":"one sentence why this matters now","tags":["PMCPA","ABPI","ANSM","FCPA","Digital","Training","Strategy"]}';
+  try{
+    var raw=await aiCall([{role:'user',content:'Generate 6 newsletter topics for Eunomia. Today is May 2026.'}],sys);
+    STATE.topics=JSON.parse(raw.replace(/```json|```/g,'').trim());
+  }catch(e){
+    STATE.topics=[
+      {title:'PMCPA Social Media Guidance 2026: Practical Steps',hook:'New guidance changes how pharma teams use LinkedIn and X.',tags:['PMCPA','Digital']},
+      {title:'ABPI Code 2024: Six Months On',hook:'Real-world compliance implications of the new code.',tags:['ABPI']},
+      {title:'FCPA 2026: UK Pharma Firms Still At Risk',hook:'Recent DOJ enforcement actions with EU connections.',tags:['FCPA']},
+      {title:'Digital HCP Engagement: Drawing the Line',hook:'Where promotional content ends and education begins.',tags:['ANSM','Digital']},
+      {title:'Building a Compliance-First Medical Affairs Team',hook:'Training frameworks that satisfy PMCPA requirements.',tags:['Training']},
+      {title:'Patient Organisation Relationships Under ABPI',hook:'Updated requirements most companies are still getting wrong.',tags:['ABPI','Strategy']}
+    ];
+  }
+  renderNewsletter();
+}
+
+async function genDraft(){
+  STATE.composerStep='drafting';STATE.draft='';STATE.draftSubj='';
+  renderNewsletter();
+  var chosen=STATE.selTopics.map(function(i){return STATE.topics[i];});
+  var tlist=chosen.map(function(t){return '- '+t.title+': '+t.hook;}).join('\n');
+  var sys='You are a senior compliance marketing writer for Eunomia. Write a newsletter. Format exactly:\nSUBJECT: [subject line]\n---\n[Opening hook]\n\n[2-3 sections with **bold headings**]\n\n[Closing CTA]\n\nUnder 400 words. Expert but readable.';
+  try{
+    var full=await aiCall([{role:'user',content:'Write newsletter covering:\n'+tlist+'\n\nAudience: pharma compliance professionals. May 2026.'}],sys);
+    STATE.draft=full;
+    var m=full.match(/SUBJECT:\s*(.+)/);
+    if(m)STATE.draftSubj=m[1].trim();
+  }catch(e){STATE.draft='Error: '+e.message;}
+  renderNewsletter();
+}
+
+function renderDraftStep(){
+  var bodyText=(STATE.draft||'').replace(/SUBJECT:.+\n?---\n?/,'').trim();
+  var html='<div style="display:flex;flex-direction:column;gap:16px;">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">';
+  html+='<div style="display:flex;gap:8px;">';
+  html+='<button class="btn btn-secondary" onclick="STATE.composerStep=\'topics\';STATE.draft=\'\';STATE.draftSubj=\'\';renderNewsletter()">Back</button>';
+  html+='<button class="btn btn-secondary" onclick="genDraft()">Regenerate</button>';
+  html+='<button class="btn btn-secondary" id="edit-toggle" onclick="toggleEdit()">Edit</button></div>';
+  html+='<div style="font-size:12px;color:#5C6B5D;">'+bodyText.split(' ').filter(Boolean).length+' words</div></div>';
+  html+='<div class="email-preview">';
+  html+='<div class="email-chrome"><span class="email-chrome-dot" style="background:#FC5F5A;"></span><span class="email-chrome-dot" style="background:#FDBC40;"></span><span class="email-chrome-dot" style="background:#34C749;"></span><span style="font-size:11px;color:#5C6B5D;margin-left:8px;">Email preview</span></div>';
+  html+='<div class="email-header"><div style="display:flex;align-items:center;gap:10px;">';
+  html+='<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" fill="white" stroke="#E8651A" stroke-width="1.5"/><path d="M9 14 L13 18 L19 10" stroke="#3d8b40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  html+='<div><div style="color:#fff;font-weight:700;font-size:12px;letter-spacing:0.05em;">EUNOMIA PHARMA SERVICES</div><div style="color:#a8c5a9;font-size:10px;">Regulatory Intelligence Newsletter</div></div></div></div>';
+  html+='<div class="email-meta"><div style="display:grid;grid-template-columns:60px 1fr;gap:4px 12px;font-size:12px;">';
+  html+='<span style="color:#5C6B5D;font-weight:600;">From:</span><span>Eunomia Pharma Services &lt;hello@eunomiapharmaservices.com&gt;</span>';
+  html+='<span style="color:#5C6B5D;font-weight:600;">To:</span><span style="color:#5C6B5D;">'+(STATE.mc&&STATE.mc.subscribers?STATE.mc.subscribers.toLocaleString():'834')+' subscribers</span>';
+  html+='<span style="color:#5C6B5D;font-weight:600;">Subject:</span><span style="font-weight:600;">'+esc(STATE.draftSubj||'Newsletter')+'</span></div></div>';
+  html+='<div class="email-body"><div id="email-body-display">'+renderEmailBody(bodyText)+'</div>';
+  html+='<textarea id="email-body-edit" style="display:none;width:100%;min-height:340px;border:1px solid #E2E8E2;border-radius:8px;padding:12px;font-size:14px;line-height:1.75;">'+esc(bodyText)+'</textarea></div>';
+  html+='<div class="email-footer">Eunomia Pharma Services &middot; hello@eunomiapharmaservices.com</div></div>';
+  html+='<div id="mc-send-result"></div>';
+  html+='<button class="btn btn-primary" style="width:100%;font-size:14px;font-weight:700;padding:14px;border-radius:10px;" onclick="sendToMailchimp()">Send to Mailchimp as Draft - '+(STATE.mc&&STATE.mc.subscribers?STATE.mc.subscribers.toLocaleString():'834')+' subscribers</button>';
+  html+='</div>';
+  return html;
+}
+
+function renderEmailBody(text){
+  if(!text)return '';
+  return text.split('\n').map(function(line){
+    if(!line.trim())return '<div style="height:12px;"></div>';
+    var parts=line.split(/\*\*([^*]+)\*\*/g);
+    var rendered=parts.map(function(p,j){return j%2===1?'<strong style="color:#1C2B1D;font-weight:700;">'+esc(p)+'</strong>':esc(p);}).join('');
+    var isHead=line.startsWith('**')&&line.endsWith('**');
+    return '<p style="margin:'+(isHead?'18px 0 6px':'0 0 10px')+';font-size:'+(isHead?'15':'14')+'px;line-height:1.7;color:#2C2C2C;">'+rendered+'</p>';
+  }).join('');
+}
+
+function toggleEdit(){
+  var disp=document.getElementById('email-body-display');
+  var edit=document.getElementById('email-body-edit');
+  var btn=document.getElementById('edit-toggle');
+  if(!disp||!edit)return;
+  if(edit.style.display==='none'){edit.style.display='block';disp.style.display='none';if(btn)btn.textContent='Done editing';}
+  else{
+    STATE.draft=edit.value;
+    var m=STATE.draft.match(/SUBJECT:\s*(.+)/);
+    if(m)STATE.draftSubj=m[1].trim();
+    edit.style.display='none';disp.style.display='block';
+    disp.innerHTML=renderEmailBody(edit.value);
+    if(btn)btn.textContent='Edit';
+  }
+}
+
+async function sendToMailchimp(){
+  var body=STATE.draft.replace(/SUBJECT:.+\n?---\n?/,'').trim();
+  var el=document.getElementById('mc-send-result');
+  if(el)el.innerHTML=spinner()+' Sending to Mailchimp...';
+  var data=await apiPost('/api/mailchimp?action=create-campaign',{subject:STATE.draftSubj,body:body});
+  if(el){
+    if(data.success)el.innerHTML=alert_('success','Draft created in Mailchimp! <a href="'+esc(data.editUrl)+'" target="_blank" style="color:#3d8b40;font-weight:600;">Open in Mailchimp to schedule</a>');
+    else el.innerHTML=alert_('error','Mailchimp error: '+esc(data.error||'Unknown'));
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadAll();
+</script>
+</body>
+</html>
