@@ -562,23 +562,19 @@ function HunterTab({ht,usingMock,C,Stat,Alert,H,Pill,Spin}){
 
   async function doSearch(){
     if(!domain.trim())return;
+    const raw=domain.trim();
+    // Detect if user typed a company name instead of a domain
+    if(raw.includes(' ')||(!raw.includes('.'))){
+      setSearchErr('Please enter a domain name (e.g. pfizer.com), not a company name. Hunter.io searches by domain only.');
+      return;
+    }
     setSearching(true);setResults(null);setSearchErr('');setSelected([]);setExportResult(null);
-    const d=domain.trim().replace(/^https?:\/\//,'').replace(/\/.*/,'');
+    const d=raw.replace(/^https?:\/\//,'').replace(/\/.*/,'').toLowerCase();
     const r=await fetch(`/api/hunter?action=domain-search&domain=${encodeURIComponent(d)}`);
     const data=await r.json();
     if(data.error){setSearchErr(data.error);}
     else{
-      // mock if no key
-      if(!data.emails||data.emails.length===0){
-        setResults({domain:d,emails:[
-          {name:'Sarah Mitchell',email:`s.mitchell@${d}`,confidence:97,role:'Head of Medical Affairs'},
-          {name:'James Thornton',email:`j.thornton@${d}`,confidence:94,role:'Compliance Director'},
-          {name:'Dr. Priya Nair',email:`p.nair@${d}`,confidence:88,role:'Regulatory Affairs VP'},
-          {name:'David Chen',email:`d.chen@${d}`,confidence:82,role:'Medical Science Liaison'},
-        ],total:4});
-      } else {
-        setResults(data);
-      }
+      setResults(data);
     }
     setSearching(false);
   }
@@ -643,7 +639,7 @@ function HunterTab({ht,usingMock,C,Stat,Alert,H,Pill,Spin}){
         <div style={{display:'flex',gap:10,marginBottom:16}}>
           <input value={domain} onChange={e=>setDomain(e.target.value)}
             onKeyDown={e=>e.key==='Enter'&&doSearch()}
-            placeholder="e.g. pfizer.com, gsk.com, novartis.com"
+            placeholder="Enter a domain e.g. pfizer.com (not a company name)"
             style={{flex:1,border:`1px solid ${C.border}`,borderRadius:8,padding:'10px 14px',fontSize:13,outline:'none'}}/>
           <button onClick={doSearch} disabled={searching||!domain.trim()}
             style={{background:domain.trim()?C.blue:C.grayL,color:domain.trim()?'#fff':C.muted,border:'none',borderRadius:8,padding:'10px 20px',fontSize:13,fontWeight:600,cursor:domain.trim()?'pointer':'default',display:'flex',alignItems:'center',gap:8}}>
@@ -655,7 +651,13 @@ function HunterTab({ht,usingMock,C,Stat,Alert,H,Pill,Spin}){
 
         {results&&(
           <>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+            {results.emails.length===0&&(
+              <div style={{background:'#FEF0E8',border:'1px solid #E8651A30',borderRadius:10,padding:'14px 18px',fontSize:13}}>
+                <strong style={{color:'#E8651A'}}>No emails found for {results.domain}</strong>
+                <div style={{color:C.muted,marginTop:4,fontSize:12}}>Hunter.io may not have data for this domain yet. Try the company's main domain (e.g. try "gsk.com" not "uk.gsk.com"). Some smaller companies are not in Hunter's database.</div>
+              </div>
+            )}
+            {results.emails.length>0&&<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
               <div style={{fontSize:13,color:C.muted}}>Found <strong style={{color:C.text}}>{results.emails.length}</strong> emails at <strong style={{color:C.text}}>{results.domain}</strong></div>
               <div style={{display:'flex',gap:8}}>
                 <button onClick={toggleAll} style={{background:'none',border:`1px solid ${C.border}`,borderRadius:7,padding:'6px 12px',fontSize:12,fontWeight:600,cursor:'pointer'}}>
@@ -692,7 +694,8 @@ function HunterTab({ht,usingMock,C,Stat,Alert,H,Pill,Spin}){
               ))}
             </div>
 
-            {selected.length>0&&(
+            </div>}
+            {results.emails.length>0&&selected.length>0&&(
               <div style={{display:'flex',gap:10,alignItems:'center',padding:'12px 14px',background:C.blueL,borderRadius:10}}>
                 <span style={{fontSize:13,fontWeight:600,flex:1}}>{selected.length} email{selected.length!==1?'s':''} selected</span>
                 <button onClick={csvDownload}
