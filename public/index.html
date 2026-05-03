@@ -285,6 +285,8 @@ async function loadAll(){
   if(srD.error){STATE.mock.sr=true;STATE.sr=MOCK.sr;setDot('sr','demo');}
   else{STATE.sr=srD;setDot('sr','live');}
   
+  initKnownClients();
+  initKnownProspects();
   renderTab(STATE.currentTab);
 }
 
@@ -503,12 +505,12 @@ function renderSalesRobot(){
 function toggleCreator(){STATE.showCreator=!STATE.showCreator;if(!STATE.showCreator)STATE.campaign=null;renderSalesRobot();}
 
 function renderCreatorForm(){
-  var titles=['Medical Affairs Director','Chief Compliance Officer','Regulatory Affairs VP','Head of Medical Affairs','Compliance Manager','Legal Counsel - Healthcare','MSL Manager','VP Medical Affairs','Director of Regulatory Affairs','Chief Medical Officer'];
+  var titles=['Medical Affairs Director','Chief Compliance Officer','Regulatory Affairs VP','Head of Medical Affairs','Compliance Manager','Legal Counsel - Healthcare','MSL Manager','VP Medical Affairs','Director of Regulatory Affairs','Chief Medical Officer','GBS Lead','GCC Lead','Global Business Services Lead','Global Compliance Centre Lead'];
   var topics=['PMCPA social media guidance 2026','ABPI Code 2024 compliance','ABAC and anti-bribery framework','HCP engagement and compliance','Medical affairs compliance training','Due diligence and third party risk','Gifts and hospitality policy','Conflict of interest management','MSL compliance training','Promotional materials approval'];
   var html='<div style="margin-top:20px;border-top:1px solid #E2E8E2;padding-top:20px;">';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">TARGET JOB TITLE *</label><input id="cr-title" list="cr-titles" placeholder="e.g. Chief Compliance Officer"/><datalist id="cr-titles">'+titles.map(function(t){return '<option value="'+esc(t)+'"/>';}).join('')+'</datalist></div>';
-  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">INDUSTRY</label><select id="cr-industry"><option>Pharmaceutical</option><option>Biotech</option><option>Medical Devices</option><option>CRO / Clinical Research</option><option>Healthcare</option><option>Life Sciences</option></select></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">INDUSTRY</label><select id="cr-industry"><option value="All pharma and life sciences">All (Pharma, Biotech, MedTech, CRO)</option><option>Pharmaceutical</option><option>Biotech</option><option>Medical Devices</option><option>CRO / Clinical Research</option><option>Healthcare</option><option>Life Sciences</option></select></div>';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">COMPANY SIZE</label><select id="cr-size"><option>50-200</option><option>200-500</option><option>500-5000</option><option>1001-5000</option><option>5000+</option></select></div>';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:6px;">COMPLIANCE TOPIC (optional)</label><select id="cr-topic"><option value="">-- Auto-select best topic --</option>'+topics.map(function(t){return '<option value="'+esc(t)+'">'+esc(t)+'</option>';}).join('')+'</select></div>';
   html+='</div>';
@@ -1238,11 +1240,20 @@ async function sendToMailchimp(){
   var body=STATE.draft.replace(/SUBJECT:.+\n?---\n?/,'').trim();
   var el=document.getElementById('mc-send-result');
   if(el)el.innerHTML=spinner()+' Sending to Mailchimp...';
+  // Always save newsletter locally regardless of Mailchimp result
+  saveNewsletterLocally(STATE.draftSubj,body);
   var data=await apiPost('/api/mailchimp?action=create-campaign',{subject:STATE.draftSubj,body:body});
   if(el){
     if(data.success)el.innerHTML=alert_('success','Draft created in Mailchimp! <a href="'+esc(data.editUrl)+'" target="_blank" style="color:#3d8b40;font-weight:600;">Open in Mailchimp to schedule</a>');
     else el.innerHTML=alert_('error','Mailchimp error: '+esc(data.error||'Unknown'));
   }
+}
+
+function saveNewsletterLocally(subject,body){
+  var newsletters=lsGet('eunomia-newsletters',[]);
+  newsletters.unshift({subject:subject,body:body,date:new Date().toLocaleDateString('en-GB'),saved:new Date().toISOString()});
+  if(newsletters.length>20)newsletters=newsletters.slice(0,20); // keep last 20
+  lsSet('eunomia-newsletters',newsletters);
 }
 
 
@@ -1784,6 +1795,22 @@ function deleteClient(i){
   renderClients();
 }
 
+// Pre-populate known clients if first time
+function initKnownClients(){
+  var existing=lsGet('eunomia-clients-list',[]);
+  if(existing.length>0)return; // already seeded
+  var known=[
+    {name:'Essential Pharma',start:'2024-01-01',services:'Pharma compliance consulting',notes:'Active SOW',testimonialReceived:false},
+    {name:'Mereo Bio',start:'2024-03-01',services:'Regulatory compliance',notes:'Active SOW',testimonialReceived:false},
+    {name:'LS Law',start:'2024-06-01',services:'Legal compliance support',notes:'Active SOW',testimonialReceived:false},
+    {name:'Prime Global People',start:'2024-09-01',services:'Compliance consulting',notes:'Active SOW',testimonialReceived:false},
+    {name:'JCR',start:'2024-11-01',services:'Compliance services',notes:'Active SOW',testimonialReceived:false},
+    {name:'Axunio',start:'2025-01-01',services:'Pharma compliance',notes:'Active SOW',testimonialReceived:false},
+    {name:'Rovi Bio',start:'2025-03-01',services:'Compliance consulting',notes:'Active SOW',testimonialReceived:false}
+  ];
+  lsSet('eunomia-clients-list',known);
+}
+
 function addClient(){
   var name=document.getElementById('new-client-name');
   var start=document.getElementById('new-client-start');
@@ -1811,6 +1838,26 @@ function toggleTm(i){
 }
 
 function markTestimonialReceived(i){toggleTm(i);}
+
+// Known prospective clients to pre-seed
+var KNOWN_PROSPECTS = [
+  {company:'Ace Pharma',reason:'Known prospective client from Eunomia ICP list',size:'50-200',targetTitle:'Chief Compliance Officer',linkedinOpener:'Hi, I noticed Ace Pharma is expanding - compliance support could help.',website:'acepharma.com'},
+  {company:'Macure Pharma',reason:'Known prospective client from Eunomia ICP list',size:'50-500',targetTitle:'Head of Regulatory Affairs',linkedinOpener:'Hi, would love to connect on compliance challenges at Macure Pharma.',website:'macurepharma.com'},
+  {company:'CNx Therapeutics',reason:'Known prospective client from Eunomia ICP list',size:'50-200',targetTitle:'Chief Compliance Officer',linkedinOpener:'Hi, CNx Therapeutics growth stage is exactly when compliance frameworks matter most.',website:'cnxtherapeutics.com'},
+  {company:'Shionogi',reason:'Known prospective client from Eunomia ICP list',size:'1000-5000',targetTitle:'Head of Medical Affairs',linkedinOpener:'Hi, Shionogi UK expansion and ABPI compliance would benefit from specialist support.',website:'shionogi.com'},
+  {company:'Theramex',reason:'Known prospective client from Eunomia ICP list',size:'200-500',targetTitle:'Compliance Manager',linkedinOpener:'Hi, Theramex specialises in womens health - a compliance area we know well.',website:'theramex.com'},
+  {company:'Sanofi',reason:'Known prospective client from Eunomia ICP list',size:'5000+',targetTitle:'VP Medical Affairs',linkedinOpener:'Hi, Sanofi UK compliance teams often benefit from specialist boutique support.',website:'sanofi.com'},
+  {company:'Ferrar Pharma',reason:'Known prospective client from Eunomia ICP list',size:'50-200',targetTitle:'Chief Compliance Officer',linkedinOpener:'Hi, would love to connect on compliance support for Ferrar Pharma.',website:'ferrarpharma.com'},
+  {company:'Biophytis',reason:'Known prospective client from Eunomia ICP list',size:'50-200',targetTitle:'Regulatory Affairs Director',linkedinOpener:'Hi, as Biophytis grows its EU presence, ABPI/EFPIA compliance support could help.',website:'biophytis.com'}
+];
+
+function initKnownProspects(){
+  // Seed the ICP prospects if no prospects exist yet for phase3-UKandEurope
+  var key='eunomia-prospects-phase3-UKandEurope';
+  var existing=lsGet(key,[]);
+  if(existing.length>0)return;
+  lsSet(key,KNOWN_PROSPECTS);
+}
 
 async function findProspects(){
   var signal=document.getElementById('prospect-signal');
