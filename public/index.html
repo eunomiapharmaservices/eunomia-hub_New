@@ -1698,7 +1698,7 @@ function renderClientTracker(){
   html+='<button class="btn btn-primary" id="prospect-btn" onclick="findProspects()">Search Prospects</button></div>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">SIGNAL TYPE</label>';
-  html+='<select id="prospect-signal" style="width:100%;"><option value="phase3">Phase 3 trial approval (last 6 months)</option><option value="compliance">Actively seeking compliance services</option><option value="funding">Recently funded (Series B/C) pharma</option><option value="warning">Recent PMCPA or FDA warning letter</option><option value="launch">New product launch preparation</option><option value="expansion">Expanding into EU/UK markets</option></select></div>';
+  html+='<select id="prospect-signal" style="width:100%;"><option value="phase3">Phase 3 trial approval (last 6 months)</option><option value="compliance">Actively recruiting compliance / medical affairs roles</option><option value="funding">Recently funded (Series B/C/D) pharma or biotech</option><option value="warning">Recent PMCPA or FDA warning letter</option><option value="launch">New product launch preparation</option><option value="expansion">Expanding into EU/UK markets</option><option value="multi">Multi-jurisdiction fragmented compliance</option><option value="agency">Med Comms or healthcare agencies</option></select></div>';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">GEOGRAPHY</label>';
   html+='<select id="prospect-geo" style="width:100%;"><option>UK and Europe</option><option>UK only</option><option>Europe only</option><option>US companies entering EU</option><option>Global</option></select></div></div>';
   html+='<div id="prospect-output"></div></div>';
@@ -1841,14 +1841,21 @@ function markTestimonialReceived(i){toggleTm(i);}
 
 // Known prospective clients to pre-seed
 var KNOWN_PROSPECTS = [
-  {company:'Ace Pharma',reason:'Known prospective client from Eunomia ICP list',size:'50-200',targetTitle:'Chief Compliance Officer',linkedinOpener:'Hi, I noticed Ace Pharma is expanding - compliance support could help.',website:'acepharma.com'},
-  {company:'Macure Pharma',reason:'Known prospective client from Eunomia ICP list',size:'50-500',targetTitle:'Head of Regulatory Affairs',linkedinOpener:'Hi, would love to connect on compliance challenges at Macure Pharma.',website:'macurepharma.com'},
-  {company:'CNx Therapeutics',reason:'Known prospective client from Eunomia ICP list',size:'50-200',targetTitle:'Chief Compliance Officer',linkedinOpener:'Hi, CNx Therapeutics growth stage is exactly when compliance frameworks matter most.',website:'cnxtherapeutics.com'},
-  {company:'Shionogi',reason:'Known prospective client from Eunomia ICP list',size:'1000-5000',targetTitle:'Head of Medical Affairs',linkedinOpener:'Hi, Shionogi UK expansion and ABPI compliance would benefit from specialist support.',website:'shionogi.com'},
-  {company:'Theramex',reason:'Known prospective client from Eunomia ICP list',size:'200-500',targetTitle:'Compliance Manager',linkedinOpener:'Hi, Theramex specialises in womens health - a compliance area we know well.',website:'theramex.com'},
-  {company:'Sanofi',reason:'Known prospective client from Eunomia ICP list',size:'5000+',targetTitle:'VP Medical Affairs',linkedinOpener:'Hi, Sanofi UK compliance teams often benefit from specialist boutique support.',website:'sanofi.com'},
-  {company:'Ferrar Pharma',reason:'Known prospective client from Eunomia ICP list',size:'50-200',targetTitle:'Chief Compliance Officer',linkedinOpener:'Hi, would love to connect on compliance support for Ferrar Pharma.',website:'ferrarpharma.com'},
-  {company:'Biophytis',reason:'Known prospective client from Eunomia ICP list',size:'50-200',targetTitle:'Regulatory Affairs Director',linkedinOpener:'Hi, as Biophytis grows its EU presence, ABPI/EFPIA compliance support could help.',website:'biophytis.com'}
+  {company:'Ace Pharma',reason:'Growth-stage pharma - ideal for ABPI Code compliance setup and SOP standardisation',size:'50-250 employees',targetTitle:'Chief Compliance Officer',linkedinOpener:'Hi, scaling pharma teams often face compliance gaps - happy to share how we help.',website:'acepharma.com'},
+  {company:'Macure Pharma',reason:'Specialty pharma expanding EU presence - needs EFPIA localisation and HCP engagement compliance',size:'50-500 employees',targetTitle:'Head of Regulatory Affairs',linkedinOpener:'Hi, EU market entry is exactly when having a compliance framework in place matters most.',website:'macurepharma.com'},
+  {company:'CNx Therapeutics',reason:'Clinical-stage biotech approaching Phase 3 - compliance infrastructure needed ahead of commercialisation',size:'50-200 employees',targetTitle:'Chief Compliance Officer',linkedinOpener:'Hi, Phase 3 approval is the moment to build your commercial compliance framework.',website:'cnxtherapeutics.com'},
+  {company:'Shionogi',reason:'Japanese pharma with growing UK/EU presence - ABPI Code, EFPIA and HCP engagement governance needed',size:'1000-5000 employees',targetTitle:'Head of Medical Affairs UK',linkedinOpener:'Hi, supporting Japanese pharma with UK and EU compliance is a core part of what we do.',website:'shionogi.com'},
+  {company:'Theramex',reason:'Womens health specialist with HCP engagement programme - FMV governance and transparency disclosure compliance',size:'200-500 employees',targetTitle:'Compliance Manager',linkedinOpener:'Hi, HCP engagement compliance in womens health is an area we have deep experience in.',website:'theramex.com'},
+  {company:'Sanofi',reason:'Large pharma BU with complex multi-market compliance needs - regional compliance programme support',size:'5000+ employees',targetTitle:'Country Compliance Manager UK',linkedinOpener:'Hi, large pharma BUs often benefit from specialist support on Code implementation across markets.',website:'sanofi.com'},
+  {company:'Ferrar Pharma',reason:'Pharma company with potential compliance infrastructure gaps - SOP development and audit readiness',size:'50-200 employees',targetTitle:'Chief Compliance Officer',linkedinOpener:'Hi, building audit-ready compliance infrastructure early saves significant cost later.',website:'ferrarpharma.com'},
+  {company:'Biophytis',reason:'French biotech expanding into UK - ABPI Code onboarding and ANSM regulatory compliance needed',size:'50-200 employees',targetTitle:'Regulatory Affairs Director',linkedinOpener:'Hi, UK market entry requires ABPI Code compliance from day one - happy to share how we help.',website:'biophytis.com'},
+  {company:'Norgine',reason:'Mid-size European pharma with multi-market presence - EFPIA Code, HCP transparency and SOP standardisation',size:'500-1000 employees',targetTitle:'Head of Compliance',linkedinOpener:'Hi, multi-market pharma compliance is complex - we help teams like yours stay audit-ready.',website:'norgine.com'},
+  {company:'Recordati',reason:'Specialty pharma with EU-wide HCP engagement - needs FMV governance and transparency disclosure framework',size:'1000-5000 employees',targetTitle:'Chief Compliance Officer',linkedinOpener:'Hi, specialty pharma with broad HCP engagement needs a robust compliance architecture.',website:'recordati.com'},
+  {company:'Vifor Pharma',reason:'Specialty pharma with iron deficiency and nephrology focus - HCP compliance and medical affairs governance',size:'1000-5000 employees',targetTitle:'Medical Affairs Compliance Lead',linkedinOpener:'Hi, specialty therapy areas have unique HCP engagement compliance considerations.',website:'viforpharma.com'},
+  {company:'Gedeon Richter',reason:'Central European pharma expanding West - ABPI Code, EFPIA and UK market compliance onboarding',size:'5000+ employees',targetTitle:'Country Compliance Manager UK',linkedinOpener:'Hi, Central European pharma entering the UK market face specific ABPI Code requirements.',website:'gedeonrichter.eu'},
+  {company:'Almirall',reason:'Dermatology-focused pharma - HCP engagement compliance and promotional materials review',size:'2000-5000 employees',targetTitle:'Medical Affairs Director',linkedinOpener:'Hi, dermatology HCP engagement has specific compliance nuances we know well.',website:'almirall.com'},
+  {company:'Ipsen',reason:'Mid-size pharma with strong UK presence - compliance programme maturity review and SOP update',size:'5000+ employees',targetTitle:'Head of Compliance UK',linkedinOpener:'Hi, maturing compliance programmes often benefit from an independent specialist review.',website:'ipsen.com'},
+  {company:'Servier',reason:'French pharma with UK commercial presence - ABPI Code compliance and HCP governance',size:'5000+ employees',targetTitle:'Country Compliance Officer',linkedinOpener:'Hi, French pharma operating in the UK need ABPI Code expertise alongside ANSM compliance.',website:'servier.com'}
 ];
 
 function initKnownProspects(){
@@ -1870,17 +1877,20 @@ async function findProspects(){
   var sigVal=signal?signal.value:'phase3';
   var geoVal=geo?geo.value:'UK and Europe';
   var sigLabels={
-    phase3:'Phase 3 clinical trial recently approved or completed',
-    compliance:'Actively recruiting compliance roles or seeking compliance services',
-    funding:'Recently received Series B, C or D funding',
-    warning:'Received a recent PMCPA ruling, FDA warning letter or regulatory sanction',
-    launch:'Preparing for a new product launch in the next 12 months',
-    expansion:'Expanding commercial operations into UK or EU markets'
+    phase3:'Phase 3 clinical trial recently approved or completed - ideal Eunomia ICP as commercialisation compliance is needed',
+    compliance:'Actively recruiting compliance, regulatory or medical affairs roles - signal of compliance infrastructure investment',
+    funding:'Recently received Series B, C or D funding - growth-stage pharma/biotech with budget for external compliance support',
+    warning:'Received a recent PMCPA ruling, FDA warning letter or regulatory sanction - urgent compliance remediation need',
+    launch:'Preparing for a new product launch in the next 12 months - HCP engagement, FMV and promotional compliance needed',
+    expansion:'Expanding commercial or medical operations into UK or EU markets - ABPI/EFPIA Code onboarding required',
+    multi:'Operating across multiple jurisdictions (US, EU, APAC) with fragmented compliance programmes',
+    agency:'Med Comms or healthcare agency supporting pharma clients with HCP engagement activities'
   };
   var batchNum=window.PROSPECT_BATCH||0;
   var prompt=[
     'You are a business development expert for Eunomia Pharma Services, a UK pharma compliance consultancy.',
-    'Identify 12 real pharmaceutical or biotech companies that are strong prospective clients based on this signal:',
+    'Eunomia ICP: Small biotech (100-250 staff, EUR250-750K compliance spend), Mid-size biotech (250-1000 staff, EUR750K-2M spend), Large pharma BU (EUR5M+ compliance spend). Target personas: CCO, Country Compliance Manager, Medical Affairs Director, Legal Counsel, COO/Digital Lead, Med Comms agencies. Pain points: fragmented SOPs, limited in-house teams, audit readiness, HCP governance, multi-market expansion.',
+    'Identify 12 real pharmaceutical, biotech or Med Comms companies that are strong prospective clients based on this signal:',
     '"'+sigLabels[sigVal]+'" in this geography: "'+geoVal+'".',
     'This is batch '+batchNum+' - provide DIFFERENT companies from previous batches.',
     'For each provide: company name, reason they need compliance help, size (employees), best title to target, short LinkedIn opener (under 100 chars), website domain.',
