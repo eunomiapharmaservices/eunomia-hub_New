@@ -397,19 +397,8 @@ function renderLinkedIn(){
   html+='<div><div style="font-weight:700;font-size:14px;color:#1C2B1D;">Create a Post</div><div style="font-size:12px;color:#5C6B5D;">Post directly to LinkedIn</div></div></button>';
   html+='</div>';
   if(STATE.showComposer)html+=renderLinkedInComposer();
-  html+='<div class="card"><div class="card-title">Content Strategy for Eunomia</div>';
-  var tips=[
-    {day:'Mon',tip:'Share a regulatory insight',detail:'Post a 3-sentence take on the latest PMCPA or ABPI development. Best time: 8-9am.',icon:'&#128203;'},
-    {day:'Wed',tip:'Publish a webinar clip',detail:'Uday clips 60-90 seconds from your last webinar. Video gets 3x more reach than text.',icon:'&#127916;'},
-    {day:'Thu',tip:'Engagement hour',detail:'Spend 15 minutes replying to comments and engaging with your ICP posts.',icon:'&#128172;'},
-    {day:'Fri',tip:'Newsletter teaser',detail:'Short preview of your upcoming newsletter with a link to subscribe.',icon:'&#128231;'}
-  ];
-  tips.forEach(function(t){
-    html+='<div class="row" style="align-items:flex-start;gap:14px;">';
-    html+='<div style="width:44px;height:44px;border-radius:8px;background:#EBF5EC;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:16px;">'+t.icon+'</span><span style="font-size:9px;font-weight:700;color:#3d8b40;text-transform:uppercase;">'+t.day+'</span></div>';
-    html+='<div><div style="font-weight:600;margin-bottom:2px;">'+esc(t.tip)+'</div><div style="font-size:12px;color:#5C6B5D;line-height:1.5;">'+esc(t.detail)+'</div></div></div>';
-  });
-  html+='</div>';
+  html+='<div id="li-calendar-section"></div>';
+  setTimeout(function(){renderLiCalendar();},50);
   document.getElementById('panel-linkedin').innerHTML=html;
 }
 
@@ -660,6 +649,225 @@ function renderHunter(){
   document.getElementById('panel-hunter').innerHTML=html;
 }
 
+// ── Hunter Email Finder ──────────────────────────────────────────────────────
+var FINDER_STATE={results:[],loading:false,err:''};
+
+function renderHunterFinder(){
+  var html='<div class="card"><div class="card-title">Email Finder — Find anyone by name</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:14px;">Find a specific person work email. Enter their name and company website domain. Hunter.io will search its database and return the most likely email address.</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">FIRST NAME</label><input id="fin-first" placeholder="e.g. Sarah"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">LAST NAME</label><input id="fin-last" placeholder="e.g. Mitchell"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">COMPANY DOMAIN</label><input id="fin-domain" placeholder="e.g. astrazeneca.com"/></div></div>';
+  html+='<button class="btn btn-primary" id="fin-btn" onclick="doEmailFinder()" style="margin-bottom:14px;">Find Email</button>';
+  html+='<div id="fin-error"></div>';
+  if(FINDER_STATE.results.length){
+    html+='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;margin-bottom:14px;">';
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr 80px 60px;gap:8px;padding:8px 12px;background:#F5F6F5;font-size:11px;font-weight:600;color:#5C6B5D;text-transform:uppercase;letter-spacing:0.05em;"><span>Name</span><span>Email</span><span>Company</span><span>Confidence</span><span>Copy</span></div>';
+    FINDER_STATE.results.forEach(function(r,i){
+      var conf=r.score||0;
+      var col=conf>=80?'#3d8b40':conf>=60?'#E8651A':'#DC2626';
+      html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr 80px 60px;gap:8px;padding:10px 12px;border-top:1px solid #E2E8E2;align-items:center;">';
+      html+='<div style="font-weight:600;font-size:13px;">'+esc(r.firstName+' '+r.lastName)+'</div>';
+      html+='<div style="font-size:12px;color:#3d8b40;font-family:monospace;">'+esc(r.email||'Not found')+'</div>';
+      html+='<div style="font-size:12px;color:#5C6B5D;">'+esc(r.company||r.domain)+'</div>';
+      html+='<div><span style="font-size:11px;font-weight:600;background:'+col+'18;color:'+col+';border-radius:4px;padding:2px 7px;">'+( r.email?conf+'%':'--')+'</span></div>';
+      html+='<div>'+(r.email?'<button data-email="'+esc(r.email)+'" onclick="navigator.clipboard.writeText(this.dataset.email)" style="background:none;border:1px solid #E2E8E2;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;">Copy</button>':'')+'</div>';
+      html+='</div>';
+    });
+    html+='</div>';
+    html+='<div style="display:flex;gap:10px;">';
+    html+='<button onclick="finderCsvDownload()" class="btn btn-secondary" style="font-size:12px;">Download CSV</button>';
+    html+='<button onclick="finderExportMailchimp()" class="btn btn-amber" style="font-size:12px;">Export to Mailchimp</button></div>';
+    html+='<div id="fin-export-result" style="margin-top:8px;"></div>';
+  }
+  html+='</div></div>';
+  return html;
+}
+
+async function doEmailFinder(){
+  var first=document.getElementById('fin-first');
+  var last=document.getElementById('fin-last');
+  var dom=document.getElementById('fin-domain');
+  var btn=document.getElementById('fin-btn');
+  var err=document.getElementById('fin-error');
+  if(!first||!first.value.trim()||!last||!last.value.trim()||!dom||!dom.value.trim()){
+    if(err)err.innerHTML=alert_('error','Please enter first name, last name and domain.');
+    return;
+  }
+  if(btn)btn.textContent='Searching...';
+  var d=dom.value.trim().replace(/^https?:\/\//,'').replace(/\/.*/,'').toLowerCase();
+  var url='/api/hunter?action=email-finder&firstName='+encodeURIComponent(first.value.trim())+'&lastName='+encodeURIComponent(last.value.trim())+'&domain='+encodeURIComponent(d);
+  var data=await apiGet(url);
+  if(data.error){if(err)err.innerHTML=alert_('error',data.error);}
+  else{
+    if(err)err.innerHTML='';
+    FINDER_STATE.results=[data].concat(FINDER_STATE.results.filter(function(r){return r.email!==data.email;}));
+    if(first)first.value='';if(last)last.value='';
+  }
+  if(btn)btn.textContent='Find Email';
+  renderHunter();
+}
+
+function finderCsvDownload(){
+  var dq='"';
+  var rows=[['First Name','Last Name','Email','Company','Domain','Confidence']].concat(
+    FINDER_STATE.results.filter(function(r){return r.email;}).map(function(r){
+      return [r.firstName,r.lastName,r.email,r.company||'',r.domain,r.score||''];
+    })
+  );
+  var csv=rows.map(function(r){return r.map(function(v){return dq+(v||'')+dq;}).join(',');}).join('\n');
+
+
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='hunter-found-emails.csv';a.click();
+}
+
+async function finderExportMailchimp(){
+  var members=FINDER_STATE.results.filter(function(r){return r.email;}).map(function(r){
+    return {name:r.firstName+' '+r.lastName,email:r.email,role:r.position||''};
+  });
+  if(!members.length){return;}
+  var data=await apiPost('/api/mailchimp?action=add-members',{members:members,tag:'Hunter-Finder'});
+  var el=document.getElementById('fin-export-result');
+  if(el)el.innerHTML=data.error?alert_('error','Mailchimp error: '+data.error):alert_('success',(data.added||members.length)+' contacts added to Mailchimp with tag Hunter-Finder');
+}
+
+// ── Hunter Job Role + Location Search ─────────────────────────────────────────
+var JOBROLE_STATE={loading:false,results:[],err:'',domainsFound:[]};
+
+function renderHunterJobRole(){
+  var html='<div class="card"><div class="card-title">Search by Job Role + Location</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:14px;">AI identifies real companies with this job role in this location, then searches Hunter.io for their compliance contacts. Combines AI intelligence with Hunter email database.</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">JOB ROLE / PERSONA</label>';
+  html+='<select id="jr-role" style="width:100%;font-family:inherit;"><option value="Chief Compliance Officer">Chief Compliance Officer</option><option value="Head of Medical Affairs">Head of Medical Affairs</option><option value="Regulatory Affairs Director">Regulatory Affairs Director</option><option value="Compliance Manager">Compliance Manager</option><option value="Medical Science Liaison Manager">MSL Manager</option><option value="VP Medical Affairs">VP Medical Affairs</option><option value="Legal Counsel Healthcare">Legal Counsel - Healthcare</option><option value="Head of Regulatory Affairs">Head of Regulatory Affairs</option><option value="Director of Medical Affairs">Director of Medical Affairs</option><option value="General Counsel Pharma">General Counsel - Pharma</option><option value="custom">Custom role...</option></select></div>';
+  html+='<div id="jr-custom-wrap" style="display:none;"><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">CUSTOM ROLE</label><input id="jr-custom" placeholder="e.g. Head of Pharmacovigilance"/></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">LOCATION</label>';
+  html+='<select id="jr-location" style="width:100%;font-family:inherit;"><option>United Kingdom</option><option>London, UK</option><option>Germany</option><option>France</option><option>Netherlands</option><option>Switzerland</option><option>Ireland</option><option>Scandinavia</option><option>UK and Europe</option><option>Europe</option><option>Global</option></select></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">COMPANY TYPE</label>';
+  html+='<select id="jr-comptype" style="width:100%;font-family:inherit;"><option>Pharmaceutical</option><option>Biotech</option><option>Medical Devices</option><option>CRO</option><option>All pharma and biotech</option></select></div></div>';
+  html+='<button class="btn btn-primary" id="jr-btn" onclick="doJobRoleSearch()" style="margin-bottom:14px;">Search Contacts</button>';
+  html+='<div id="jr-error"></div>';
+
+  if(JOBROLE_STATE.loading){
+    html+='<div style="display:flex;align-items:center;gap:10px;color:#5C6B5D;font-size:13px;padding:16px 0;"><span class="spinner"></span> AI identifying companies, then searching Hunter.io for contacts...</div>';
+  }
+
+  if(JOBROLE_STATE.results.length){
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">';
+    html+='<div style="font-size:13px;font-weight:600;">'+JOBROLE_STATE.results.length+' contacts found across '+JOBROLE_STATE.domainsFound.length+' companies</div>';
+    html+='<div style="display:flex;gap:8px;">';
+    html+='<button onclick="jrCsvDownload()" class="btn btn-secondary" style="font-size:12px;">Download CSV</button>';
+    html+='<button onclick="jrExportMailchimp()" class="btn btn-amber" style="font-size:12px;">Export to Mailchimp</button></div></div>';
+    html+='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;margin-bottom:12px;">';
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr 80px;gap:8px;padding:8px 12px;background:#F5F6F5;font-size:11px;font-weight:600;color:#5C6B5D;text-transform:uppercase;letter-spacing:0.05em;"><span>Name</span><span>Email</span><span>Company</span><span>Confidence</span></div>';
+    JOBROLE_STATE.results.forEach(function(e){
+      var conf=e.confidence||0;
+      var col=conf>=90?'#3d8b40':conf>=75?'#E8651A':'#DC2626';
+      html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr 80px;gap:8px;padding:10px 12px;border-top:1px solid #E2E8E2;align-items:center;">';
+      html+='<div style="font-weight:600;font-size:13px;">'+esc(e.name||'Unknown')+(e.role?'<div style="font-size:11px;color:#5C6B5D;margin-top:1px;">'+esc(e.role)+'</div>':'')+'</div>';
+      html+='<div style="font-size:12px;color:#3d8b40;font-family:monospace;word-break:break-all;">'+esc(e.email)+'</div>';
+      html+='<div style="font-size:12px;color:#5C6B5D;">'+esc(e.company||e.domain||'')+'</div>';
+      html+='<div><span style="font-size:11px;font-weight:600;background:'+col+'18;color:'+col+';border-radius:4px;padding:2px 7px;">'+conf+'%</span></div>';
+      html+='</div>';
+    });
+    html+='</div>';
+    html+='<div id="jr-export-result"></div>';
+  }
+  html+='</div>';
+
+  // Add onchange for custom role
+  html+='<script>document.getElementById("jr-role")&&document.getElementById("jr-role").addEventListener("change",function(){var w=document.getElementById("jr-custom-wrap");if(w)w.style.display=this.value==="custom"?"block":"none";});<\/script>';
+  return html;
+}
+
+async function doJobRoleSearch(){
+  var roleEl=document.getElementById('jr-role');
+  var customEl=document.getElementById('jr-custom');
+  var locEl=document.getElementById('jr-location');
+  var compEl=document.getElementById('jr-comptype');
+  var btn=document.getElementById('jr-btn');
+  var err=document.getElementById('jr-error');
+  var role=roleEl&&roleEl.value==='custom'?(customEl?customEl.value.trim():''):( roleEl?roleEl.value:'Chief Compliance Officer');
+  var location=locEl?locEl.value:'United Kingdom';
+  var compType=compEl?compEl.value:'Pharmaceutical';
+  if(!role){if(err)err.innerHTML=alert_('error','Please enter a job role.');return;}
+  JOBROLE_STATE.loading=true;JOBROLE_STATE.results=[];JOBROLE_STATE.err='';JOBROLE_STATE.domainsFound=[];
+  if(btn)btn.textContent='Searching...';
+  if(err)err.innerHTML='';
+  renderHunter();
+
+  // Step 1: AI identifies companies with this role in this location
+  var prompt=[
+    'List 10 real '+compType+' companies in '+location+' that likely have a '+role+'.',
+    'Return ONLY a JSON array of objects with company name and website domain.',
+    'Format: [{"company":"Pfizer UK","domain":"pfizer.com"},{"company":"AstraZeneca","domain":"astrazeneca.com"}]',
+    'Include only real, verifiable companies. Return exactly 10.'
+  ].join(' ');
+
+  var domains=[];
+  try{
+    var raw=await aiCall([{role:'user',content:prompt}],'You are a pharma industry expert. List real companies accurately. Return only valid JSON.');
+    var companies=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    domains=companies.map(function(c){return {domain:c.domain,company:c.company};});
+    JOBROLE_STATE.domainsFound=domains;
+  }catch(e){
+    JOBROLE_STATE.loading=false;JOBROLE_STATE.err='AI error: '+e.message;
+    if(btn)btn.textContent='Search Contacts';
+    renderHunter();
+    return;
+  }
+
+  // Step 2: Search Hunter for each domain
+  var allEmails=[];
+  for(var i=0;i<domains.length;i++){
+    var dom=domains[i];
+    var data=await apiGet('/api/hunter?action=domain-search&domain='+encodeURIComponent(dom.domain));
+    if(data.emails&&data.emails.length){
+      data.emails.forEach(function(e){
+        allEmails.push({
+          name:e.name||'Unknown',
+          email:e.email,
+          confidence:e.confidence,
+          role:e.role||'',
+          company:dom.company,
+          domain:dom.domain
+        });
+      });
+    }
+  }
+
+  JOBROLE_STATE.results=allEmails;
+  JOBROLE_STATE.loading=false;
+  if(btn)btn.textContent='Search Contacts';
+  renderHunter();
+}
+
+function jrCsvDownload(){
+  var dq='"';
+  var rows=[['Name','Email','Company','Role','Confidence','Domain']].concat(
+    JOBROLE_STATE.results.map(function(e){return [e.name,e.email,e.company,e.role||'',e.confidence||'',e.domain];})
+  );
+  var csv=rows.map(function(r){return r.map(function(v){return dq+(v||'')+dq;}).join(',');}).join('\n');
+
+
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='hunter-jobrole-results.csv';a.click();
+}
+
+async function jrExportMailchimp(){
+  var members=JOBROLE_STATE.results.filter(function(e){return e.email;}).map(function(e){
+    return {name:e.name,email:e.email,role:e.role||''};
+  });
+  if(!members.length)return;
+  var data=await apiPost('/api/mailchimp?action=add-members',{members:members,tag:'Hunter-JobRole'});
+  var el=document.getElementById('jr-export-result');
+  if(el)el.innerHTML=data.error?alert_('error','Mailchimp error: '+data.error):alert_('success',(data.added||members.length)+' contacts added to Mailchimp with tag Hunter-JobRole');
+}
+
 function setHunterView(v){
   STATE.hunterView=v;
   if(v==='leads'&&!HUNTER_STATE.leads&&!HUNTER_STATE.leadsLoading)loadLeads();
@@ -825,7 +1033,8 @@ function toggleLeadEmail(email){
 function downloadCsv(items,filename){
   var dq='"';
   var rows=[['Name','Email','Company','Position','Phone','LinkedIn']].concat(items.map(function(l){return [l.name||l.firstName+' '+l.lastName,l.email,l.company,l.position,l.phone,l.linkedinUrl];}));
-  var csv=rows.map(function(r){return r.map(function(v){return dq+(v||'')+dq;}).join(',');}).join('\n');
+  var csv=rows.map(function(r){return r.map(function(v){var s=(v||'').split('"').join("'");return '"'+s+'"';}).join(',');}).join('\n');
+
   var blob=new Blob([csv],{type:'text/csv'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download=filename;a.click();
@@ -851,6 +1060,7 @@ async function exportLeadsToHubspot(){
   var dq='"';
   var rows=[['First Name','Last Name','Email Address','Company Name','Job Title','Phone Number','LinkedIn Bio']].concat(chosen.map(function(l){return [l.firstName,l.lastName,l.email,l.company,l.position,l.phone,l.linkedinUrl];}));
   var csv=rows.map(function(r){return r.map(function(v){return dq+(v||'')+dq;}).join(',');}).join('\n');
+
   var blob=new Blob([csv],{type:'text/csv'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download='hubspot-import-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
@@ -948,6 +1158,7 @@ async function genDraft(){
   renderNewsletter();
   var chosen=STATE.selTopics.map(function(i){return STATE.topics[i];});
   var tlist=chosen.map(function(t){return '- '+t.title+': '+t.hook;}).join('\n');
+
   var sys=['You are a senior compliance marketing writer for Eunomia.',
     'Write a newsletter. Format exactly:',
     'SUBJECT: [subject line]',
@@ -1462,51 +1673,251 @@ function deleteCaseStudy(i){
 // CLIENT TRACKER
 function renderClientTracker(){
   var clients=lsGet('eunomia-clients-list',[]);
-  var html='<div class="card"><div class="card-title">Client Tracker</div>';
-  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">Track your active clients, their 90-day testimonial due date, and onboarding status.</div>';
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">';
+  var editIdx=window.EDIT_CLIENT_IDX;
+  var html='';
+
+  // Prospect finder card
+  html+='<div class="card" style="margin-bottom:16px;border:1.5px solid #3d8b40;">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">';
+  html+='<div><div style="font-weight:700;font-size:15px;">Find Prospective Clients</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-top:2px;">Identify pharma companies with Phase 3 approvals or active compliance needs</div></div>';
+  html+='<button class="btn btn-primary" id="prospect-btn" onclick="findProspects()">Search Prospects</button></div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">SIGNAL TYPE</label>';
+  html+='<select id="prospect-signal" style="width:100%;"><option value="phase3">Phase 3 trial approval (last 6 months)</option><option value="compliance">Actively seeking compliance services</option><option value="funding">Recently funded (Series B/C) pharma</option><option value="warning">Recent PMCPA or FDA warning letter</option><option value="launch">New product launch preparation</option><option value="expansion">Expanding into EU/UK markets</option></select></div>';
+  html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">GEOGRAPHY</label>';
+  html+='<select id="prospect-geo" style="width:100%;"><option>UK and Europe</option><option>UK only</option><option>Europe only</option><option>US companies entering EU</option><option>Global</option></select></div></div>';
+  html+='<div id="prospect-output"></div></div>';
+
+  // Client tracker card
+  html+='<div class="card"><div class="card-title">Active Client Tracker</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">Track clients, 90-day testimonial dates, and notes. Edit or delete any entry.</div>';
+
+  // Add client form
+  html+='<div style="border:1px solid #E2E8E2;border-radius:10px;padding:14px;margin-bottom:16px;background:#F9FAF9;">';
+  html+='<div style="font-size:12px;font-weight:600;color:#5C6B5D;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em;">Add New Client</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">';
   html+='<input id="new-client-name" placeholder="Client name"/>';
   html+='<input id="new-client-start" type="date" title="Engagement start date"/>';
+  html+='<input id="new-client-services" placeholder="Services (e.g. ABPI audit)"/></div>';
   html+='<button class="btn btn-primary" onclick="addClient()">Add Client</button></div>';
+
   if(clients.length){
     html+='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
-    html+='<div style="display:grid;grid-template-columns:1fr 100px 120px 100px 80px;gap:8px;padding:8px 12px;background:#F5F6F5;font-size:11px;font-weight:600;color:#5C6B5D;text-transform:uppercase;letter-spacing:0.05em;">';
-    html+='<span>Client</span><span>Start</span><span>Testimonial due</span><span>Status</span><span>Action</span></div>';
     clients.forEach(function(c,i){
       var start=new Date(c.start);
-      var testimonialDue=new Date(c.start);testimonialDue.setDate(testimonialDue.getDate()+90);
-      var daysToTm=Math.ceil((testimonialDue-Date.now())/86400000);
+      var tmDue=new Date(c.start);tmDue.setDate(tmDue.getDate()+90);
+      var daysToTm=Math.ceil((tmDue-Date.now())/86400000);
       var tmStatus=c.testimonialReceived?'Received':daysToTm<0?'Overdue':daysToTm<14?'Due soon':'Pending';
       var tmColor=c.testimonialReceived?'#3d8b40':daysToTm<0?'#DC2626':daysToTm<14?'#E8651A':'#6B7280';
-      html+='<div style="display:grid;grid-template-columns:1fr 100px 120px 100px 80px;gap:8px;padding:10px 12px;border-top:1px solid #E2E8E2;align-items:center;">';
-      html+='<span style="font-weight:600;font-size:13px;">'+esc(c.name)+'</span>';
-      html+='<span style="font-size:12px;color:#5C6B5D;">'+esc(start.toLocaleDateString('en-GB'))+'</span>';
-      html+='<span style="font-size:12px;color:#5C6B5D;">'+esc(testimonialDue.toLocaleDateString('en-GB'))+'</span>';
-      html+='<span style="font-size:11px;font-weight:600;color:'+tmColor+';">'+tmStatus+'</span>';
-      html+='<button onclick=""markTestimonialReceived(&quot;+i+&quot;)" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;">'+(c.testimonialReceived?'Received':'Mark done')+'</button>';
+      var isEditing=(editIdx===i);
+      html+='<div style="padding:14px;border-top:'+(i>0?'1px solid #E2E8E2':'none')+';background:'+(isEditing?'#EBF5EC':'#fff')+'">';
+      if(isEditing){
+        // Edit form
+        html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
+        html+='<div><label style="font-size:11px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:4px;">CLIENT NAME</label>';
+        html+='<input id="edit-name-'+i+'" value="'+esc(c.name)+'" style="width:100%;"/></div>';
+        html+='<div><label style="font-size:11px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:4px;">START DATE</label>';
+        html+='<input id="edit-start-'+i+'" type="date" value="'+esc(c.start)+'" style="width:100%;"/></div>';
+        html+='<div><label style="font-size:11px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:4px;">SERVICES</label>';
+        html+='<input id="edit-services-'+i+'" value="'+esc(c.services||'')+'" placeholder="Services provided" style="width:100%;"/></div>';
+        html+='<div><label style="font-size:11px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:4px;">NOTES</label>';
+        html+='<input id="edit-notes-'+i+'" value="'+esc(c.notes||'')+'" placeholder="Any notes..." style="width:100%;"/></div></div>';
+        html+='<div style="display:flex;gap:8px;">';
+        html+='<button class="btn btn-primary" data-idx="'+i+'" onclick="saveClientEdit(this.dataset.idx)">Save</button>';
+        html+='<button class="btn btn-secondary" onclick="window.EDIT_CLIENT_IDX=null;renderClients()">Cancel</button></div>';
+      } else {
+        // View row
+        html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">';
+        html+='<div style="flex:1;">';
+        html+='<div style="font-weight:700;font-size:14px;margin-bottom:2px;">'+esc(c.name)+'</div>';
+        if(c.services)html+='<div style="font-size:12px;color:#5C6B5D;margin-bottom:2px;">'+esc(c.services)+'</div>';
+        if(c.notes)html+='<div style="font-size:12px;color:#5C6B5D;font-style:italic;">'+esc(c.notes)+'</div>';
+        html+='<div style="display:flex;gap:12px;margin-top:6px;font-size:12px;color:#5C6B5D;">';
+        html+='<span>Started: '+esc(start.toLocaleDateString('en-GB'))+'</span>';
+        html+='<span>Testimonial due: '+esc(tmDue.toLocaleDateString('en-GB'))+'</span>';
+        html+='<span style="font-weight:600;color:'+tmColor+';">'+tmStatus+'</span></div></div>';
+        html+='<div style="display:flex;gap:6px;flex-shrink:0;">';
+        html+='<button data-idx="'+i+'" onclick="setEditClient(this.dataset.idx)" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;">Edit</button>';
+        html+='<button data-idx="'+i+'" onclick="toggleTm(this.dataset.idx)" style="background:'+(c.testimonialReceived?'#EBF5EC':'none')+';border:1px solid '+(c.testimonialReceived?'#3d8b40':'#E2E8E2')+';border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;color:'+(c.testimonialReceived?'#3d8b40':'#1C2B1D')+';">'+(c.testimonialReceived?'Testimonial received':'Mark received')+'</button>';
+        html+='<button data-idx="'+i+'" onclick="deleteClient(this.dataset.idx)" style="background:none;border:1px solid #FEE2E2;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#DC2626;font-family:inherit;">Delete</button></div>';
+        html+='</div>';
+      }
       html+='</div>';
     });
     html+='</div>';
-  }else{html+='<div style="color:#5C6B5D;font-size:13px;">No clients added yet. Add your first client above to start tracking.</div>';}
+  } else {
+    html+='<div style="color:#5C6B5D;font-size:13px;padding:20px;text-align:center;">No clients added yet. Add your first client above.</div>';
+  }
   html+='</div>';
   return html;
+}
+
+function setEditClient(i){window.EDIT_CLIENT_IDX=parseInt(i);renderClients();}
+
+function saveClientEdit(i){
+  i=parseInt(i);
+  var clients=lsGet('eunomia-clients-list',[]);
+  var nm=document.getElementById('edit-name-'+i);
+  var st=document.getElementById('edit-start-'+i);
+  var sv=document.getElementById('edit-services-'+i);
+  var nt=document.getElementById('edit-notes-'+i);
+  if(nm)clients[i].name=nm.value.trim()||clients[i].name;
+  if(st&&st.value)clients[i].start=st.value;
+  if(sv)clients[i].services=sv.value;
+  if(nt)clients[i].notes=nt.value;
+  lsSet('eunomia-clients-list',clients);
+  window.EDIT_CLIENT_IDX=null;
+  renderClients();
+}
+
+function deleteClient(i){
+  i=parseInt(i);
+  if(!confirm('Delete this client? This cannot be undone.'))return;
+  var clients=lsGet('eunomia-clients-list',[]);
+  clients.splice(i,1);
+  lsSet('eunomia-clients-list',clients);
+  window.EDIT_CLIENT_IDX=null;
+  renderClients();
 }
 
 function addClient(){
   var name=document.getElementById('new-client-name');
   var start=document.getElementById('new-client-start');
+  var services=document.getElementById('new-client-services');
   if(!name||!name.value.trim())return;
   var clients=lsGet('eunomia-clients-list',[]);
-  clients.push({name:name.value.trim(),start:start&&start.value?start.value:new Date().toISOString().slice(0,10),testimonialReceived:false});
+  clients.push({
+    name:name.value.trim(),
+    start:start&&start.value?start.value:new Date().toISOString().slice(0,10),
+    services:services?services.value:'',
+    notes:'',
+    testimonialReceived:false
+  });
   lsSet('eunomia-clients-list',clients);
-  name.value='';if(start)start.value='';
+  name.value='';if(start)start.value='';if(services)services.value='';
   renderClients();
 }
-function markTestimonialReceived(i){
+
+function toggleTm(i){
+  i=parseInt(i);
   var clients=lsGet('eunomia-clients-list',[]);
   clients[i].testimonialReceived=!clients[i].testimonialReceived;
   lsSet('eunomia-clients-list',clients);
   renderClients();
+}
+
+function markTestimonialReceived(i){toggleTm(i);}
+
+async function findProspects(){
+  var signal=document.getElementById('prospect-signal');
+  var geo=document.getElementById('prospect-geo');
+  var out=document.getElementById('prospect-output');
+  var btn=document.getElementById('prospect-btn');
+  if(!out)return;
+  if(btn)btn.textContent='Searching...';
+  out.innerHTML='<div style="padding:14px;color:#5C6B5D;font-size:13px;display:flex;align-items:center;gap:8px;"><span class="spinner"></span> Identifying prospective clients...</div>';
+  var sigVal=signal?signal.value:'phase3';
+  var geoVal=geo?geo.value:'UK and Europe';
+  var sigLabels={
+    phase3:'Phase 3 clinical trial recently approved or completed',
+    compliance:'Actively recruiting compliance roles or seeking compliance services',
+    funding:'Recently received Series B, C or D funding',
+    warning:'Received a recent PMCPA ruling, FDA warning letter or regulatory sanction',
+    launch:'Preparing for a new product launch in the next 12 months',
+    expansion:'Expanding commercial operations into UK or EU markets'
+  };
+  var batchNum=window.PROSPECT_BATCH||0;
+  var prompt=[
+    'You are a business development expert for Eunomia Pharma Services, a UK pharma compliance consultancy.',
+    'Identify 25 real pharmaceutical or biotech companies that are strong prospective clients based on this signal:',
+    '"'+sigLabels[sigVal]+'" in this geography: "'+geoVal+'".',
+    'This is batch number '+batchNum+' - provide a DIFFERENT set of companies from previous searches.',
+    'For each company provide: company name, why they are a prospect (specific signal), estimated company size, key compliance decision maker title to target, and a personalised first-line opening for a Sales Robot LinkedIn message.',
+    'Include companies of all sizes - from small biotechs to large pharma. Mix well-known and emerging companies.',
+    'Focus on companies where compliance spend is likely to increase. Include only real verifiable companies.',
+    'Respond ONLY as a JSON array of exactly 25 items. Each item:',
+    '{"company":"...","reason":"...","size":"...","targetTitle":"...","linkedinOpener":"...","website":"..."}'
+  ].join(' ');
+  try{
+    var raw=await aiCall([{role:'user',content:prompt}],
+      'You are a pharma business development expert. Identify real companies that genuinely need compliance support based on observable signals. Be specific and commercially astute.');
+    var data=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    // Merge with existing prospects
+    var existing=lsGet('eunomia-prospects-'+sigVal+'-'+geoVal.split(' ').join(''),[]);
+    var existingNames=existing.map(function(p){return p.company;});
+    var newOnes=data.filter(function(p){return existingNames.indexOf(p.company)<0;});
+    var allProspects=existing.concat(newOnes);
+    lsSet('eunomia-prospects-'+sigVal+'-'+geoVal.split(' ').join(''),allProspects);
+    window.PROSPECT_BATCH=(window.PROSPECT_BATCH||0)+1;
+    var html='<div style="margin-top:4px;">';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">';
+    html+='<div style="font-size:13px;font-weight:600;color:#1C2B1D;">'+allProspects.length+' prospective clients found ('+newOnes.length+' new this search)</div>';
+    html+='<div style="display:flex;gap:8px;">';
+    html+='<button onclick="clearProspects()" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit;">Clear all</button>';
+    html+='<button onclick="downloadProspects()" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit;">Download CSV</button>';
+    html+='</div></div>';
+    var data=allProspects;
+    data.forEach(function(p,i){
+      html+='<div style="border:1px solid #E2E8E2;border-radius:10px;padding:14px;margin-bottom:10px;background:#fff;">';
+      html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;">';
+      html+='<div>';
+      html+='<div style="font-weight:700;font-size:14px;color:#1C2B1D;">'+esc(p.company)+'</div>';
+      html+='<div style="font-size:12px;color:#5C6B5D;margin-top:2px;">'+esc(p.size)+' &middot; Target: '+esc(p.targetTitle)+'</div></div>';
+      html+='<div style="display:flex;gap:6px;flex-shrink:0;">';
+      if(p.website)html+='<a href="https://'+esc(p.website)+'" target="_blank" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:4px 10px;font-size:11px;text-decoration:none;color:#5C6B5D;">Website</a>';
+      html+='<button data-company="'+esc(p.company)+'" onclick="addProspectToSR(this.dataset.company)" style="background:#3d8b40;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;">Add to Sales Robot</button></div></div>';
+      html+='<div style="background:#F4F7F4;border-radius:6px;padding:8px 10px;font-size:12px;color:#1C2B1D;margin-bottom:8px;"><strong>Signal:</strong> '+esc(p.reason)+'</div>';
+      html+='<div style="border-left:3px solid #3d8b40;padding-left:10px;font-size:12px;color:#5C6B5D;line-height:1.6;font-style:italic;">';
+      html+='"'+esc(p.linkedinOpener)+'"';
+      html+='<button data-msg="'+esc(p.linkedinOpener)+'" onclick="navigator.clipboard.writeText(this.dataset.msg)" style="background:none;border:1px solid #E2E8E2;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;margin-left:8px;font-family:inherit;">Copy</button>';
+      html+='</div></div>';
+    });
+    html+='</div>';
+    html+='<div style="text-align:center;padding:16px 0;border-top:1px solid #E2E8E2;margin-top:4px;">';
+    html+='<button onclick="findProspects()" class="btn btn-primary" style="margin-right:10px;">Find 25 more</button>';
+    html+='<span style="font-size:12px;color:#5C6B5D;">Each search finds a different batch of companies</span></div>';
+    html+='</div>';
+    out.innerHTML=html;
+  }catch(e){
+    out.innerHTML='<div style="color:#DC2626;font-size:13px;padding:8px;">Error: '+esc(e.message)+'</div>';
+  }
+  if(btn)btn.textContent='Search Prospects';
+}
+
+function clearProspects(){
+  if(!confirm('Clear all found prospects?'))return;
+  var signal=document.getElementById('prospect-signal');
+  var geo=document.getElementById('prospect-geo');
+  if(signal&&geo){
+    var key='eunomia-prospects-'+signal.value+'-'+(geo.value||'').split(' ').join('');
+    lsSet(key,[]);
+  }
+  window.PROSPECT_BATCH=0;
+  findProspects();
+}
+
+function downloadProspects(){
+  var signal=document.getElementById('prospect-signal');
+  var geo=document.getElementById('prospect-geo');
+  if(!signal||!geo)return;
+  var key='eunomia-prospects-'+signal.value+'-'+(geo.value||'').split(' ').join('');
+  var prospects=lsGet(key,[]);
+  if(!prospects.length){alert('No prospects to download.');return;}
+  var header=['Company','Size','Target Title','Signal','LinkedIn Opener','Website'];
+  var csvRows=[header].concat(prospects.map(function(p){
+    return [p.company||'',p.size||'',p.targetTitle||'',p.reason||'',p.linkedinOpener||'',p.website||''];
+  }));
+  var csvStr=csvRows.map(function(r){
+    return r.map(function(v){return '"'+(v||'').split('"').join("'")+'"';}).join(',');
+  }).join('\n');
+
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='eunomia-prospects.csv';a.click();
+}
+
+function addProspectToSR(company){
+  alert('To add '+company+' to Sales Robot:\n\n1. Find them on LinkedIn Sales Navigator\n2. Add their decision makers to your target list\n3. Use the AI Campaign Creator in the Sales Robot tab to generate a personalised outreach sequence');
 }
 
 function copyDoc(id){
@@ -1522,6 +1933,276 @@ function downloadDoc(id,filename){
   var a=document.createElement('a');a.href=url;a.download=filename||'eunomia-document.txt';a.click();
 }
 
+
+// ============================================================
+// LINKEDIN CONTENT CALENDAR
+// ============================================================
+var LI_CAL = {
+  view: 'month',
+  currentDate: new Date(),
+  selectedDate: null
+};
+
+var CONTENT_TYPES = [
+  {id:'regulatory',label:'Regulatory Insight',color:'#3d8b40',icon:'&#128203;',day:1,desc:'Post a 3-sentence take on the latest PMCPA or ABPI development. Best time: 8-9am.'},
+  {id:'video',label:'Webinar Clip',color:'#1a5c1d',icon:'&#127916;',day:3,desc:'Uday clips 60-90 seconds from your last webinar. Add captions. 3x more reach than text.'},
+  {id:'engagement',label:'Engagement Hour',color:'#0E9E8E',icon:'&#128172;',day:4,desc:'15 minutes replying to comments and engaging with your ICP posts on LinkedIn.'},
+  {id:'newsletter',label:'Newsletter Teaser',color:'#E8651A',icon:'&#128231;',day:5,desc:'Short preview of your upcoming newsletter with a link to subscribe.'},
+  {id:'casestudy',label:'Case Study / Testimonial',color:'#7C3AED',icon:'&#11088;',day:2,desc:'Share an anonymised client win or testimonial. Positions Eunomia as trusted partner.'},
+  {id:'custom',label:'Custom Post',color:'#6B7280',icon:'&#9998;',day:-1,desc:'Ad hoc post - regulatory alert, event follow-up, thought leadership.'}
+];
+
+function getScheduledPosts(){return lsGet('li-scheduled-posts',[]);}
+function saveScheduledPosts(posts){lsSet('li-scheduled-posts',posts);}
+
+function getPostsForDate(dateStr){
+  return getScheduledPosts().filter(function(p){return p.date===dateStr;});
+}
+
+function dateStr(d){
+  return d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'))+'-'+(String(d.getDate()).padStart(2,'0'));
+}
+
+function fmtShort(d){
+  return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+}
+
+// Auto-generate recurring posts based on the weekly strategy
+function autoGenerateMonth(year,month){
+  var posts=getScheduledPosts();
+  var existing=posts.map(function(p){return p.date;});
+  var d=new Date(year,month,1);
+  var newPosts=[];
+  while(d.getMonth()===month){
+    var dow=d.getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+    var type=null;
+    if(dow===1)type=CONTENT_TYPES[0]; // Mon = regulatory
+    else if(dow===3)type=CONTENT_TYPES[1]; // Wed = video
+    else if(dow===4)type=CONTENT_TYPES[2]; // Thu = engagement
+    else if(dow===5)type=CONTENT_TYPES[3]; // Fri = newsletter
+    if(type){
+      var ds=dateStr(d);
+      if(existing.indexOf(ds)<0){
+        newPosts.push({id:Date.now()+Math.random(),date:ds,type:type.id,title:type.label,notes:'',status:'planned',color:type.color});
+        existing.push(ds);
+      }
+    }
+    d.setDate(d.getDate()+1);
+  }
+  if(newPosts.length){
+    saveScheduledPosts(posts.concat(newPosts));
+  }
+  return newPosts.length;
+}
+
+function renderLiCalendar(){
+  var el=document.getElementById('li-calendar-section');
+  if(!el)return;
+  var html='';
+
+  // Header controls
+  html+='<div class="card" style="margin-bottom:0;">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">';
+  html+='<div style="font-weight:700;font-size:15px;">Content Calendar</div>';
+  html+='<div style="display:flex;gap:8px;align-items:center;">';
+  html+='<button onclick="liCalNav(-1)" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;font-family:inherit;">&#8592;</button>';
+  html+='<span style="font-weight:600;font-size:14px;min-width:140px;text-align:center;">'+LI_CAL.currentDate.toLocaleDateString('en-GB',{month:'long',year:'numeric'})+'</span>';
+  html+='<button onclick="liCalNav(1)" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;font-family:inherit;">&#8594;</button>';
+  html+='<button onclick="liCalToday()" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;font-family:inherit;">Today</button>';
+  html+='<button onclick="liCalAutoGen()" class="btn btn-primary" style="font-size:12px;padding:5px 12px;">Auto-fill month</button>';
+  html+='<button onclick="liCalClearMonth()" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;font-family:inherit;">Clear month</button>';
+  html+='</div></div>';
+
+  // Legend
+  html+='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">';
+  CONTENT_TYPES.forEach(function(t){
+    html+='<span style="font-size:11px;font-weight:600;background:'+t.color+'15;color:'+t.color+';border-radius:4px;padding:2px 8px;border:1px solid '+t.color+'30;">'+t.label+'</span>';
+  });
+  html+='</div>';
+
+  // Calendar grid
+  var year=LI_CAL.currentDate.getFullYear();
+  var month=LI_CAL.currentDate.getMonth();
+  var firstDay=new Date(year,month,1);
+  var lastDay=new Date(year,month+1,0);
+  var startDow=firstDay.getDay()||7; // 1=Mon...7=Sun
+
+  html+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">';
+  // Day headers
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function(d){
+    html+='<div style="text-align:center;font-size:11px;font-weight:700;color:#5C6B5D;padding:4px 0;text-transform:uppercase;letter-spacing:0.05em;">'+d+'</div>';
+  });
+
+  // Empty cells before month start
+  for(var blank=1;blank<startDow;blank++){
+    html+='<div style="height:80px;background:#F9FAF9;border-radius:6px;"></div>';
+  }
+
+  var today=dateStr(new Date());
+  // Day cells
+  for(var day=1;day<=lastDay.getDate();day++){
+    var d=new Date(year,month,day);
+    var ds=dateStr(d);
+    var posts=getPostsForDate(ds);
+    var isToday=ds===today;
+    var isSel=LI_CAL.selectedDate===ds;
+    html+='<div data-date="'+ds+'" onclick="liCalSelectDate(this.dataset.date)" style="min-height:80px;border-radius:6px;padding:4px;cursor:pointer;border:1.5px solid '+(isToday?'#3d8b40':isSel?'#E8651A':'#E2E8E2')+';background:'+(isToday?'#EBF5EC':isSel?'#FEF0E8':'#fff')+';position:relative;">';
+    html+='<div style="font-size:11px;font-weight:'+(isToday?'800':'600')+';color:'+(isToday?'#3d8b40':'#1C2B1D')+';margin-bottom:3px;">'+day+'</div>';
+    posts.slice(0,3).forEach(function(p){
+      var statusOp=p.status==='posted'?'1':'0.85';
+      html+='<div style="font-size:9px;font-weight:600;background:'+p.color+';color:#fff;border-radius:3px;padding:1px 4px;margin-bottom:2px;opacity:'+statusOp+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">';
+      html+=(p.status==='posted'?'&#10003; ':'')+esc(p.title)+'</div>';
+    });
+    if(posts.length>3)html+='<div style="font-size:9px;color:#5C6B5D;">+'+( posts.length-3)+' more</div>';
+    html+='</div>';
+  }
+  html+='</div></div>';
+
+  // Selected date detail panel
+  if(LI_CAL.selectedDate){
+    var selPosts=getPostsForDate(LI_CAL.selectedDate);
+    var selD=new Date(LI_CAL.selectedDate+'T12:00:00');
+    html+='<div class="card" style="margin-top:12px;">';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">';
+    html+='<div style="font-weight:700;font-size:14px;">'+fmtShort(selD)+'</div>';
+    html+='<button onclick="liCalAddPost()" class="btn btn-primary" style="font-size:12px;padding:5px 14px;">+ Add post</button></div>';
+
+    if(selPosts.length===0){
+      html+='<div style="color:#5C6B5D;font-size:13px;padding:10px 0;">No posts scheduled. Click + Add post to plan content for this day.</div>';
+    }
+
+    selPosts.forEach(function(p,pi){
+      var ct=CONTENT_TYPES.find(function(t){return t.id===p.type;})||CONTENT_TYPES[5];
+      html+='<div style="border:1px solid '+p.color+'30;border-radius:10px;padding:12px;margin-bottom:10px;background:'+p.color+'08;">';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">';
+      html+='<div style="display:flex;align-items:center;gap:8px;">';
+      html+='<span style="font-size:16px;">'+ct.icon+'</span>';
+      html+='<select data-pid="'+esc(p.id)+'" data-field="type" onchange="updatePostField(this.dataset.pid,this.dataset.field,this.value)" style="font-size:12px;font-weight:600;border:none;background:transparent;color:'+p.color+';font-family:inherit;cursor:pointer;">';
+      CONTENT_TYPES.forEach(function(t){html+='<option value="'+t.id+'"'+(p.type===t.id?' selected':'')+'>'+t.label+'</option>';});
+      html+='</select></div>';
+      html+='<div style="display:flex;gap:6px;">';
+      html+='<select data-pid="'+esc(p.id)+'" data-field="status" onchange="updatePostField(this.dataset.pid,this.dataset.field,this.value);renderLiCalendar()" style="font-size:11px;border:1px solid #E2E8E2;border-radius:6px;padding:3px 6px;font-family:inherit;background:#fff;">';
+      ['planned','drafted','scheduled','posted'].forEach(function(s){html+='<option value="'+s+'"'+(p.status===s?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1)+'</option>';});
+      html+='</select>';
+      html+='<button data-pid="'+esc(p.id)+'" onclick="deleteCalPost(this.dataset.pid)" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit;">Delete</button></div></div>';
+      html+='<input data-pid="'+esc(p.id)+'" data-field="title" value="'+esc(p.title)+'" onblur="updatePostField(this.dataset.pid,this.dataset.field,this.value)" placeholder="Post title..." style="width:100%;border:1px solid #E2E8E2;border-radius:6px;padding:6px 10px;font-size:13px;margin-bottom:8px;font-family:inherit;"/>';
+      html+='<textarea data-pid="'+esc(p.id)+'" data-field="notes" rows="3" onblur="updatePostField(this.dataset.pid,this.dataset.field,this.value)" placeholder="Notes, key message, or draft content..." style="width:100%;border:1px solid #E2E8E2;border-radius:6px;padding:6px 10px;font-size:12px;font-family:inherit;resize:vertical;">'+esc(p.notes||'')+'</textarea>';
+      html+='<div style="font-size:11px;color:#5C6B5D;margin-top:4px;">'+esc(ct.desc)+'</div></div>';
+    });
+
+    // Add post form
+    html+='<div id="li-add-post-form" style="display:none;border:1px solid #3d8b40;border-radius:10px;padding:12px;margin-top:10px;">';
+    html+='<div style="font-weight:600;font-size:13px;margin-bottom:10px;">New post for '+fmtShort(selD)+'</div>';
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
+    html+='<div><label style="font-size:11px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:4px;">CONTENT TYPE</label>';
+    html+='<select id="new-post-type" style="width:100%;font-family:inherit;">';
+    CONTENT_TYPES.forEach(function(t){html+='<option value="'+t.id+'">'+t.label+'</option>';});
+    html+='</select></div>';
+    html+='<div><label style="font-size:11px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:4px;">TITLE</label>';
+    html+='<input id="new-post-title" placeholder="e.g. PMCPA Q2 update post" style="width:100%;font-family:inherit;"/></div></div>';
+    html+='<textarea id="new-post-notes" rows="2" placeholder="Notes or draft content..." style="width:100%;border:1px solid #E2E8E2;border-radius:6px;padding:6px 10px;font-size:12px;font-family:inherit;margin-bottom:10px;"></textarea>';
+    html+='<div style="display:flex;gap:8px;">';
+    html+='<button class="btn btn-primary" onclick="saveNewPost()" style="font-size:12px;">Save Post</button>';
+    html+='<button class="btn btn-secondary" onclick="liCalHideForm()" style="font-size:12px;">Cancel</button></div></div>';
+    html+='</div>';
+  }
+
+  // Weekly strategy reference
+  html+='<div class="card" style="margin-top:12px;">';
+  html+='<div style="font-weight:700;font-size:14px;margin-bottom:12px;">Weekly Posting Template</div>';
+  var tips=[
+    {day:'Mon',tip:'Regulatory Insight',detail:'3-sentence take on PMCPA or ABPI development. Best time: 8-9am.',icon:'&#128203;',color:'#3d8b40'},
+    {day:'Tue',tip:'Case Study / Win',detail:'Anonymised client success story or testimonial. Builds trust.',icon:'&#11088;',color:'#7C3AED'},
+    {day:'Wed',tip:'Webinar Clip',detail:'Uday clips 60-90 seconds from your last webinar. 3x more reach.',icon:'&#127916;',color:'#1a5c1d'},
+    {day:'Thu',tip:'Engagement Hour',detail:'15 mins replying to comments and engaging with ICP posts.',icon:'&#128172;',color:'#0E9E8E'},
+    {day:'Fri',tip:'Newsletter Teaser',detail:'Preview your upcoming newsletter. Link to subscribe.',icon:'&#128231;',color:'#E8651A'}
+  ];
+  html+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">';
+  tips.forEach(function(t){
+    html+='<div style="border:1px solid '+t.color+'30;border-radius:8px;padding:10px;background:'+t.color+'08;">';
+    html+='<div style="font-size:18px;margin-bottom:4px;">'+t.icon+'</div>';
+    html+='<div style="font-size:10px;font-weight:700;color:'+t.color+';text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">'+t.day+'</div>';
+    html+='<div style="font-size:12px;font-weight:600;margin-bottom:3px;">'+t.tip+'</div>';
+    html+='<div style="font-size:11px;color:#5C6B5D;line-height:1.4;">'+t.detail+'</div></div>';
+  });
+  html+='</div></div>';
+
+  el.innerHTML=html;
+}
+
+function liCalNav(dir){
+  LI_CAL.currentDate=new Date(LI_CAL.currentDate.getFullYear(),LI_CAL.currentDate.getMonth()+dir,1);
+  LI_CAL.selectedDate=null;
+  renderLiCalendar();
+}
+function liCalToday(){LI_CAL.currentDate=new Date();LI_CAL.selectedDate=dateStr(new Date());renderLiCalendar();}
+function liCalSelectDate(ds){LI_CAL.selectedDate=(LI_CAL.selectedDate===ds?null:ds);renderLiCalendar();}
+
+function liCalAutoGen(){
+  var y=LI_CAL.currentDate.getFullYear();
+  var m=LI_CAL.currentDate.getMonth();
+  var n=autoGenerateMonth(y,m);
+  alert(n>0?'Added '+n+' scheduled posts for this month based on your weekly strategy.':'This month already has posts scheduled for all strategy days.');
+  renderLiCalendar();
+}
+
+function liCalClearMonth(){
+  if(!confirm('Clear all planned posts for this month?'))return;
+  var y=LI_CAL.currentDate.getFullYear();
+  var m=LI_CAL.currentDate.getMonth();
+  var posts=getScheduledPosts().filter(function(p){
+    var d=new Date(p.date);
+    return !(d.getFullYear()===y&&d.getMonth()===m);
+  });
+  saveScheduledPosts(posts);
+  renderLiCalendar();
+}
+
+function liCalAddPost(){
+  var f=document.getElementById('li-add-post-form');
+  if(f)f.style.display=f.style.display==='none'?'block':'none';
+}
+
+function liCalHideForm(){var f=document.getElementById('li-add-post-form');if(f)f.style.display='none';}
+function saveNewPost(){
+  var type=document.getElementById('new-post-type');
+  var title=document.getElementById('new-post-title');
+  var notes=document.getElementById('new-post-notes');
+  var ct=CONTENT_TYPES.find(function(t){return t.id===(type?type.value:'custom');})||CONTENT_TYPES[5];
+  var posts=getScheduledPosts();
+  posts.push({
+    id:String(Date.now()),
+    date:LI_CAL.selectedDate,
+    type:ct.id,
+    title:title&&title.value?title.value:ct.label,
+    notes:notes?notes.value:'',
+    status:'planned',
+    color:ct.color
+  });
+  saveScheduledPosts(posts);
+  renderLiCalendar();
+}
+
+function updatePostField(pid,field,value){
+  var posts=getScheduledPosts();
+  var p=posts.find(function(x){return x.id===pid;});
+  if(p){
+    p[field]=value;
+    if(field==='type'){
+      var ct=CONTENT_TYPES.find(function(t){return t.id===value;})||CONTENT_TYPES[5];
+      p.color=ct.color;
+      if(!p.title||p.title===p.type)p.title=ct.label;
+    }
+    saveScheduledPosts(posts);
+  }
+  if(field==='status')renderLiCalendar();
+}
+
+function deleteCalPost(pid){
+  if(!confirm('Delete this post?'))return;
+  saveScheduledPosts(getScheduledPosts().filter(function(p){return p.id!==pid;}));
+  renderLiCalendar();
+}
 // ============================================================
 // INIT
 // ============================================================
