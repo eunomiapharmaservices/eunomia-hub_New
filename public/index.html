@@ -1149,7 +1149,7 @@ function renderTopicStep(){
     html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">';
     STATE.topics.forEach(function(t,i){
       var isSel=STATE.selTopics.indexOf(i)>=0;
-      html+='<div class="topic-card '+(isSel?'selected':'')+'" onclick=""toggleTopic(&quot;+i+&quot;)">';
+      html+='<div class="topic-card '+(isSel?'selected':'')+'" data-tidx="'+i+'" onclick="toggleTopic(parseInt(this.dataset.tidx))">';
       html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">';
       html+='<span style="font-size:13px;font-weight:600;flex:1;margin-right:8px;">'+esc(t.title)+'</span>';
       html+='<span class="check '+(isSel?'on':'')+'" style="flex-shrink:0;">'+(isSel?'v':'')+'</span></div>';
@@ -1372,7 +1372,7 @@ function renderRegulatory(){
   GOOGLE_ALERTS.forEach(function(q,i){
     html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:'+(i<GOOGLE_ALERTS.length-1?'1px solid #E2E8E2':'none')+';font-size:13px;">';
     html += '<span style="font-family:monospace;color:#1C2B1D;">'+esc(q)+'</span>';
-    html += '<button onclick=""copyAlert(&quot;+i+&quot;)" id="alert-copy-'+i+'" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;color:#5C6B5D;">Copy</button>';
+    html += '<button data-i="+i+" onclick="copyAlert(parseInt(this.dataset.i))" id="alert-copy-'+i+'" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;color:#5C6B5D;">Copy</button>';
     html += '</div>';
   });
   html += '</div></div>';
@@ -1672,8 +1672,8 @@ function renderTestimonial(){
       html+='<div style="border:1px solid #E2E8E2;border-radius:10px;padding:14px;margin-bottom:10px;">';
       html+='<div style="font-size:13px;line-height:1.6;color:#1C2B1D;font-style:italic;margin-bottom:8px;">&#8220;'+esc(t.text)+'&#8221;</div>';
       html+='<div style="font-size:12px;font-weight:600;color:#3d8b40;">-- '+esc(t.author)+'</div>';
-      html+='<div style="margin-top:8px;display:flex;gap:8px;"><button onclick=""copyTestimonial(&quot;+i+&quot;)" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Copy</button>';
-      html+='<button onclick=""deleteTestimonial(&quot;+i+&quot;)" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Delete</button></div></div>';
+      html+='<div style="margin-top:8px;display:flex;gap:8px;"><button data-i="+i+" onclick="copyTestimonial(parseInt(this.dataset.i))" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Copy</button>';
+      html+='<button data-i="+i+" onclick="deleteTestimonial(parseInt(this.dataset.i))" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Delete</button></div></div>';
     });
   }else{html+='<div style="color:#5C6B5D;font-size:13px;">No testimonials saved yet.</div>';}
   html+='</div>';
@@ -1758,9 +1758,9 @@ function renderCaseStudy(){
       html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">';
       html+='<div><div style="font-weight:600;font-size:14px;margin-bottom:4px;">'+esc(cs.title)+'</div><div style="font-size:12px;color:#5C6B5D;">'+esc(cs.service)+' &middot; Saved '+esc(cs.date)+'</div></div>';
       html+='<div style="display:flex;gap:6px;flex-shrink:0;">';
-      html+='<button onclick=""viewCaseStudy(&quot;+i+&quot;)" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">View</button>';
-      html+='<button onclick=""copyCaseStudy(&quot;+i+&quot;)" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Copy</button>';
-      html+='<button onclick=""deleteCaseStudy(&quot;+i+&quot;)" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Delete</button></div></div>';
+      html+='<button data-i="+i+" onclick="viewCaseStudy(parseInt(this.dataset.i))" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">View</button>';
+      html+='<button data-i="+i+" onclick="copyCaseStudy(parseInt(this.dataset.i))" style="background:none;border:1px solid #E2E8E2;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Copy</button>';
+      html+='<button data-i="+i+" onclick="deleteCaseStudy(parseInt(this.dataset.i))" style="background:none;border:1px solid #FEE2E2;color:#DC2626;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">Delete</button></div></div>';
       html+='<div id="cs-view-'+i+'" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid #E2E8E2;font-size:13px;line-height:1.7;white-space:pre-wrap;color:#1C2B1D;">'+esc(cs.content)+'</div>';
       html+='</div>';
     });
@@ -1805,7 +1805,7 @@ async function genCaseStudy(){
       out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;">Case Study Generated</span><div style="display:flex;gap:8px;">';
       out.innerHTML+='<button onclick="copyLastDoc()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy</button>';
       out.innerHTML+='<button onclick="saveLastCaseStudy()" style="background:#E8651A;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Save</button>';
-      out.innerHTML+='<button onclick=""downloadLastDoc(&quot;casestudy.txt&quot;)" style="background:#3d8b40;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download</button></div></div>';
+      out.innerHTML+='<button onclick="downloadLastDoc()" style="background:#3d8b40;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;">Download</button></div></div>';
       out.innerHTML+='<div style="padding:20px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:#1C2B1D;max-height:500px;overflow-y:auto;">'+esc(text)+'</div></div>';
     }
   }catch(e){if(out)out.innerHTML=alert_('error','Error: '+e.message);}
