@@ -1318,18 +1318,18 @@ function lsGet(key,def){try{var v=localStorage.getItem(key);return v?JSON.parse(
 function lsSet(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
 
 var REG_BODIES = [
-  {name:'PMCPA', country:'UK', url:'https://www.pmcpa.org.uk', rss:'https://www.pmcpa.org.uk/feed/', desc:'UK pharma advertising self-regulator. Issues rulings and guidance on digital channels, social media and the ABPI Code.', color:'#3d8b40', lastUpdate:'Social media guidance updated Feb 2026'},
-  {name:'ABPI', country:'UK', url:'https://www.abpi.org.uk', rss:'https://www.abpi.org.uk/media/news/rss.xml', desc:'Sets the UK Code of Practice for pharma promotion. Current version: ABPI Code 2024, in force since 1 Jan 2025.', color:'#1a5c1d', lastUpdate:'Code 2024 in full force Jan 2025'},
-  {name:'ANSM', country:'France', url:'https://ansm.sante.fr', rss:'https://ansm.sante.fr/rss.xml', desc:'French medicines regulator. Publishes guidance on pharma advertising, digital channels and enforcement actions.', color:'#0E9E8E', lastUpdate:'Digital promotion charter published 2025'},
-  {name:'FCPA', country:'USA', url:'https://www.justice.gov/criminal/fraud/fcpa', rss:'', desc:'US anti-bribery law with extraterritorial reach. Enforced by DOJ and SEC. Applies to UK pharma firms with any US business nexus.', color:'#E8651A', lastUpdate:'Monitor DOJ enforcement actions'},
-  {name:'EMA', country:'EU', url:'https://www.ema.europa.eu', rss:'https://www.ema.europa.eu/en/about-us/whats-new/rss', desc:'European Medicines Agency. Regulatory guidance for EU market authorisations and post-market surveillance.', color:'#2563EB', lastUpdate:'Ongoing EU regulatory updates'},
-  {name:'EFPIA', country:'EU', url:'https://www.efpia.eu', rss:'', desc:'European Federation of Pharmaceutical Industries. Sets the EFPIA Code governing member interactions across EU markets.', color:'#7C3AED', lastUpdate:'EFPIA Code 2023 in force'},
-  {name:'HPRA', country:'Ireland', url:'https://www.hpra.ie', rss:'', desc:'Health Products Regulatory Authority Ireland. Regulates medicines, medical devices and controlled drugs in Ireland.', color:'#0E9E8E', lastUpdate:'Ongoing updates'},
-  {name:'IPHA', country:'Ireland', url:'https://www.ipha.ie', rss:'', desc:'Irish Pharmaceutical Healthcare Association. Sets voluntary code of practice for pharma promotion in Ireland.', color:'#1a5c1d', lastUpdate:'IPHA Code current'},
-  {name:'LEEM', country:'France', url:'https://www.leem.org', rss:'', desc:'Les Entreprises du Medicament. French pharma industry association setting voluntary promotional standards aligned with EFPIA.', color:'#0E9E8E', lastUpdate:'Ongoing updates'},
-  {name:'Farmaindustria', country:'Spain', url:'https://www.farmaindustria.es', rss:'', desc:'Spanish pharma industry association. Issues the Farmaindustria Code of Practice governing promotional activities in Spain.', color:'#DC2626', lastUpdate:'Current code in force'},
-  {name:'INFARMED', country:'Portugal', url:'https://www.infarmed.pt', rss:'', desc:'Portuguese National Authority of Medicines and Health Products. Statutory regulator for pharma promotion in Portugal.', color:'#7C3AED', lastUpdate:'Ongoing updates'},
-  {name:'FSA', country:'Germany', url:'https://www.fs-arzneimittelindustrie.de', rss:'', desc:'Freiwillige Selbstkontrolle fur die Arzneimittelindustrie. German voluntary self-regulatory body for pharma promotion.', color:'#E8651A', lastUpdate:'Current code in force'}
+  {name:'PMCPA', country:'UK', url:'https://www.pmcpa.org.uk', rulings:'https://www.pmcpa.org.uk/cases', rss:'https://www.pmcpa.org.uk/feed/', desc:'UK pharma advertising self-regulator. Issues rulings and guidance on digital channels, social media and the ABPI Code.', color:'#3d8b40', lastUpdate:'Visit site for current rulings'},
+  {name:'ABPI', country:'UK', url:'https://www.abpi.org.uk', rulings:'https://www.abpi.org.uk/medicines-and-patients/abpi-code', rss:'https://www.abpi.org.uk/media/news/rss.xml', desc:'Sets the UK Code of Practice for pharma promotion. Current version: ABPI Code 2024. Always check abpi.org.uk for the latest version.', color:'#1a5c1d', lastUpdate:'Visit site to verify current code'},
+  {name:'ANSM', country:'France', url:'https://ansm.sante.fr', rulings:'https://ansm.sante.fr/actualites', rss:'https://ansm.sante.fr/rss.xml', desc:'French medicines regulator. Publishes guidance on pharma advertising, digital channels and enforcement actions.', color:'#0E9E8E', lastUpdate:'Visit site for current guidance'},
+  {name:'FCPA', country:'USA', url:'https://www.justice.gov/criminal/fraud/fcpa', rulings:'https://www.justice.gov/criminal/fraud/fcpa/cases', rss:'', desc:'US anti-bribery law with extraterritorial reach. Enforced by DOJ and SEC. Applies to UK pharma firms with any US business nexus.', color:'#E8651A', lastUpdate:'Visit DOJ site for enforcement actions'},
+  {name:'EMA', country:'EU', url:'https://www.ema.europa.eu', rulings:'https://www.ema.europa.eu/en/about-us/whats-new', rss:'https://www.ema.europa.eu/en/about-us/whats-new/rss', desc:'European Medicines Agency. Regulatory guidance for EU market authorisations and post-market surveillance.', color:'#2563EB', lastUpdate:'Visit site for current guidelines'},
+  {name:'EFPIA', country:'EU', url:'https://www.efpia.eu', rulings:'https://www.efpia.eu/publications', rss:'', desc:'European Federation of Pharmaceutical Industries. Sets the EFPIA Code governing member interactions across EU markets.', color:'#7C3AED', lastUpdate:'Visit site to verify current code'},
+  {name:'HPRA', country:'Ireland', url:'https://www.hpra.ie', rulings:'https://www.hpra.ie/homepage/medicines/regulatory-information', rss:'', desc:'Health Products Regulatory Authority Ireland. Regulates medicines, medical devices and controlled drugs in Ireland.', color:'#0E9E8E', lastUpdate:'Visit site for current guidance'},
+  {name:'IPHA', country:'Ireland', url:'https://www.ipha.ie', rulings:'https://www.ipha.ie/codes-and-guidelines', rss:'', desc:'Irish Pharmaceutical Healthcare Association. Sets voluntary code of practice for pharma promotion in Ireland.', color:'#1a5c1d', lastUpdate:'Visit site to verify current code'},
+  {name:'LEEM', country:'France', url:'https://www.leem.org', rulings:'https://www.leem.org/charte-et-codes', rss:'', desc:'Les Entreprises du Medicament. French pharma industry association setting voluntary promotional standards aligned with EFPIA.', color:'#0E9E8E', lastUpdate:'Visit site to verify current code'},
+  {name:'Farmaindustria', country:'Spain', url:'https://www.farmaindustria.es', rulings:'https://www.farmaindustria.es/web/farmaindustria/codigo-farmaindustria', rss:'', desc:'Spanish pharma industry association. Issues the Farmaindustria Code of Practice governing promotional activities in Spain.', color:'#DC2626', lastUpdate:'Visit site to verify current code'},
+  {name:'INFARMED', country:'Portugal', url:'https://www.infarmed.pt', rulings:'https://www.infarmed.pt/web/infarmed/legislacao', rss:'', desc:'Portuguese National Authority of Medicines and Health Products. Statutory regulator for pharma promotion in Portugal.', color:'#7C3AED', lastUpdate:'Visit site for current guidance'},
+  {name:'FSA', country:'Germany', url:'https://www.fs-arzneimittelindustrie.de', rulings:'https://www.fs-arzneimittelindustrie.de/fsa-kodex', rss:'', desc:'Freiwillige Selbstkontrolle fur die Arzneimittelindustrie. German voluntary self-regulatory body for pharma promotion.', color:'#E8651A', lastUpdate:'Visit site to verify current code'}
 ];
 
 // REGULATORY COVERAGE — Source: Eunomia Pharma Services Regulatory Coverage document (uploaded May 2026)
@@ -1546,18 +1546,46 @@ function renderRegulatory(){
   html += '<button class="btn btn-primary" id="reg-gen-btn" onclick="genRegulatoryInsight()" style="margin-bottom:14px;">Generate Insight</button>';
   html += '<div id="reg-output"></div></div>';
 
-  // Regulatory bodies
-  html += '<div class="card" style="margin-bottom:16px;"><div class="card-title">Regulatory Bodies Dashboard</div>';
-  REG_BODIES.forEach(function(b){
-    html += '<div style="display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid #E2E8E2;">';
-    html += '<div style="width:56px;height:56px;border-radius:10px;background:'+b.color+'15;border:2px solid '+b.color+'40;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-weight:800;font-size:13px;color:'+b.color+';">'+esc(b.name)+'</span></div>';
-    html += '<div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><strong style="font-size:14px;">'+esc(b.name)+'</strong><span style="font-size:11px;background:#F5F6F5;border-radius:4px;padding:2px 7px;color:#5C6B5D;">'+esc(b.country)+'</span></div>';
-    html += '<div style="font-size:13px;color:#5C6B5D;line-height:1.5;margin-bottom:6px;">'+esc(b.desc)+'</div>';
-    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
-    html += '<span style="font-size:11px;background:'+b.color+'10;color:'+b.color+';border-radius:4px;padding:2px 8px;font-weight:600;">'+esc(b.lastUpdate)+'</span>';
-    if(b.url)html += '<a href="'+esc(b.url)+'" target="_blank" style="font-size:11px;color:#3d8b40;text-decoration:none;font-weight:600;">Visit site &rarr;</a>';
-    if(b.rss)html += '<span style="font-size:11px;color:#5C6B5D;">RSS: '+esc(b.rss)+'</span>';
-    html += '</div></div></div>';
+  // Regulatory bodies - honest direct links only, no fabricated status
+  html += '<div class="card" style="margin-bottom:16px;">';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">';
+  html += '<div class="card-title" style="margin-bottom:0;">Regulatory Bodies — Direct Links</div></div>';
+  html += '<div style="background:#EBF5EC;border:1px solid #3d8b4030;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#1C2B1D;">';
+  html += '<strong style="color:#3d8b40;">Live information:</strong> This section shows direct links to official regulatory body websites only. ';
+  html += 'No status, dates or descriptions are shown here because they cannot be verified in real time. ';
+  html += 'Click "Latest updates" or "Rulings" to go directly to the official source for current information.</div>';
+
+  // Group by country
+  var bodyGroups = [
+    {label:'United Kingdom', color:'#3d8b40', bodies:['PMCPA','ABPI']},
+    {label:'European Union', color:'#2563EB', bodies:['EMA','EFPIA']},
+    {label:'Ireland', color:'#1a5c1d', bodies:['HPRA','IPHA']},
+    {label:'France', color:'#0E9E8E', bodies:['ANSM','LEEM']},
+    {label:'Spain', color:'#DC2626', bodies:['Farmaindustria']},
+    {label:'Portugal', color:'#7C3AED', bodies:['INFARMED']},
+    {label:'Germany', color:'#E8651A', bodies:['FSA']},
+    {label:'USA (extraterritorial)', color:'#6B7280', bodies:['FCPA']}
+  ];
+
+  bodyGroups.forEach(function(g){
+    var groupBodies=REG_BODIES.filter(function(b){return g.bodies.indexOf(b.name)>=0;});
+    if(!groupBodies.length)return;
+    html += '<div style="margin-bottom:16px;">';
+    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:'+g.color+';margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid '+g.color+'30;">'+esc(g.label)+'</div>';
+    groupBodies.forEach(function(b){
+      html += '<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #E2E8E2;border-radius:8px;margin-bottom:6px;background:#fff;">';
+      html += '<div style="width:48px;height:48px;border-radius:8px;background:'+b.color+'12;border:1.5px solid '+b.color+'30;display:flex;align-items:center;justify-content:center;flex-shrink:0;">';
+      html += '<span style="font-weight:800;font-size:11px;color:'+b.color+';text-align:center;line-height:1.2;">'+esc(b.name)+'</span></div>';
+      html += '<div style="flex:1;min-width:0;">';
+      html += '<div style="font-weight:700;font-size:13px;color:#1C2B1D;margin-bottom:2px;">'+esc(b.name)+'</div>';
+      html += '<div style="font-size:11px;color:#5C6B5D;">'+esc(b.country)+'</div></div>';
+      html += '<div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">';
+      if(b.url)html += '<a href="'+esc(b.url)+'" target="_blank" style="font-size:11px;font-weight:600;color:#fff;background:'+b.color+';border-radius:6px;padding:5px 12px;text-decoration:none;white-space:nowrap;">Official site &rarr;</a>';
+      if(b.rulings)html += '<a href="'+esc(b.rulings)+'" target="_blank" style="font-size:11px;font-weight:600;color:'+b.color+';border:1.5px solid '+b.color+';border-radius:6px;padding:5px 12px;text-decoration:none;white-space:nowrap;">Latest updates &rarr;</a>';
+      if(b.rss)html += '<a href="'+esc(b.rss)+'" target="_blank" style="font-size:11px;font-weight:600;color:#5C6B5D;border:1px solid #E2E8E2;border-radius:6px;padding:5px 10px;text-decoration:none;white-space:nowrap;">RSS feed</a>';
+      html += '</div></div>';
+    });
+    html += '</div>';
   });
   html += '</div>';
 
