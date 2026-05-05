@@ -306,7 +306,9 @@ function renderOverview(){
   
   // Demo notice
   var demos=Object.keys(STATE.mock);
-  if(demos.length)html+=alert_('warning','Demo mode: '+demos.join(', ')+' showing sample data. Add API keys in Vercel to see live data.');
+  if(demos.length)html+=alert_('warning','<strong>Demo mode active:</strong> '+demos.join(', ')+' showing sample/placeholder data — NOT your real figures. Add API keys in Vercel env vars to connect live data.');
+  // Global assumption notice
+  html+=alert_('info','<strong>Transparency notice:</strong> This hub uses AI to generate content, prospects, and campaign copy. AI output is a starting point only — always verify regulatory references against official sources (PMCPA, ABPI, ANSM, EMA) and validate prospect data before use in client-facing or outreach contexts.');
   
   // Stats
   html+='<div class="grid4">';
@@ -384,7 +386,8 @@ function renderLinkedIn(){
   var li=STATE.li;
   var liName=(li&&li.name&&li.name!=='undefined undefined')?li.name:(li&&li.email?li.email:'Connected');
   var html='';
-  if(STATE.mock.li)html+=alert_('warning','Showing demo data. Add LINKEDIN_ACCESS_TOKEN in Vercel env vars.');
+  if(STATE.mock.li)html+=alert_('warning','<strong>Assumption:</strong> LinkedIn showing demo figures (1,247 connections). These are NOT your real data. Add LINKEDIN_ACCESS_TOKEN in Vercel env vars to see live data.');
+  else if(STATE.li)html+=alert_('info','Live LinkedIn data connected. Follower and connection counts are real.');
   html+='<div class="grid3">';
   html+=statCard('Account',liName,'LinkedIn profile');
   html+=statCard('Connections',li&&li.connections?li.connections.toLocaleString():'--','Total network');
@@ -465,7 +468,7 @@ async function postToLinkedIn(){
 function renderSalesRobot(){
   var sr=STATE.sr;
   var html='';
-  if(STATE.mock.sr)html+=alert_('warning','Showing your real campaign data. To connect live API, contact Sales Robot support for your API endpoint URL.');
+  html+=alert_('warning','<strong>Assumption:</strong> Campaign reply rates (25.29%, 25.72% etc.) are hardcoded from data you provided in May 2025. They are NOT pulled live from Sales Robot. If your campaigns have run since then, these figures are out of date. Connect a live Sales Robot API or update these figures manually.');
   if(sr&&sr.summary){
     html+='<div class="grid4">';
     html+=statCard('Active sequences',sr.summary.activeSequences);
@@ -487,7 +490,7 @@ function renderSalesRobot(){
       html+='<div style="text-align:right;">'+pill(s.rate+'%',col)+'</div>';
       html+='<div style="text-align:right;">'+pill(s.status,s.status==='active'?'#3d8b40':'#6B7280')+'</div></div>';
     });
-    html+=alert_('info','<strong>Your average reply rate of '+esc(sr.summary.replyRate)+'% is well above the industry average of 10-15%.</strong> The Legal and Medical Directors campaigns are your strongest performers.');
+    html+=alert_('info','<strong>Your average reply rate of '+esc(sr.summary.replyRate)+'% is well above the industry average of 10-15%.</strong> The Legal and Medical Directors campaigns are your strongest performers. <strong>Assumption:</strong> Industry average of 10-15% is a general LinkedIn outreach benchmark, not a pharma compliance sector-specific figure. Verify against your own Sales Robot benchmarks.');
   }else{html+='<div style="color:#5C6B5D;">No campaigns found.</div>';}
   html+='</div>';
   
@@ -582,6 +585,7 @@ function renderCampaignOutput(){
   var c=STATE.campaign;
   if(!c)return '';
   var html='<div style="display:flex;flex-direction:column;gap:12px;">';
+  html+=alert_('warning','<strong>Review before use:</strong> These messages are AI-generated. Verify that compliance pain points referenced are accurate for the target company. Do not include specific regulatory claims you cannot verify. Personalise with real company-specific detail before loading into Sales Robot.');
   html+='<div style="background:#EBF5EC;border-radius:10px;padding:14px 16px;">';
   html+='<div style="font-size:11px;font-weight:600;color:#3d8b40;text-transform:uppercase;margin-bottom:4px;">Campaign Name</div>';
   html+='<div style="font-size:15px;font-weight:700;margin-bottom:12px;">'+esc(c.campaignName)+'</div>';
@@ -671,7 +675,8 @@ var HUNTER_STATE={results:null,selected:[],leads:null,leadsSelected:[],searching
 function renderHunter(){
   var ht=STATE.ht;
   var html='';
-  if(STATE.mock.ht)html+=alert_('warning','Showing demo data. Add HUNTER_API_KEY in Vercel env vars for live data.');
+  if(STATE.mock.ht)html+=alert_('warning','<strong>Assumption:</strong> Hunter.io showing demo credit figures. These are NOT your real account data. Add HUNTER_API_KEY in Vercel env vars.');
+  else html+=alert_('info','Live Hunter.io data connected. Credit counts are real.');
   html+='<div class="grid4">';
   html+=statCard('Plan',ht?ht.plan:'--');
   html+=statCard('Search credits',ht?ht.creditsUsed+'/'+ht.creditsTotal:'--');
@@ -782,7 +787,7 @@ var JOBROLE_STATE={loading:false,results:[],err:'',domainsFound:[]};
 
 function renderHunterJobRole(){
   var html='<div class="card"><div class="card-title">Search by Job Role + Location</div>';
-  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:14px;">AI identifies real companies with this job role in this location, then searches Hunter.io for their compliance contacts. Combines AI intelligence with Hunter email database.</div>';
+  html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:14px;">AI identifies companies likely to have this role, then searches Hunter.io for contacts. <strong style="color:#E8651A;">Assumption: company list is AI-generated and unverified. Validate each company before outreach.</strong></div>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">';
   html+='<div><label style="font-size:12px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:5px;">JOB ROLE / PERSONA</label>';
   html+='<select id="jr-role" onchange="var w=document.getElementById(\'jr-custom-wrap\');if(w)w.style.display=this.value===\'custom\'?\'block\':\'none\';" style="width:100%;font-family:inherit;"><option value="Chief Compliance Officer">Chief Compliance Officer</option><option value="Head of Medical Affairs">Head of Medical Affairs</option><option value="Regulatory Affairs Director">Regulatory Affairs Director</option><option value="Compliance Manager">Compliance Manager</option><option value="Medical Science Liaison Manager">MSL Manager</option><option value="VP Medical Affairs">VP Medical Affairs</option><option value="Legal Counsel Healthcare">Legal Counsel - Healthcare</option><option value="Head of Regulatory Affairs">Head of Regulatory Affairs</option><option value="Director of Medical Affairs">Director of Medical Affairs</option><option value="General Counsel Pharma">General Counsel - Pharma</option><option value="custom">Custom role...</option></select></div>';
@@ -1140,6 +1145,7 @@ function renderTopicStep(){
   var html='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
   html+='<div class="card-title" style="margin-bottom:0;">Step 1: Choose Topics</div>';
   html+='<button class="btn btn-secondary" onclick="STATE.composerOpen=false;renderNewsletter()">Close</button></div>';
+  html+=alert_('warning','<strong>Important:</strong> Topics below are AI-generated based on known regulatory themes. Always verify specific case references, ruling numbers, or recent updates directly at PMCPA (pmcpa.org.uk/cases), ABPI (abpi.org.uk), ANSM (ansm.sante.fr) or EMA (ema.europa.eu) before publishing.');
   if(STATE.topics.length===0){
     html+='<div style="text-align:center;padding:20px 0;">';
     html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">AI will research current pharma regulatory topics for your audience</div>';
@@ -1156,7 +1162,10 @@ function renderTopicStep(){
       html+='<p style="font-size:12px;color:#5C6B5D;margin:0 0 8px;">'+esc(t.hook)+'</p>';
       html+='<div>';
       t.tags.forEach(function(tag){html+='<span class="tag" style="background:'+(tagColor[tag]||'#6B7280')+'20;color:'+(tagColor[tag]||'#6B7280')+'">'+esc(tag)+'</span>';});
-      html+='</div></div>';
+      html+='</div>';
+      html+='<div style="margin-top:8px;padding-top:8px;border-top:1px solid #E2E8E2;font-size:11px;color:#E8651A;display:flex;align-items:center;gap:4px;">';
+      html+='<span>&#9888;</span><span>AI-suggested topic — verify specific details and case references at the relevant regulatory body before publishing</span></div>';
+      html+='</div>';
     });
     html+='</div>';
     html+='<div style="display:flex;gap:10px;">';
@@ -1200,13 +1209,15 @@ async function genDraft(){
   var chosen=STATE.selTopics.map(function(i){return STATE.topics[i];});
   var tlist=chosen.map(function(t){return '- '+t.title+': '+t.hook;}).join('\n');
 
-  var sys=['You are a senior compliance marketing writer for Eunomia.',
+  var sys=['You are a senior compliance marketing writer for Eunomia Pharma Services.',
     'Write a newsletter. Format exactly:',
     'SUBJECT: [subject line]',
     '---',
     '[Opening hook]',
     '[2-3 sections with bold headings]',
     '[Closing CTA]',
+    'CRITICAL RULES: Do NOT invent specific case numbers, ruling IDs, or precise statistics you cannot verify.',
+    'Refer to regulatory topics and trends in general terms. Use phrases like "recent PMCPA guidance" not fabricated case IDs.',
     'Under 400 words. Expert but readable.'
   ].join(' ');
   try{
@@ -1949,8 +1960,10 @@ function deleteClient(i){
 
 // Pre-populate known clients if first time
 function initKnownClients(){
+  // NOTE: Client names and start dates below were provided by Rashmi in May 2025.
+  // Start dates are estimated — update them with actual contract start dates.
   var existing=lsGet('eunomia-clients-list',[]);
-  if(existing.length>0)return; // already seeded
+  if(existing.length>0)return;
   var known=[
     {name:'Essential Pharma',start:'2024-01-01',services:'Pharma compliance consulting',notes:'Active SOW',testimonialReceived:false},
     {name:'Mereo Bio',start:'2024-03-01',services:'Regulatory compliance',notes:'Active SOW',testimonialReceived:false},
@@ -2062,6 +2075,7 @@ async function findProspects(){
     lsSet('eunomia-prospects-'+sigVal+'-'+geoVal.split(' ').join(''),allProspects);
     window.PROSPECT_BATCH=(window.PROSPECT_BATCH||0)+1;
     var html='<div style="margin-top:4px;">';
+    html+=alert_('warning','<strong>Assumption — verify before outreach:</strong> Companies, contact titles, and LinkedIn openers below are AI-generated based on your ICP. They are NOT confirmed sales intelligence. Eunomia has NOT verified that these companies are currently seeking compliance services, that the suggested contact title is correct, or that domains are current. Always research each company independently before contacting.');
     html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">';
     html+='<div style="font-size:13px;font-weight:600;color:#1C2B1D;">'+allProspects.length+' prospective clients found ('+newOnes.length+' new this search)</div>';
     html+='<div style="display:flex;gap:8px;">';
