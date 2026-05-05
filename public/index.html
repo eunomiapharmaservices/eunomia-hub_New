@@ -1623,35 +1623,48 @@ function copyAlert(i){
 }
 
 async function genRegulatoryInsight(){
-  var body=document.getElementById('reg-body');
+  var bodyEl=document.getElementById('reg-body');
   var format=document.getElementById('reg-format');
   var topic=document.getElementById('reg-topic');
   var btn=document.getElementById('reg-gen-btn');
   var out=document.getElementById('reg-output');
-  if(!body||!body.value){if(out)out.innerHTML=alert_('error','Please select a regulatory body.');return;}
-  if(btn)btn.textContent='Generating...';
-  var bodyName=body.value;
+  if(!bodyEl||!bodyEl.value){if(out)out.innerHTML=alert_('error','Please select a regulatory body.');return;}
+  if(btn){btn.textContent='Searching for recent updates...';btn.disabled=true;}
+  var bodyName=bodyEl.value;
   var formatName=format?format.value:'client-alert';
   var topicText=topic?topic.value:'';
   var bodyInfo=REG_BODIES.find(function(b){return b.name===bodyName;})||{};
-  var formatInstructions={
-    'client-alert':'Write a short client alert email (150-200 words). Subject line first, then body. Professional, plain English, explains what changed and what clients should do. Sign off as Eunomia Pharma Services.',
-    'linkedin':'Write a LinkedIn post (150-200 words) positioning Eunomia as a regulatory intelligence leader. End with 3-4 relevant hashtags. No emojis.',
-    'newsletter':'Write a newsletter section (200-300 words) with a bold heading. Explain the regulatory development and its practical implications for pharma compliance teams.',
-    'briefing':'Write an internal team briefing (200-300 words). Heading, summary of the update, client impact assessment, and recommended Eunomia actions.'
-  }[formatName]||'Write a professional compliance briefing.';
-  var prompt='You are a senior pharma compliance expert at Eunomia Pharma Services. Generate '+formatName+' content about '+bodyName+' ('+bodyInfo.country+') for pharma compliance professionals. '+bodyInfo.desc+(topicText?' Specific topic: '+topicText+'.':' Focus on the most recent and relevant guidance or update.')+' '+formatInstructions+' Be specific, authoritative, and practically useful. Include a clear call to action to contact Eunomia for guidance.';
+  if(out){
+    out.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:16px;background:#EBF5EC;border-radius:10px;font-size:13px;">'+
+    '<span class="spinner"></span><div><strong>Step 1:</strong> Searching for real verified updates from '+esc(bodyName)+' (last 60 days)...<br>'+
+    '<span style="font-size:12px;color:#5C6B5D;">Using live web search before generating any content</span></div></div>';
+  }
   try{
-    var text=await aiCall([{role:'user',content:prompt}],'You are a senior pharma regulatory compliance expert at Eunomia Pharma Services. Write clear, authoritative content that positions Eunomia as the go-to compliance partner.');
+    var resp=await fetch('/api/regulatory-insight',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({regulatoryBody:bodyName,country:bodyInfo.country||'',format:formatName,topic:topicText})
+    });
+    var data=await resp.json();
+    if(data.error)throw new Error(data.error);
     if(out){
-      out.innerHTML='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
-      out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;font-size:13px;">'+esc(bodyName)+' - '+esc(formatName.replace('-',' '))+'</span><button onclick="copyInsight()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;" id="copy-insight-btn">Copy</button></div>';
-      out.innerHTML+='<div style="padding:16px;font-size:13px;line-height:1.75;white-space:pre-wrap;color:#1C2B1D;" id="insight-text">'+esc(text)+'</div></div>';
-      out.innerHTML+='<div style="margin-top:10px;display:flex;gap:10px;"><button class="btn btn-secondary" onclick="genRegulatoryInsight()">Regenerate</button><button class="btn btn-primary" onclick="shareToLinkedIn()">Post to LinkedIn</button></div>';
-      REG_STATE.insight=text;
+      out.innerHTML='';
+      if(!data.grounded){
+        out.innerHTML=alert_('warning','<strong>No recent verified data found.</strong><br>'+esc(data.warning||'')+'<br><br>Search used: <em>'+esc(data.searchQuery||'')+'</em><br><br>Visit the official '+esc(bodyName)+' website directly. Eunomia should not publish insights without a verified recent source.');
+      }else{
+        out.innerHTML='<div style="background:#EBF5EC;border:1px solid #3d8b4030;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;"><strong style="color:#3d8b40;">&#10003; Source-grounded</strong> — generated from live web search: &quot;'+esc(data.searchQuery)+'&quot;. Verify all cited sources before publishing.</div>';
+        out.innerHTML+='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
+        out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;font-size:13px;">'+esc(bodyName)+' &mdash; '+esc(formatName.replace('-',' '))+'</span><button onclick="copyInsight()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;" id="copy-insight-btn">Copy</button></div>';
+        out.innerHTML+='<div style="padding:16px;font-size:13px;line-height:1.75;white-space:pre-wrap;color:#1C2B1D;" id="insight-text">'+esc(data.insight)+'</div></div>';
+        out.innerHTML+='<div style="background:#FEF0E8;border-radius:8px;padding:8px 12px;margin-top:10px;font-size:12px;"><strong style="color:#E8651A;">Before publishing:</strong> Verify every cited source directly on the official website. Check case numbers, dates and enforcement actions match exactly.</div>';
+        out.innerHTML+='<div style="display:flex;gap:10px;margin-top:10px;"><button class="btn btn-secondary" onclick="genRegulatoryInsight()">Regenerate</button><button class="btn btn-primary" onclick="shareToLinkedIn()">Post to LinkedIn</button></div>';
+        REG_STATE.insight=data.insight;
+      }
     }
-  }catch(e){if(out)out.innerHTML=alert_('error','Error: '+e.message);}
-  if(btn)btn.textContent='Generate Insight';
+  }catch(e){
+    if(out)out.innerHTML=alert_('error','Error: '+esc(e.message));
+  }
+  if(btn){btn.textContent='Generate Insight';btn.disabled=false;}
 }
 
 function copyInsight(){
