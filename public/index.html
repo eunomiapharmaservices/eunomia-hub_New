@@ -1629,37 +1629,60 @@ async function genRegulatoryInsight(){
   var btn=document.getElementById('reg-gen-btn');
   var out=document.getElementById('reg-output');
   if(!bodyEl||!bodyEl.value){if(out)out.innerHTML=alert_('error','Please select a regulatory body.');return;}
-  if(btn){btn.textContent='Searching for recent updates...';btn.disabled=true;}
+  if(btn){btn.textContent='Generating...';btn.disabled=true;}
   var bodyName=bodyEl.value;
   var formatName=format?format.value:'client-alert';
   var topicText=topic?topic.value:'';
   var bodyInfo=REG_BODIES.find(function(b){return b.name===bodyName;})||{};
-  if(out){
-    out.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:16px;background:#EBF5EC;border-radius:10px;font-size:13px;">'+
-    '<span class="spinner"></span><div><strong>Step 1:</strong> Searching for real verified updates from '+esc(bodyName)+' (last 60 days)...<br>'+
-    '<span style="font-size:12px;color:#5C6B5D;">Using live web search before generating any content</span></div></div>';
-  }
+  if(out)out.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:14px;background:#EBF5EC;border-radius:10px;font-size:13px;"><span class="spinner"></span><div>Generating insight for '+esc(bodyName)+'...</div></div>';
+  var formatInstructions={
+    'client-alert':'Write a short client alert email (150-200 words). Subject line first, then body. Professional, plain English. Sign off as Eunomia Pharma Services.',
+    'linkedin':'Write a LinkedIn post (150-200 words). End with 3-4 relevant hashtags. No emojis.',
+    'newsletter':'Write a newsletter section (200-300 words) with a bold heading. Explain the development and practical implications.',
+    'briefing':'Write an internal team briefing (200-300 words). Heading, summary, client impact, recommended Eunomia actions.'
+  }[formatName]||'Write a professional compliance briefing.';
+  var sys=[
+    'You are a senior pharma compliance expert at Eunomia Pharma Services.',
+    'STRICT RULES YOU MUST FOLLOW:',
+    '1. NEVER invent regulatory case numbers, ruling IDs, enforcement dates or specific statistics.',
+    '2. NEVER fabricate quotes from regulatory bodies.',
+    '3. Only reference regulatory developments that are part of established, publicly known regulatory frameworks.',
+    '4. If you do not have reliable knowledge of a RECENT (last 90 days) development from '+bodyName+', write general compliance guidance based on the known regulatory framework instead - and clearly label it as general guidance, not a recent update.',
+    '5. Begin the output with one of: [RECENT UPDATE - verified in training data] or [GENERAL GUIDANCE - no specific recent update cited].',
+    '6. Always include a verification note at the end: Verify at [official website URL] before publishing.'
+  ].join(' ');
+  var prompt=[
+    'Generate '+formatName+' content about '+bodyName+' ('+( bodyInfo.country||'')+') for pharma compliance professionals.',
+    topicText?'Topic: '+topicText+'.':'Focus on the most significant current regulatory requirement or framework.',
+    formatInstructions,
+    'Include a clear call to action to contact Eunomia Pharma Services.'
+  ].join(' ');
   try{
-    var resp=await fetch('/api/regulatory-insight',{
+    var resp=await fetch('/api/claude',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({regulatoryBody:bodyName,country:bodyInfo.country||'',format:formatName,topic:topicText})
+      body:JSON.stringify({messages:[{role:'user',content:prompt}],system:sys})
     });
     var data=await resp.json();
     if(data.error)throw new Error(data.error);
+    var text='';
+    if(data.content&&Array.isArray(data.content))text=data.content.filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    else if(typeof data==='string')text=data;
+    if(!text)throw new Error('No content returned');
+    var isRecent=text.indexOf('[RECENT UPDATE')===0;
+    var isGeneral=text.indexOf('[GENERAL GUIDANCE')===0;
     if(out){
       out.innerHTML='';
-      if(!data.grounded){
-        out.innerHTML=alert_('warning','<strong>No recent verified data found.</strong><br>'+esc(data.warning||'')+'<br><br>Search used: <em>'+esc(data.searchQuery||'')+'</em><br><br>Visit the official '+esc(bodyName)+' website directly. Eunomia should not publish insights without a verified recent source.');
-      }else{
-        out.innerHTML='<div style="background:#EBF5EC;border:1px solid #3d8b4030;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;"><strong style="color:#3d8b40;">&#10003; Source-grounded</strong> — generated from live web search: &quot;'+esc(data.searchQuery)+'&quot;. Verify all cited sources before publishing.</div>';
-        out.innerHTML+='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
-        out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;font-size:13px;">'+esc(bodyName)+' &mdash; '+esc(formatName.replace('-',' '))+'</span><button onclick="copyInsight()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;" id="copy-insight-btn">Copy</button></div>';
-        out.innerHTML+='<div style="padding:16px;font-size:13px;line-height:1.75;white-space:pre-wrap;color:#1C2B1D;" id="insight-text">'+esc(data.insight)+'</div></div>';
-        out.innerHTML+='<div style="background:#FEF0E8;border-radius:8px;padding:8px 12px;margin-top:10px;font-size:12px;"><strong style="color:#E8651A;">Before publishing:</strong> Verify every cited source directly on the official website. Check case numbers, dates and enforcement actions match exactly.</div>';
-        out.innerHTML+='<div style="display:flex;gap:10px;margin-top:10px;"><button class="btn btn-secondary" onclick="genRegulatoryInsight()">Regenerate</button><button class="btn btn-primary" onclick="shareToLinkedIn()">Post to LinkedIn</button></div>';
-        REG_STATE.insight=data.insight;
+      if(isGeneral){
+        out.innerHTML+=alert_('warning','<strong>General guidance only</strong> — the AI does not have a verified recent update from '+esc(bodyName)+' to cite. Content below is based on the established regulatory framework. Do not present this as a recent update. Always check '+esc(bodyInfo.url||'')+ ' for current news before publishing.');
+      }else if(isRecent){
+        out.innerHTML+='<div style="background:#EBF5EC;border:1px solid #3d8b4030;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;"><strong style="color:#3d8b40;">&#9432; Verify before publishing</strong> — this insight is based on training data, not a live search. Always confirm details at the official '+esc(bodyName)+' website.</div>';
       }
+      out.innerHTML+='<div style="border:1px solid #E2E8E2;border-radius:10px;overflow:hidden;">';
+      out.innerHTML+='<div style="background:#2C3E2D;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;"><span style="color:#fff;font-weight:600;font-size:13px;">'+esc(bodyName)+' &mdash; '+esc(formatName.replace('-',' '))+'</span><button onclick="copyInsight()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;" id="copy-insight-btn">Copy</button></div>';
+      out.innerHTML+='<div style="padding:16px;font-size:13px;line-height:1.75;white-space:pre-wrap;color:#1C2B1D;" id="insight-text">'+esc(text)+'</div></div>';
+      out.innerHTML+='<div style="display:flex;gap:10px;margin-top:10px;"><button class="btn btn-secondary" onclick="genRegulatoryInsight()">Regenerate</button><button class="btn btn-primary" onclick="shareToLinkedIn()">Post to LinkedIn</button></div>';
+      REG_STATE.insight=text;
     }
   }catch(e){
     if(out)out.innerHTML=alert_('error','Error: '+esc(e.message));
