@@ -1145,7 +1145,14 @@ function renderTopicStep(){
   var html='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
   html+='<div class="card-title" style="margin-bottom:0;">Step 1: Choose Topics</div>';
   html+='<button class="btn btn-secondary" onclick="STATE.composerOpen=false;renderNewsletter()">Close</button></div>';
+  html+='<div style="display:flex;gap:12px;margin-bottom:12px;padding:12px 0;">';
+  var savedSubUrl=lsGet('nl-sub-url','');
+  html+='<div style="flex:1;"><label style="font-size:11px;font-weight:600;color:#5C6B5D;display:block;margin-bottom:4px;">SUBSCRIBE PAGE URL</label>';
+  html+='<input id="nl-sub-url" value="'+esc(savedSubUrl)+'" placeholder="https://eunomiapharmaservices.com/subscribe" style="width:100%;" onblur="lsSet(&quot;nl-sub-url&quot;,this.value)"/></div>';
+  html+='</div>';
   html+=alert_('warning','<strong>Important:</strong> Topics below are AI-generated based on known regulatory themes. Always verify specific case references, ruling numbers, or recent updates directly at PMCPA (pmcpa.org.uk/cases), ABPI (abpi.org.uk), ANSM (ansm.sante.fr) or EMA (ema.europa.eu) before publishing.');
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;padding:12px;background:#F5F6F5;border-radius:10px;">';
+  html+='</div>';
   if(STATE.topics.length===0){
     html+='<div style="text-align:center;padding:20px 0;">';
     html+='<div style="font-size:13px;color:#5C6B5D;margin-bottom:16px;">AI will research current pharma regulatory topics for your audience</div>';
@@ -1249,7 +1256,14 @@ function renderDraftStep(){
   html+='<span style="color:#5C6B5D;font-weight:600;">Subject:</span><span style="font-weight:600;">'+esc(STATE.draftSubj||'Newsletter')+'</span></div></div>';
   html+='<div class="email-body"><div id="email-body-display">'+renderEmailBody(bodyText)+'</div>';
   html+='<textarea id="email-body-edit" style="display:none;width:100%;min-height:340px;border:1px solid #E2E8E2;border-radius:8px;padding:12px;font-size:14px;line-height:1.75;">'+esc(bodyText)+'</textarea></div>';
-  html+='<div class="email-footer">Eunomia Pharma Services &middot; hello@eunomiapharmaservices.com</div></div>';
+  // Subscribe section in email
+  html+='<div style="background:#2C3E2D;padding:24px;text-align:center;border-top:3px solid #E8651A;">';
+  html+='<div style="color:#fff;font-weight:700;font-size:15px;margin-bottom:6px;">Enjoyed this newsletter?</div>';
+  html+='<div style="color:#a8c5a9;font-size:13px;margin-bottom:16px;">Forward it to a colleague in pharma compliance and help them stay ahead of regulatory change.</div>';
+  html+='<a href="'+esc(subUrl)+'" style="display:inline-block;background:#E8651A;color:#fff;font-weight:700;font-size:13px;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.02em;">Subscribe to our newsletter</a>';
+  html+='<div style="color:#a8c5a9;font-size:11px;margin-top:12px;">Join '+(STATE.mc&&STATE.mc.subscribers?STATE.mc.subscribers.toLocaleString():'1,000+')+' pharma compliance professionals who receive Eunomia regulatory intelligence.</div>';
+  html+='</div>';
+  html+='<div class="email-footer">Eunomia Pharma Services &middot; hello@eunomiapharmaservices.com &middot; <a href="'+esc(subUrl)+'" style="color:#3d8b40;text-decoration:none;">Subscribe</a>'+(unsubUrl?' &middot; <a href="'+esc(unsubUrl)+'" style="color:#5C6B5D;text-decoration:none;">Unsubscribe</a>':'')+' &middot; Woking, Surrey, UK</div></div>';
   html+='<div id="mc-send-result"></div>';
   html+='<button class="btn btn-primary" style="width:100%;font-size:14px;font-weight:700;padding:14px;border-radius:10px;" onclick="sendToMailchimp()">Send to Mailchimp as Draft - '+(STATE.mc&&STATE.mc.subscribers?STATE.mc.subscribers.toLocaleString():'834')+' subscribers</button>';
   html+='</div>';
@@ -1284,10 +1298,15 @@ function toggleEdit(){
 }
 
 async function sendToMailchimp(){
-  var body=STATE.draft.replace(/SUBJECT:.+\n?---\n?/,'').trim();
+  var rawBody=STATE.draft.replace(/SUBJECT:.+\n?---\n?/,'').trim();
+  // Append subscribe block to the Mailchimp HTML body
+  var subscribeBlock='\n\n---\n\nEnjoyed this newsletter? Forward it to a colleague in pharma compliance.\n\n';
+  subscribeBlock+='SUBSCRIBE: '+subUrl+'\n';
+  if(unsubUrl)subscribeBlock+='UNSUBSCRIBE: '+unsubUrl+'\n';
+  subscribeBlock+='\nEunomia Pharma Services | hello@eunomiapharmaservices.com | Woking, Surrey, UK';
+  var body=rawBody+subscribeBlock;
   var el=document.getElementById('mc-send-result');
   if(el)el.innerHTML=spinner()+' Sending to Mailchimp...';
-  // Always save newsletter locally regardless of Mailchimp result
   saveNewsletterLocally(STATE.draftSubj,body);
   var data=await apiPost('/api/mailchimp?action=create-campaign',{subject:STATE.draftSubj,body:body});
   if(el){
